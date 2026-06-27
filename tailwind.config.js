@@ -67,6 +67,7 @@ module.exports = {
           down: '#F87171',
           unknown: '#9CA3AF',
         },
+        lime: '#C2EF4E',
       },
       borderRadius: {
         lg: 'var(--radius)',

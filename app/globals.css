@@ -90,4 +90,15 @@
   .glow-pink {
     box-shadow: 0 0 0 1px rgba(225,86,124,0.25), 0 8px 30px -8px rgba(225,86,124,0.45);
   }
+  .glow-lime {
+    box-shadow: 0 0 0 1px rgba(194,239,78,0.3), 0 8px 30px -8px rgba(194,239,78,0.4);
+  }
+  .grid-overlay {
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 100%);
+    mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 100%);
+  }
 }

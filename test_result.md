@@ -199,29 +199,49 @@ frontend:
   - task: "Dashboard UI, wizard, search/filter, dark mode"
     implemented: true
     working: "NA"
-    file: "app/page.js"
+    file: "app/dashboard/page.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
         -working: "NA"
         -agent: "main"
-        -comment: "Rendered correctly in screenshot. Frontend testing not yet authorized by user."
+        -comment: "Dashboard moved from / to /dashboard. Untouched otherwise."
+
+  - task: "Marketing landing page at / (rebuilt) - responsive + interactions"
+    implemented: true
+    working: true
+    file: "components/landing/LandingClient.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Rebuilt landing: hero w/ lime keyword chips, how-it-works, zig-zag live demo, bento features, comparison cards, animated metric counters, terminal+built-with, FAQ accordion, final CTA, footer. Verified at 1440 via screenshot. Needs responsive verification at 375/768 + interaction checks."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ COMPREHENSIVE TESTING PASSED (17/17 checks). RESPONSIVE: Desktop 1440x900 - horizontal nav links visible (How it works, Features, Compare, FAQ), hamburger hidden, 3-column bento features grid, 3-column comparison cards. Tablet 768x1024 - layout adapts cleanly, no horizontal overflow. Mobile 375x812 - desktop nav HIDDEN, hamburger VISIBLE (aria-label 'Open menu'), drawer opens with animated height containing nav links + 'Start Monitoring Free' button, hero headline scales down, lime chips ('never sleep', 'your monitoring') wrap within viewport without overflow, bento features stack to 1 column, comparison cards stack to 1 column, no horizontal scrollbar (scrollWidth=clientWidth=375px). INTERACTIONS at 1440: FAQ accordion expands answer on click, theme toggle switches dark/light mode, 'Start Monitoring Free' CTAs navigate to /dashboard, 'View live status' navigates to /status. All navigation routes functional. Screenshots: desktop_1440x900.png, tablet_768x1024.png, mobile_375x812.png, mobile_drawer_open.png, faq_expanded.png, theme_toggled.png."
 
 metadata:
   created_by: "main_agent"
-  version: "1.0"
+  version: "1.1"
   test_sequence: 1
-  run_ui: false
+  run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Marketing landing page at / (rebuilt) - responsive + interactions"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
     -agent: "main"
-    -message: "StatusPulse MVP built on Next.js + MongoDB (JS). Please test all backend API routes under /api. Seed is idempotent so call POST /api/seed first. Then verify CRUD, /dashboard shape (endpoints[], health{healthy,total}), /status (uptime windows + incidents + overall), /ping-all returns {pinged,total}, and /badge/:id returns SVG with Content-Type image/svg+xml. Note: pinging external URLs may vary by network; focus on correct response shapes and persistence in MongoDB. Do not test frontend."
+    -message: "StatusPulse MVP built on Next.js + MongoDB (JS). Backend already passed 11/11."
     -agent: "testing"
-    -message: "✅ ALL BACKEND TESTS PASSED (11/11) - Comprehensive testing completed for all backend API routes. All endpoints return correct HTTP status codes (200), proper JSON response shapes, no MongoDB _id fields in responses, and data persists correctly in MongoDB. Tested: seed (idempotent), endpoints CRUD with UUID ids, ping scheduler with deduplication, dashboard aggregation with health metrics, public status with uptime windows (24h/7d/30d) and incidents, SVG badge with correct Content-Type and Cache-Control headers. No 500 errors encountered. Backend is production-ready."
+    -message: "ALL BACKEND TESTS PASSED (11/11)."
+    -agent: "main"
+    -message: "FRONTEND VERIFICATION REQUESTED BY USER for the marketing landing page at / (base URL). Check: (1) Responsive at 375px, 768px, 1440px - screenshot each. At 375px navbar shows a hamburger that opens an animated drawer with nav links + CTA; desktop nav links hidden. Bento feature grid & comparison cards stack to 1 column on mobile. Hero headline scales down; lime keyword chips ('never sleep', 'your monitoring') wrap without overflow. (2) FAQ accordion expands answer + rotates chevron on click. (3) Theme toggle switches dark/light. (4) All 'Start Monitoring Free' CTAs (navbar, hero, comparison, final CTA) navigate to /dashboard; 'View live status' -> /status. (5) Anchor links (#how,#features,#compare,#faq) scroll to sections. Report overflow/overlap/broken nav. Do NOT modify backend."
+    -agent: "testing"
+    -message: "✅ MARKETING LANDING PAGE FULLY VERIFIED - ALL TESTS PASSED (17/17). Responsive design works perfectly at all breakpoints (1440x900, 768x1024, 375x812). Mobile hamburger menu with animated drawer functions correctly. All lime chips wrap without overflow. FAQ accordion, theme toggle, and all navigation links work as expected. No horizontal overflow, no overlapping elements, no broken navigation. Screenshots captured at all viewports. Both /dashboard and /status routes are accessible and functional."
