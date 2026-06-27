@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light canvas */
+    --background: 270 30% 99%;
+    --foreground: 263 47% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 263 47% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 263 47% 12%;
+    --primary: 344 70% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 264 30% 95%;
+    --secondary-foreground: 263 47% 18%;
+    --muted: 264 24% 95%;
+    --muted-foreground: 263 12% 42%;
+    --accent: 344 70% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 264 20% 90%;
+    --input: 264 20% 90%;
+    --ring: 344 70% 55%;
+    --chart-1: 160 70% 45%;
+    --chart-2: 43 96% 56%;
+    --chart-3: 0 84% 70%;
+    --chart-4: 344 70% 61%;
+    --chart-5: 263 47% 30%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Deep purple/navy canvas (#1B102D family) */
+    --background: 263 47% 12%;
+    --foreground: 250 30% 94%;
+    --card: 264 40% 16%;
+    --card-foreground: 250 30% 94%;
+    --popover: 264 44% 14%;
+    --popover-foreground: 250 30% 94%;
+    --primary: 344 70% 61%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 264 30% 22%;
+    --secondary-foreground: 250 30% 94%;
+    --muted: 264 28% 22%;
+    --muted-foreground: 264 18% 68%;
+    --accent: 344 70% 61%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 264 30% 24%;
+    --input: 264 30% 24%;
+    --ring: 344 70% 61%;
+    --chart-1: 160 84% 45%;
+    --chart-2: 43 96% 56%;
+    --chart-3: 0 84% 70%;
+    --chart-4: 344 70% 61%;
+    --chart-5: 250 30% 80%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+}
+
+@layer utilities {
+  .font-mono-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Subtle starfield texture for dark canvas */
+  .starfield {
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.18) 0, transparent 100%),
+      radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.12) 0, transparent 100%),
+      radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.10) 0, transparent 100%),
+      radial-gradient(1.5px 1.5px at 85% 20%, rgba(225,86,124,0.20) 0, transparent 100%),
+      radial-gradient(1px 1px at 10% 70%, rgba(255,255,255,0.10) 0, transparent 100%);
+    background-repeat: no-repeat;
+  }
+  .glow-pink {
+    box-shadow: 0 0 0 1px rgba(225,86,124,0.25), 0 8px 30px -8px rgba(225,86,124,0.45);
+  }
+}
