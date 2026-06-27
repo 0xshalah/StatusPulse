@@ -1,654 +1,576 @@
 #!/usr/bin/env python3
 """
-StatusPulse Backend API Test Suite
-Tests all backend endpoints for correct response shapes, status codes, and MongoDB persistence.
+StatusPulse v2 Backend API Test Suite
+Tests all backend routes with MongoDB + UUID ids
 """
-
 import requests
-import json
 import time
-from typing import Dict, Any
+import json
+import sys
 
-# Base URL from environment
 BASE_URL = "https://endpoint-status-3.preview.emergentagent.com/api"
 
-class Colors:
-    GREEN = '\033[92m'
-    RED = '\033[91m'
-    YELLOW = '\033[93m'
-    BLUE = '\033[94m'
-    END = '\033[0m'
+def log(msg, status="INFO"):
+    print(f"[{status}] {msg}")
 
-def log_test(name: str):
-    print(f"\n{Colors.BLUE}{'='*80}{Colors.END}")
-    print(f"{Colors.BLUE}TEST: {name}{Colors.END}")
-    print(f"{Colors.BLUE}{'='*80}{Colors.END}")
-
-def log_success(msg: str):
-    print(f"{Colors.GREEN}✓ {msg}{Colors.END}")
-
-def log_error(msg: str):
-    print(f"{Colors.RED}✗ {msg}{Colors.END}")
-
-def log_info(msg: str):
-    print(f"{Colors.YELLOW}ℹ {msg}{Colors.END}")
-
-def validate_endpoint_shape(ep: Dict[str, Any], context: str) -> bool:
-    """Validate endpoint object has correct shape"""
-    required = ['id', 'name', 'url', 'expectedStatus', 'interval', 'createdAt']
-    for field in required:
-        if field not in ep:
-            log_error(f"{context}: Missing field '{field}' in endpoint")
-            return False
-    if '_id' in ep:
-        log_error(f"{context}: MongoDB _id should not be present")
-        return False
-    log_success(f"{context}: Endpoint shape valid")
-    return True
-
-def validate_ping_shape(ping: Dict[str, Any], context: str) -> bool:
-    """Validate ping object has correct shape"""
-    required = ['id', 'endpointId', 'timestamp', 'statusCode', 'responseTime', 'verdict']
-    for field in required:
-        if field not in ping:
-            log_error(f"{context}: Missing field '{field}' in ping")
-            return False
-    if '_id' in ping:
-        log_error(f"{context}: MongoDB _id should not be present")
-        return False
-    if ping['verdict'] not in ['up', 'degraded', 'down']:
-        log_error(f"{context}: Invalid verdict '{ping['verdict']}'")
-        return False
-    log_success(f"{context}: Ping shape valid")
-    return True
-
-# Test results tracking
-test_results = {
-    'passed': 0,
-    'failed': 0,
-    'tests': []
-}
-
-def record_test(name: str, passed: bool, details: str = ""):
-    test_results['tests'].append({'name': name, 'passed': passed, 'details': details})
-    if passed:
-        test_results['passed'] += 1
-    else:
-        test_results['failed'] += 1
-
-# ============================================================================
-# TEST 1: POST /api/seed - Idempotent seeding
-# ============================================================================
-def test_seed():
-    log_test("1. POST /api/seed - Idempotent seeding")
-    
+def test_seed_idempotent():
+    """Test 1: POST /api/seed - idempotent seeding"""
+    log("Testing POST /api/seed (idempotent)...")
     try:
-        # First call - may seed or skip if data exists
-        response = requests.post(f"{BASE_URL}/seed", timeout=15)
-        log_info(f"Status Code: {response.status_code}")
-        log_info(f"Response: {response.text[:200]}")
+        # First call
+        r1 = requests.post(f"{BASE_URL}/seed", timeout=30)
+        log(f"First seed call: {r1.status_code} - {r1.text[:200]}")
+        assert r1.status_code == 200, f"Expected 200, got {r1.status_code}"
+        data1 = r1.json()
+        assert "seeded" in data1, "Missing 'seeded' field"
+        assert "count" in data1, "Missing 'count' field"
         
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("POST /api/seed", False, f"Wrong status code: {response.status_code}")
-            return False
+        # Second call - should be idempotent
+        r2 = requests.post(f"{BASE_URL}/seed", timeout=30)
+        log(f"Second seed call: {r2.status_code} - {r2.text[:200]}")
+        assert r2.status_code == 200, f"Expected 200, got {r2.status_code}"
+        data2 = r2.json()
+        assert data2["seeded"] == False, "Second call should return seeded:false"
         
-        data = response.json()
-        
-        # Should have seeded field
-        if 'seeded' not in data:
-            log_error("Response missing 'seeded' field")
-            record_test("POST /api/seed", False, "Missing 'seeded' field")
-            return False
-        
-        if data['seeded']:
-            log_success(f"Seeded {data.get('count', 0)} endpoints")
-            if data.get('count') != 5:
-                log_error(f"Expected count=5, got {data.get('count')}")
-        else:
-            log_success("Data already exists, skipped seeding (idempotent)")
-        
-        # Second call - should always skip
-        response2 = requests.post(f"{BASE_URL}/seed", timeout=15)
-        data2 = response2.json()
-        
-        if data2.get('seeded') == True:
-            log_error("Second seed call should not seed again (not idempotent)")
-            record_test("POST /api/seed", False, "Not idempotent")
-            return False
-        
-        log_success("Seed endpoint is idempotent")
-        record_test("POST /api/seed", True)
+        log("✅ PASS: POST /api/seed is idempotent", "SUCCESS")
         return True
-        
     except Exception as e:
-        log_error(f"Exception: {str(e)}")
-        record_test("POST /api/seed", False, str(e))
+        log(f"❌ FAIL: POST /api/seed - {str(e)}", "ERROR")
         return False
 
-# ============================================================================
-# TEST 2: GET /api/endpoints - List all endpoints
-# ============================================================================
-def test_get_endpoints():
-    log_test("2. GET /api/endpoints - List all endpoints")
-    
+def test_rollups():
+    """Test 2: POST /api/rollups"""
+    log("Testing POST /api/rollups...")
     try:
-        response = requests.get(f"{BASE_URL}/endpoints", timeout=10)
-        log_info(f"Status Code: {response.status_code}")
+        r = requests.post(f"{BASE_URL}/rollups", timeout=30)
+        log(f"Rollups response: {r.status_code} - {r.text[:200]}")
+        assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+        data = r.json()
+        assert data.get("rollups") == True, "Expected {rollups:true}"
         
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("GET /api/endpoints", False, f"Wrong status code: {response.status_code}")
-            return None
-        
-        data = response.json()
-        
-        if not isinstance(data, list):
-            log_error("Response should be an array")
-            record_test("GET /api/endpoints", False, "Not an array")
-            return None
-        
-        log_success(f"Got {len(data)} endpoints")
-        
-        if len(data) > 0:
-            # Validate first endpoint shape
-            if validate_endpoint_shape(data[0], "GET /api/endpoints"):
-                log_info(f"Sample endpoint: {data[0]['name']} - {data[0]['url']}")
-        
-        record_test("GET /api/endpoints", True)
-        return data
-        
+        log("✅ PASS: POST /api/rollups", "SUCCESS")
+        return True
     except Exception as e:
-        log_error(f"Exception: {str(e)}")
-        record_test("GET /api/endpoints", False, str(e))
+        log(f"❌ FAIL: POST /api/rollups - {str(e)}", "ERROR")
+        return False
+
+def test_cron_ping():
+    """Test 3: POST /api/cron/ping - interval-aware scheduler"""
+    log("Testing POST /api/cron/ping...")
+    try:
+        r = requests.post(f"{BASE_URL}/cron/ping", timeout=30)
+        log(f"Cron ping response: {r.status_code} - {r.text[:200]}")
+        assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+        data = r.json()
+        assert "ok" in data, "Missing 'ok' field"
+        assert data["ok"] == True, "Expected ok:true"
+        assert "due" in data, "Missing 'due' field"
+        assert "total" in data, "Missing 'total' field"
+        assert isinstance(data["due"], int), "due should be integer"
+        assert isinstance(data["total"], int), "total should be integer"
+        log(f"Cron ping: due={data['due']}, total={data['total']}")
+        
+        log("✅ PASS: POST /api/cron/ping", "SUCCESS")
+        return True
+    except Exception as e:
+        log(f"❌ FAIL: POST /api/cron/ping - {str(e)}", "ERROR")
+        return False
+
+def test_dashboard():
+    """Test 4: GET /api/dashboard"""
+    log("Testing GET /api/dashboard...")
+    try:
+        r = requests.get(f"{BASE_URL}/dashboard", timeout=30)
+        log(f"Dashboard response: {r.status_code} - {r.text[:300]}")
+        assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+        data = r.json()
+        
+        # Check structure
+        assert "endpoints" in data, "Missing 'endpoints' field"
+        assert "health" in data, "Missing 'health' field"
+        assert isinstance(data["endpoints"], list), "endpoints should be array"
+        
+        # Check health structure
+        health = data["health"]
+        required_health_keys = ["up", "degraded", "down", "maintenance", "paused", "total", "healthy"]
+        for key in required_health_keys:
+            assert key in health, f"Missing health.{key}"
+        
+        # Verify healthy = up + degraded
+        expected_healthy = health["up"] + health["degraded"]
+        assert health["healthy"] == expected_healthy, f"healthy should be {expected_healthy}, got {health['healthy']}"
+        
+        # Check endpoint structure
+        if data["endpoints"]:
+            ep = data["endpoints"][0]
+            assert "verdict" in ep, "Endpoint missing 'verdict'"
+            assert "pings" in ep, "Endpoint missing 'pings'"
+            assert "uptime24h" in ep, "Endpoint missing 'uptime24h'"
+            assert "paused" in ep, "Endpoint missing 'paused'"
+            assert isinstance(ep["pings"], list), "pings should be array"
+            assert len(ep["pings"]) <= 30, "pings should be max 30"
+            assert "_id" not in ep, "Endpoint should not have MongoDB _id"
+        
+        log(f"Dashboard: {len(data['endpoints'])} endpoints, health={health}")
+        log("✅ PASS: GET /api/dashboard", "SUCCESS")
+        return True
+    except Exception as e:
+        log(f"❌ FAIL: GET /api/dashboard - {str(e)}", "ERROR")
+        return False
+
+def test_status():
+    """Test 5: GET /api/status"""
+    log("Testing GET /api/status...")
+    try:
+        r = requests.get(f"{BASE_URL}/status", timeout=30)
+        log(f"Status response: {r.status_code} - {r.text[:300]}")
+        assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+        data = r.json()
+        
+        # Check top-level structure
+        assert "endpoints" in data, "Missing 'endpoints'"
+        assert "incidents" in data, "Missing 'incidents'"
+        assert "overall" in data, "Missing 'overall'"
+        assert "health" in data, "Missing 'health'"
+        assert "updatedAt" in data, "Missing 'updatedAt'"
+        
+        # Check endpoint structure
+        if data["endpoints"]:
+            ep = data["endpoints"][0]
+            assert "heatmap" in ep, "Endpoint missing 'heatmap'"
+            assert "uptime" in ep, "Endpoint missing 'uptime'"
+            assert isinstance(ep["heatmap"], list), "heatmap should be array"
+            assert len(ep["heatmap"]) == 30, f"heatmap should have 30 items, got {len(ep['heatmap'])}"
+            
+            # Check heatmap structure
+            hm = ep["heatmap"][0]
+            assert "date" in hm, "Heatmap item missing 'date'"
+            assert "uptime" in hm, "Heatmap item missing 'uptime'"
+            
+            # Check uptime structure
+            uptime = ep["uptime"]
+            assert "h24" in uptime, "Missing uptime.h24"
+            assert "d7" in uptime, "Missing uptime.d7"
+            assert "d30" in uptime, "Missing uptime.d30"
+        
+        log(f"Status: {len(data['endpoints'])} endpoints, {len(data['incidents'])} incidents, overall={data['overall']}")
+        log("✅ PASS: GET /api/status", "SUCCESS")
+        return True
+    except Exception as e:
+        log(f"❌ FAIL: GET /api/status - {str(e)}", "ERROR")
+        return False
+
+def test_endpoints_list():
+    """Test 6: GET /api/endpoints"""
+    log("Testing GET /api/endpoints...")
+    try:
+        r = requests.get(f"{BASE_URL}/endpoints", timeout=30)
+        log(f"Endpoints list response: {r.status_code} - {r.text[:300]}")
+        assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+        data = r.json()
+        
+        assert isinstance(data, list), "Response should be array"
+        if data:
+            ep = data[0]
+            required_keys = ["id", "name", "url", "expectedStatus", "interval"]
+            for key in required_keys:
+                assert key in ep, f"Endpoint missing '{key}'"
+            assert "_id" not in ep, "Endpoint should not have MongoDB _id"
+        
+        log(f"Endpoints list: {len(data)} endpoints")
+        log("✅ PASS: GET /api/endpoints", "SUCCESS")
+        return data  # Return for use in other tests
+    except Exception as e:
+        log(f"❌ FAIL: GET /api/endpoints - {str(e)}", "ERROR")
         return None
 
-# ============================================================================
-# TEST 3: GET /api/dashboard - Dashboard aggregation
-# ============================================================================
-def test_dashboard():
-    log_test("3. GET /api/dashboard - Dashboard aggregation")
-    
+def test_endpoint_detail(endpoint_id):
+    """Test 7: GET /api/endpoints/{id}/detail"""
+    log(f"Testing GET /api/endpoints/{endpoint_id}/detail...")
     try:
-        response = requests.get(f"{BASE_URL}/dashboard", timeout=15)
-        log_info(f"Status Code: {response.status_code}")
+        r = requests.get(f"{BASE_URL}/endpoints/{endpoint_id}/detail", timeout=30)
+        log(f"Endpoint detail response: {r.status_code} - {r.text[:300]}")
+        assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+        data = r.json()
         
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("GET /api/dashboard", False, f"Wrong status code: {response.status_code}")
-            return False
+        # Check required keys
+        required_keys = ["endpoint", "verdict", "history", "heatmap", "incidents", "percentiles", "uptime"]
+        for key in required_keys:
+            assert key in data, f"Missing '{key}'"
         
-        data = response.json()
+        # Check arrays
+        assert isinstance(data["history"], list), "history should be array"
+        assert isinstance(data["heatmap"], list), "heatmap should be array"
+        assert isinstance(data["incidents"], list), "incidents should be array"
+        assert len(data["heatmap"]) == 30, f"heatmap should have 30 items, got {len(data['heatmap'])}"
         
-        # Validate structure
-        if 'endpoints' not in data or 'health' not in data:
-            log_error("Missing 'endpoints' or 'health' field")
-            record_test("GET /api/dashboard", False, "Missing required fields")
-            return False
+        # Check percentiles
+        perc = data["percentiles"]
+        assert "p50" in perc, "Missing percentiles.p50"
+        assert "p95" in perc, "Missing percentiles.p95"
+        assert "p99" in perc, "Missing percentiles.p99"
         
-        if not isinstance(data['endpoints'], list):
-            log_error("'endpoints' should be an array")
-            record_test("GET /api/dashboard", False, "'endpoints' not an array")
-            return False
+        # Check uptime
+        uptime = data["uptime"]
+        assert "h24" in uptime, "Missing uptime.h24"
+        assert "d7" in uptime, "Missing uptime.d7"
+        assert "d30" in uptime, "Missing uptime.d30"
         
-        # Validate health object
-        health = data['health']
-        if 'healthy' not in health or 'total' not in health:
-            log_error("Health object missing 'healthy' or 'total'")
-            record_test("GET /api/dashboard", False, "Invalid health object")
-            return False
-        
-        log_success(f"Health: {health['healthy']}/{health['total']} healthy")
-        
-        # Validate endpoint shape
-        if len(data['endpoints']) > 0:
-            ep = data['endpoints'][0]
-            required = ['id', 'name', 'url', 'verdict', 'pings', 'latest', 'uptime24h', 'avgResponseTime']
-            for field in required:
-                if field not in ep:
-                    log_error(f"Endpoint missing field '{field}'")
-                    record_test("GET /api/dashboard", False, f"Missing field '{field}'")
-                    return False
-            
-            # Validate verdict
-            if ep['verdict'] not in ['up', 'degraded', 'down', 'unknown']:
-                log_error(f"Invalid verdict: {ep['verdict']}")
-                record_test("GET /api/dashboard", False, f"Invalid verdict")
-                return False
-            
-            # Validate pings array
-            if not isinstance(ep['pings'], list):
-                log_error("'pings' should be an array")
-                record_test("GET /api/dashboard", False, "'pings' not an array")
-                return False
-            
-            if len(ep['pings']) > 30:
-                log_error(f"Too many pings: {len(ep['pings'])} (max 30)")
-                record_test("GET /api/dashboard", False, "Too many pings")
-                return False
-            
-            # Verify pings are ascending by timestamp
-            if len(ep['pings']) > 1:
-                timestamps = [p['timestamp'] for p in ep['pings']]
-                if timestamps != sorted(timestamps):
-                    log_error("Pings not sorted ascending by timestamp")
-                    record_test("GET /api/dashboard", False, "Pings not sorted")
-                    return False
-                log_success("Pings are sorted ascending by timestamp")
-            
-            log_success(f"Sample endpoint: {ep['name']} - {ep['verdict']} - {len(ep['pings'])} pings")
-            log_info(f"  Uptime 24h: {ep['uptime24h']}%, Avg Response: {ep['avgResponseTime']}ms")
-        
-        record_test("GET /api/dashboard", True)
+        log(f"Endpoint detail: verdict={data['verdict']}, {len(data['history'])} history items")
+        log("✅ PASS: GET /api/endpoints/{id}/detail", "SUCCESS")
         return True
-        
     except Exception as e:
-        log_error(f"Exception: {str(e)}")
-        record_test("GET /api/dashboard", False, str(e))
+        log(f"❌ FAIL: GET /api/endpoints/{endpoint_id}/detail - {str(e)}", "ERROR")
         return False
 
-# ============================================================================
-# TEST 4: GET /api/status - Public status page
-# ============================================================================
-def test_status():
-    log_test("4. GET /api/status - Public status with uptime windows and incidents")
-    
+def test_endpoint_test(endpoint_id):
+    """Test 8: POST /api/endpoints/{id}/test"""
+    log(f"Testing POST /api/endpoints/{endpoint_id}/test...")
     try:
-        response = requests.get(f"{BASE_URL}/status", timeout=15)
-        log_info(f"Status Code: {response.status_code}")
+        r = requests.post(f"{BASE_URL}/endpoints/{endpoint_id}/test", timeout=30)
+        log(f"Endpoint test response: {r.status_code} - {r.text[:300]}")
+        assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+        data = r.json()
         
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("GET /api/status", False, f"Wrong status code: {response.status_code}")
-            return False
+        assert "ping" in data, "Missing 'ping' field"
+        ping = data["ping"]
+        required_keys = ["statusCode", "responseTime", "verdict"]
+        for key in required_keys:
+            assert key in ping, f"Ping missing '{key}'"
         
-        data = response.json()
+        log(f"Endpoint test: statusCode={ping['statusCode']}, responseTime={ping['responseTime']}ms, verdict={ping['verdict']}")
+        log("✅ PASS: POST /api/endpoints/{id}/test", "SUCCESS")
+        return True
+    except Exception as e:
+        log(f"❌ FAIL: POST /api/endpoints/{endpoint_id}/test - {str(e)}", "ERROR")
+        return False
+
+def test_pause_toggle(endpoint_id):
+    """Test 9: POST /api/endpoints/{id}/pause"""
+    log(f"Testing POST /api/endpoints/{endpoint_id}/pause...")
+    try:
+        # Pause endpoint
+        r1 = requests.post(f"{BASE_URL}/endpoints/{endpoint_id}/pause", 
+                          json={"paused": True}, timeout=30)
+        log(f"Pause response: {r1.status_code} - {r1.text[:200]}")
+        assert r1.status_code == 200, f"Expected 200, got {r1.status_code}"
+        data1 = r1.json()
+        assert data1.get("paused") == True, "Expected paused:true"
         
-        # Validate structure
-        required_fields = ['endpoints', 'incidents', 'overall', 'health', 'updatedAt']
-        for field in required_fields:
-            if field not in data:
-                log_error(f"Missing field '{field}'")
-                record_test("GET /api/status", False, f"Missing field '{field}'")
-                return False
+        # Check dashboard shows paused verdict
+        time.sleep(1)
+        r_dash = requests.get(f"{BASE_URL}/dashboard", timeout=30)
+        dash = r_dash.json()
+        ep = next((e for e in dash["endpoints"] if e["id"] == endpoint_id), None)
+        assert ep is not None, "Endpoint not found in dashboard"
+        assert ep["verdict"] == "paused", f"Expected verdict='paused', got '{ep['verdict']}'"
+        log(f"Dashboard confirms verdict='paused'")
         
-        log_success("All required fields present")
+        # Unpause endpoint
+        r2 = requests.post(f"{BASE_URL}/endpoints/{endpoint_id}/pause", 
+                          json={"paused": False}, timeout=30)
+        log(f"Unpause response: {r2.status_code} - {r2.text[:200]}")
+        assert r2.status_code == 200, f"Expected 200, got {r2.status_code}"
+        data2 = r2.json()
+        assert data2.get("paused") == False, "Expected paused:false"
         
-        # Validate overall status
-        if data['overall'] not in ['up', 'degraded', 'down', 'unknown']:
-            log_error(f"Invalid overall status: {data['overall']}")
-            record_test("GET /api/status", False, "Invalid overall status")
-            return False
+        log("✅ PASS: POST /api/endpoints/{id}/pause", "SUCCESS")
+        return True
+    except Exception as e:
+        log(f"❌ FAIL: POST /api/endpoints/{endpoint_id}/pause - {str(e)}", "ERROR")
+        return False
+
+def test_maintenance_toggle(endpoint_id):
+    """Test 10: POST /api/endpoints/{id}/maintenance"""
+    log(f"Testing POST /api/endpoints/{endpoint_id}/maintenance...")
+    try:
+        # Set maintenance mode
+        r1 = requests.post(f"{BASE_URL}/endpoints/{endpoint_id}/maintenance", 
+                          json={"maintenance": True}, timeout=30)
+        log(f"Maintenance on response: {r1.status_code} - {r1.text[:200]}")
+        assert r1.status_code == 200, f"Expected 200, got {r1.status_code}"
+        data1 = r1.json()
+        assert data1.get("maintenance") == True, "Expected maintenance:true"
         
-        log_success(f"Overall status: {data['overall']}")
+        # Check dashboard shows maintenance verdict
+        time.sleep(1)
+        r_dash = requests.get(f"{BASE_URL}/dashboard", timeout=30)
+        dash = r_dash.json()
+        ep = next((e for e in dash["endpoints"] if e["id"] == endpoint_id), None)
+        assert ep is not None, "Endpoint not found in dashboard"
+        assert ep["verdict"] == "maintenance", f"Expected verdict='maintenance', got '{ep['verdict']}'"
+        log(f"Dashboard confirms verdict='maintenance'")
         
-        # Validate endpoints
-        if len(data['endpoints']) > 0:
-            ep = data['endpoints'][0]
-            required_ep = ['id', 'name', 'url', 'verdict', 'uptime']
-            for field in required_ep:
-                if field not in ep:
-                    log_error(f"Endpoint missing field '{field}'")
-                    record_test("GET /api/status", False, f"Missing field '{field}'")
-                    return False
-            
-            # Validate uptime windows
-            uptime = ep['uptime']
-            if not isinstance(uptime, dict):
-                log_error("'uptime' should be an object")
-                record_test("GET /api/status", False, "'uptime' not an object")
-                return False
-            
-            for window in ['h24', 'd7', 'd30']:
-                if window not in uptime:
-                    log_error(f"Uptime missing window '{window}'")
-                    record_test("GET /api/status", False, f"Missing uptime window '{window}'")
-                    return False
+        # Disable maintenance mode
+        r2 = requests.post(f"{BASE_URL}/endpoints/{endpoint_id}/maintenance", 
+                          json={"maintenance": False}, timeout=30)
+        log(f"Maintenance off response: {r2.status_code} - {r2.text[:200]}")
+        assert r2.status_code == 200, f"Expected 200, got {r2.status_code}"
+        data2 = r2.json()
+        assert data2.get("maintenance") == False, "Expected maintenance:false"
+        
+        log("✅ PASS: POST /api/endpoints/{id}/maintenance", "SUCCESS")
+        return True
+    except Exception as e:
+        log(f"❌ FAIL: POST /api/endpoints/{endpoint_id}/maintenance - {str(e)}", "ERROR")
+        return False
+
+def test_test_url():
+    """Test 11: POST /api/test-url"""
+    log("Testing POST /api/test-url...")
+    try:
+        # Get initial endpoint count
+        r_before = requests.get(f"{BASE_URL}/endpoints", timeout=30)
+        count_before = len(r_before.json())
+        
+        # Test URL
+        r = requests.post(f"{BASE_URL}/test-url", 
+                         json={"url": "https://api.github.com", "expectedStatus": 200}, 
+                         timeout=30)
+        log(f"Test URL response: {r.status_code} - {r.text[:300]}")
+        assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+        data = r.json()
+        
+        required_keys = ["statusCode", "responseTime", "verdict", "errored", "attempts"]
+        for key in required_keys:
+            assert key in data, f"Missing '{key}'"
+        
+        # Verify no new endpoint was created
+        r_after = requests.get(f"{BASE_URL}/endpoints", timeout=30)
+        count_after = len(r_after.json())
+        assert count_after == count_before, f"Endpoint count changed from {count_before} to {count_after}"
+        
+        log(f"Test URL: statusCode={data['statusCode']}, verdict={data['verdict']}, no endpoint created")
+        log("✅ PASS: POST /api/test-url", "SUCCESS")
+        return True
+    except Exception as e:
+        log(f"❌ FAIL: POST /api/test-url - {str(e)}", "ERROR")
+        return False
+
+def test_check_duplicate():
+    """Test 12: POST /api/check-duplicate"""
+    log("Testing POST /api/check-duplicate...")
+    try:
+        # Check existing URL
+        r1 = requests.post(f"{BASE_URL}/check-duplicate", 
+                          json={"url": "https://api.github.com"}, 
+                          timeout=30)
+        log(f"Check duplicate (existing) response: {r1.status_code} - {r1.text[:200]}")
+        assert r1.status_code == 200, f"Expected 200, got {r1.status_code}"
+        data1 = r1.json()
+        assert "exists" in data1, "Missing 'exists' field"
+        assert data1["exists"] == True, "Expected exists:true for existing URL"
+        
+        # Check non-existing URL
+        r2 = requests.post(f"{BASE_URL}/check-duplicate", 
+                          json={"url": "https://no-such-url-xyz-12345.example"}, 
+                          timeout=30)
+        log(f"Check duplicate (non-existing) response: {r2.status_code} - {r2.text[:200]}")
+        assert r2.status_code == 200, f"Expected 200, got {r2.status_code}"
+        data2 = r2.json()
+        assert data2["exists"] == False, "Expected exists:false for non-existing URL"
+        
+        log("✅ PASS: POST /api/check-duplicate", "SUCCESS")
+        return True
+    except Exception as e:
+        log(f"❌ FAIL: POST /api/check-duplicate - {str(e)}", "ERROR")
+        return False
+
+def test_subscribe():
+    """Test 13: POST /api/subscribe"""
+    log("Testing POST /api/subscribe...")
+    try:
+        # Valid email
+        r1 = requests.post(f"{BASE_URL}/subscribe", 
+                          json={"email": "test@example.com"}, 
+                          timeout=30)
+        log(f"Subscribe (valid) response: {r1.status_code} - {r1.text[:200]}")
+        assert r1.status_code == 200, f"Expected 200, got {r1.status_code}"
+        data1 = r1.json()
+        assert data1.get("subscribed") == True, "Expected subscribed:true"
+        
+        # Invalid email
+        r2 = requests.post(f"{BASE_URL}/subscribe", 
+                          json={"email": "bad"}, 
+                          timeout=30)
+        log(f"Subscribe (invalid) response: {r2.status_code} - {r2.text[:200]}")
+        assert r2.status_code == 400, f"Expected 400 for invalid email, got {r2.status_code}"
+        
+        log("✅ PASS: POST /api/subscribe", "SUCCESS")
+        return True
+    except Exception as e:
+        log(f"❌ FAIL: POST /api/subscribe - {str(e)}", "ERROR")
+        return False
+
+def test_badge_variants(endpoint_id):
+    """Test 14: GET /api/badge/{id} - all variants"""
+    log(f"Testing GET /api/badge/{endpoint_id} variants...")
+    try:
+        styles = ["flat", "plastic", "for-the-badge"]
+        metrics = ["status", "uptime", "response_time"]
+        passed = 0
+        total = 0
+        
+        # Test all 9 combinations
+        for style in styles:
+            for metric in metrics:
+                total += 1
+                url = f"{BASE_URL}/badge/{endpoint_id}?style={style}&metric={metric}"
+                r = requests.get(url, timeout=30)
+                log(f"Badge {style}/{metric}: {r.status_code}, Content-Type: {r.headers.get('Content-Type')}, size: {len(r.content)} bytes")
                 
-                val = uptime[window]
-                if val is not None and not isinstance(val, (int, float)):
-                    log_error(f"Uptime {window} should be number or null, got {type(val)}")
-                    record_test("GET /api/status", False, f"Invalid uptime type")
-                    return False
-            
-            log_success(f"Sample endpoint: {ep['name']} - Uptime 24h: {uptime['h24']}%, 7d: {uptime['d7']}%, 30d: {uptime['d30']}%")
+                try:
+                    assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+                    assert "image/svg+xml" in r.headers.get("Content-Type", ""), "Expected Content-Type: image/svg+xml"
+                    assert "<svg" in r.text, "Response should contain '<svg'"
+                    assert "Cache-Control" in r.headers, "Missing Cache-Control header"
+                    passed += 1
+                except AssertionError as e:
+                    log(f"  ❌ Failed: {e}", "ERROR")
         
-        # Validate incidents
-        if not isinstance(data['incidents'], list):
-            log_error("'incidents' should be an array")
-            record_test("GET /api/status", False, "'incidents' not an array")
+        # Test with icon
+        total += 1
+        url = f"{BASE_URL}/badge/{endpoint_id}?style=flat&metric=status&icon=1"
+        r = requests.get(url, timeout=30)
+        log(f"Badge with icon: {r.status_code}, size: {len(r.content)} bytes")
+        try:
+            assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+            assert "image/svg+xml" in r.headers.get("Content-Type", ""), "Expected Content-Type: image/svg+xml"
+            assert "<svg" in r.text, "Response should contain '<svg'"
+            passed += 1
+        except AssertionError as e:
+            log(f"  ❌ Failed: {e}", "ERROR")
+        
+        log(f"Badge variants: {passed}/{total} passed")
+        if passed == total:
+            log("✅ PASS: GET /api/badge/{id} all variants", "SUCCESS")
+            return True
+        else:
+            log(f"❌ FAIL: GET /api/badge/{id} - {total - passed} variants failed", "ERROR")
             return False
-        
-        log_success(f"Found {len(data['incidents'])} incidents")
-        
-        if len(data['incidents']) > 0:
-            inc = data['incidents'][0]
-            required_inc = ['endpointName', 'start', 'resolved', 'durationMs']
-            for field in required_inc:
-                if field not in inc:
-                    log_error(f"Incident missing field '{field}'")
-                    record_test("GET /api/status", False, f"Missing incident field '{field}'")
-                    return False
-            
-            # 'end' should be present (can be null for unresolved)
-            if 'end' not in inc:
-                log_error("Incident missing 'end' field")
-                record_test("GET /api/status", False, "Missing incident 'end' field")
-                return False
-            
-            log_info(f"Sample incident: {inc['endpointName']} - Resolved: {inc['resolved']} - Duration: {inc['durationMs']}ms")
-        
-        record_test("GET /api/status", True)
-        return True
-        
     except Exception as e:
-        log_error(f"Exception: {str(e)}")
-        record_test("GET /api/status", False, str(e))
+        log(f"❌ FAIL: GET /api/badge/{id} - {str(e)}", "ERROR")
         return False
 
-# ============================================================================
-# TEST 5: POST /api/ping-all - Ping all endpoints
-# ============================================================================
-def test_ping_all():
-    log_test("5. POST /api/ping-all - Ping all endpoints")
-    
-    try:
-        response = requests.post(f"{BASE_URL}/ping-all", timeout=30)
-        log_info(f"Status Code: {response.status_code}")
-        
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("POST /api/ping-all", False, f"Wrong status code: {response.status_code}")
-            return False
-        
-        data = response.json()
-        
-        if 'pinged' not in data or 'total' not in data:
-            log_error("Missing 'pinged' or 'total' field")
-            record_test("POST /api/ping-all", False, "Missing required fields")
-            return False
-        
-        log_success(f"Pinged {data['pinged']}/{data['total']} endpoints")
-        log_info("Note: External URLs may time out or be deduplicated, that's expected")
-        
-        record_test("POST /api/ping-all", True)
-        return True
-        
-    except Exception as e:
-        log_error(f"Exception: {str(e)}")
-        record_test("POST /api/ping-all", False, str(e))
-        return False
-
-# ============================================================================
-# TEST 6: CRUD Lifecycle
-# ============================================================================
 def test_crud_lifecycle():
-    log_test("6. CRUD Lifecycle - Create, Update, Ping, Get Pings, Delete")
-    
-    created_id = None
-    
+    """Test 15: Full CRUD lifecycle"""
+    log("Testing full CRUD lifecycle...")
     try:
-        # 6a. POST /api/endpoints - Create new endpoint
-        log_info("\n6a. Creating new endpoint...")
-        new_endpoint = {
-            "name": "Production API Gateway",
+        # Get initial count
+        r_before = requests.get(f"{BASE_URL}/endpoints", timeout=30)
+        count_before = len(r_before.json())
+        log(f"Initial endpoint count: {count_before}")
+        
+        # CREATE
+        create_data = {
+            "name": "QA Test Endpoint",
             "url": "https://httpstat.us/200",
             "expectedStatus": 200,
-            "interval": 60
+            "interval": 30
         }
+        r_create = requests.post(f"{BASE_URL}/endpoints", json=create_data, timeout=30)
+        log(f"CREATE response: {r_create.status_code} - {r_create.text[:300]}")
+        assert r_create.status_code == 200, f"Expected 200, got {r_create.status_code}"
+        created = r_create.json()
+        assert "id" in created, "Missing 'id' in created endpoint"
+        endpoint_id = created["id"]
+        log(f"Created endpoint with id: {endpoint_id}")
         
-        response = requests.post(f"{BASE_URL}/endpoints", json=new_endpoint, timeout=15)
-        log_info(f"Status Code: {response.status_code}")
+        # Verify count increased
+        r_after_create = requests.get(f"{BASE_URL}/endpoints", timeout=30)
+        count_after_create = len(r_after_create.json())
+        assert count_after_create == count_before + 1, f"Expected {count_before + 1} endpoints, got {count_after_create}"
         
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("POST /api/endpoints (create)", False, f"Wrong status code: {response.status_code}")
-            return False
-        
-        created = response.json()
-        
-        if not validate_endpoint_shape(created, "POST /api/endpoints"):
-            record_test("POST /api/endpoints (create)", False, "Invalid shape")
-            return False
-        
-        if created['name'] != new_endpoint['name']:
-            log_error(f"Name mismatch: expected '{new_endpoint['name']}', got '{created['name']}'")
-            record_test("POST /api/endpoints (create)", False, "Name mismatch")
-            return False
-        
-        created_id = created['id']
-        log_success(f"Created endpoint with ID: {created_id}")
-        record_test("POST /api/endpoints (create)", True)
-        
-        # Wait a moment for the immediate ping to complete
-        time.sleep(2)
-        
-        # 6b. PUT /api/endpoints/:id - Update endpoint
-        log_info("\n6b. Updating endpoint...")
-        update_data = {"name": "Production API Gateway (Updated)"}
-        
-        response = requests.put(f"{BASE_URL}/endpoints/{created_id}", json=update_data, timeout=10)
-        log_info(f"Status Code: {response.status_code}")
-        
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("PUT /api/endpoints/:id", False, f"Wrong status code: {response.status_code}")
-            return False
-        
-        updated = response.json()
-        
-        if updated['name'] != update_data['name']:
-            log_error(f"Name not updated: expected '{update_data['name']}', got '{updated['name']}'")
-            record_test("PUT /api/endpoints/:id", False, "Name not updated")
-            return False
-        
-        log_success(f"Updated endpoint name to: {updated['name']}")
-        record_test("PUT /api/endpoints/:id", True)
-        
-        # 6c. POST /api/ping/:id - Ping single endpoint
-        log_info("\n6c. Pinging endpoint...")
-        
-        response = requests.post(f"{BASE_URL}/ping/{created_id}", timeout=15)
-        log_info(f"Status Code: {response.status_code}")
-        
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("POST /api/ping/:id", False, f"Wrong status code: {response.status_code}")
-            return False
-        
-        ping_result = response.json()
-        
-        if 'ping' not in ping_result or 'skipped' not in ping_result:
-            log_error("Missing 'ping' or 'skipped' field")
-            record_test("POST /api/ping/:id", False, "Missing required fields")
-            return False
-        
-        if ping_result['ping'] and not ping_result['skipped']:
-            if validate_ping_shape(ping_result['ping'], "POST /api/ping/:id"):
-                log_success(f"Ping successful: {ping_result['ping']['verdict']} - {ping_result['ping']['responseTime']}ms")
-        elif ping_result['skipped']:
-            log_info("Ping skipped (deduplication)")
-        
-        record_test("POST /api/ping/:id", True)
-        
-        # Wait for ping to be stored
+        # UPDATE
         time.sleep(1)
+        update_data = {"name": "QA Test Endpoint Updated"}
+        r_update = requests.put(f"{BASE_URL}/endpoints/{endpoint_id}", json=update_data, timeout=30)
+        log(f"UPDATE response: {r_update.status_code} - {r_update.text[:300]}")
+        assert r_update.status_code == 200, f"Expected 200, got {r_update.status_code}"
+        updated = r_update.json()
+        assert updated["name"] == "QA Test Endpoint Updated", "Name not updated"
+        log(f"Updated endpoint name")
         
-        # 6d. GET /api/endpoints/:id/pings - Get pings
-        log_info("\n6d. Getting pings for endpoint...")
+        # DELETE
+        time.sleep(1)
+        r_delete = requests.delete(f"{BASE_URL}/endpoints/{endpoint_id}", timeout=30)
+        log(f"DELETE response: {r_delete.status_code} - {r_delete.text[:200]}")
+        assert r_delete.status_code == 200, f"Expected 200, got {r_delete.status_code}"
+        deleted = r_delete.json()
+        assert deleted.get("deleted") == True, "Expected deleted:true"
+        log(f"Deleted endpoint")
         
-        response = requests.get(f"{BASE_URL}/endpoints/{created_id}/pings?limit=30", timeout=10)
-        log_info(f"Status Code: {response.status_code}")
+        # Verify removed from list
+        time.sleep(1)
+        r_after_delete = requests.get(f"{BASE_URL}/endpoints", timeout=30)
+        endpoints_after = r_after_delete.json()
+        count_after_delete = len(endpoints_after)
+        assert count_after_delete == count_before, f"Expected {count_before} endpoints, got {count_after_delete}"
+        assert not any(e["id"] == endpoint_id for e in endpoints_after), "Deleted endpoint still in list"
         
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("GET /api/endpoints/:id/pings", False, f"Wrong status code: {response.status_code}")
-            return False
-        
-        pings = response.json()
-        
-        if not isinstance(pings, list):
-            log_error("Response should be an array")
-            record_test("GET /api/endpoints/:id/pings", False, "Not an array")
-            return False
-        
-        log_success(f"Got {len(pings)} pings")
-        
-        if len(pings) > 0:
-            # Verify pings are ascending by timestamp
-            timestamps = [p['timestamp'] for p in pings]
-            if timestamps != sorted(timestamps):
-                log_error("Pings not sorted ascending by timestamp")
-                record_test("GET /api/endpoints/:id/pings", False, "Pings not sorted")
-                return False
-            
-            log_success("Pings are sorted ascending by timestamp")
-            validate_ping_shape(pings[0], "GET /api/endpoints/:id/pings")
-        
-        record_test("GET /api/endpoints/:id/pings", True)
-        
-        # 6e. DELETE /api/endpoints/:id - Delete endpoint
-        log_info("\n6e. Deleting endpoint...")
-        
-        response = requests.delete(f"{BASE_URL}/endpoints/{created_id}", timeout=10)
-        log_info(f"Status Code: {response.status_code}")
-        
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("DELETE /api/endpoints/:id", False, f"Wrong status code: {response.status_code}")
-            return False
-        
-        delete_result = response.json()
-        
-        if not delete_result.get('deleted') or delete_result.get('id') != created_id:
-            log_error("Invalid delete response")
-            record_test("DELETE /api/endpoints/:id", False, "Invalid response")
-            return False
-        
-        log_success(f"Deleted endpoint {created_id}")
-        
-        # 6f. Verify deletion - endpoint should not exist
-        log_info("\n6f. Verifying deletion...")
-        
-        response = requests.get(f"{BASE_URL}/endpoints", timeout=10)
-        endpoints = response.json()
-        
-        if any(ep['id'] == created_id for ep in endpoints):
-            log_error("Endpoint still exists after deletion")
-            record_test("DELETE /api/endpoints/:id", False, "Endpoint not deleted")
-            return False
-        
-        log_success("Endpoint successfully removed from database")
-        record_test("DELETE /api/endpoints/:id", True)
-        
+        log("✅ PASS: Full CRUD lifecycle", "SUCCESS")
         return True
-        
     except Exception as e:
-        log_error(f"Exception: {str(e)}")
-        record_test("CRUD Lifecycle", False, str(e))
+        log(f"❌ FAIL: Full CRUD lifecycle - {str(e)}", "ERROR")
         return False
 
-# ============================================================================
-# TEST 7: GET /api/badge/:id - SVG Badge
-# ============================================================================
-def test_badge(endpoints):
-    log_test("7. GET /api/badge/:id - Dynamic SVG badge")
-    
-    if not endpoints or len(endpoints) == 0:
-        log_error("No endpoints available for badge test")
-        record_test("GET /api/badge/:id", False, "No endpoints available")
-        return False
-    
-    try:
-        endpoint_id = endpoints[0]['id']
-        log_info(f"Testing badge for endpoint: {endpoints[0]['name']} ({endpoint_id})")
-        
-        response = requests.get(f"{BASE_URL}/badge/{endpoint_id}", timeout=10)
-        log_info(f"Status Code: {response.status_code}")
-        
-        if response.status_code != 200:
-            log_error(f"Expected 200, got {response.status_code}")
-            record_test("GET /api/badge/:id", False, f"Wrong status code: {response.status_code}")
-            return False
-        
-        # Verify Content-Type
-        content_type = response.headers.get('Content-Type', '')
-        if 'image/svg+xml' not in content_type:
-            log_error(f"Expected Content-Type 'image/svg+xml', got '{content_type}'")
-            record_test("GET /api/badge/:id", False, f"Wrong Content-Type: {content_type}")
-            return False
-        
-        log_success(f"Content-Type: {content_type}")
-        
-        # Verify Cache-Control header
-        cache_control = response.headers.get('Cache-Control', '')
-        if not cache_control:
-            log_error("Missing Cache-Control header")
-            record_test("GET /api/badge/:id", False, "Missing Cache-Control header")
-            return False
-        
-        log_success(f"Cache-Control: {cache_control}")
-        
-        # Verify SVG content
-        svg_content = response.text
-        if '<svg' not in svg_content:
-            log_error("Response does not contain '<svg'")
-            record_test("GET /api/badge/:id", False, "Not valid SVG")
-            return False
-        
-        log_success("Response contains valid SVG")
-        log_info(f"SVG length: {len(svg_content)} bytes")
-        
-        record_test("GET /api/badge/:id", True)
-        return True
-        
-    except Exception as e:
-        log_error(f"Exception: {str(e)}")
-        record_test("GET /api/badge/:id", False, str(e))
-        return False
-
-# ============================================================================
-# Main Test Runner
-# ============================================================================
 def main():
-    print(f"\n{Colors.BLUE}{'='*80}{Colors.END}")
-    print(f"{Colors.BLUE}StatusPulse Backend API Test Suite{Colors.END}")
-    print(f"{Colors.BLUE}Base URL: {BASE_URL}{Colors.END}")
-    print(f"{Colors.BLUE}{'='*80}{Colors.END}")
+    log("=" * 80)
+    log("StatusPulse v2 Backend API Test Suite")
+    log("=" * 80)
     
-    # Run tests in order
-    test_seed()
-    endpoints = test_get_endpoints()
-    test_dashboard()
-    test_status()
-    test_ping_all()
-    test_crud_lifecycle()
+    results = {}
     
-    if endpoints:
-        test_badge(endpoints)
+    # Run all tests
+    results["seed_idempotent"] = test_seed_idempotent()
+    results["rollups"] = test_rollups()
+    results["cron_ping"] = test_cron_ping()
+    results["dashboard"] = test_dashboard()
+    results["status"] = test_status()
     
-    # Print summary
-    print(f"\n{Colors.BLUE}{'='*80}{Colors.END}")
-    print(f"{Colors.BLUE}TEST SUMMARY{Colors.END}")
-    print(f"{Colors.BLUE}{'='*80}{Colors.END}")
+    endpoints = test_endpoints_list()
+    results["endpoints_list"] = endpoints is not None
     
-    total = test_results['passed'] + test_results['failed']
-    print(f"\nTotal Tests: {total}")
-    print(f"{Colors.GREEN}Passed: {test_results['passed']}{Colors.END}")
-    print(f"{Colors.RED}Failed: {test_results['failed']}{Colors.END}")
+    # Use first endpoint for detail tests
+    if endpoints and len(endpoints) > 0:
+        test_endpoint_id = endpoints[0]["id"]
+        log(f"\nUsing endpoint {test_endpoint_id} for detail tests")
+        
+        results["endpoint_detail"] = test_endpoint_detail(test_endpoint_id)
+        results["endpoint_test"] = test_endpoint_test(test_endpoint_id)
+        results["pause_toggle"] = test_pause_toggle(test_endpoint_id)
+        results["maintenance_toggle"] = test_maintenance_toggle(test_endpoint_id)
+        results["badge_variants"] = test_badge_variants(test_endpoint_id)
+    else:
+        log("⚠️  No endpoints available for detail tests", "WARNING")
+        results["endpoint_detail"] = False
+        results["endpoint_test"] = False
+        results["pause_toggle"] = False
+        results["maintenance_toggle"] = False
+        results["badge_variants"] = False
     
-    if test_results['failed'] > 0:
-        print(f"\n{Colors.RED}Failed Tests:{Colors.END}")
-        for test in test_results['tests']:
-            if not test['passed']:
-                print(f"  {Colors.RED}✗ {test['name']}{Colors.END}")
-                if test['details']:
-                    print(f"    {test['details']}")
+    results["test_url"] = test_test_url()
+    results["check_duplicate"] = test_check_duplicate()
+    results["subscribe"] = test_subscribe()
+    results["crud_lifecycle"] = test_crud_lifecycle()
     
-    print(f"\n{Colors.BLUE}{'='*80}{Colors.END}\n")
+    # Summary
+    log("\n" + "=" * 80)
+    log("TEST SUMMARY")
+    log("=" * 80)
     
-    return test_results['failed'] == 0
+    passed = sum(1 for v in results.values() if v)
+    total = len(results)
+    
+    for test_name, result in results.items():
+        status = "✅ PASS" if result else "❌ FAIL"
+        log(f"{status}: {test_name}")
+    
+    log("=" * 80)
+    log(f"TOTAL: {passed}/{total} tests passed")
+    log("=" * 80)
+    
+    return 0 if passed == total else 1
 
 if __name__ == "__main__":
-    success = main()
-    exit(0 if success else 1)
+    sys.exit(main())

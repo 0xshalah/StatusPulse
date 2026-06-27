@@ -195,6 +195,171 @@ backend:
         -agent: "testing"
         -comment: "✅ PASSED - GET /api/badge/:id returns 200 with Content-Type: image/svg+xml; charset=utf-8. Cache-Control header present. Response contains valid SVG markup (750 bytes). Badge displays endpoint status correctly."
 
+  - task: "Server-side scheduler + interval-aware cron - POST /api/cron/ping"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js, lib/monitor.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Interval-aware scheduler with atomic lock using nextPingAt. Only pings endpoints whose nextPingAt <= now. Returns {ok:true, due:<n>, total:<n>}."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/cron/ping returns 200 with {ok:true, due:0, total:5}. Interval-aware: due=0 when no endpoints are due for ping. No errors, correct response shape with ok, due, and total fields."
+
+  - task: "Endpoint detail with percentiles + heatmap - GET /api/endpoints/:id/detail"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js, lib/monitor.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Returns detailed endpoint view with endpoint, verdict, history (24h), heatmap (30 days), incidents, percentiles (p50/p95/p99), and uptime (h24/d7/d30)."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - GET /api/endpoints/{id}/detail returns 200 with all required keys: endpoint, verdict, history, heatmap (30 items), incidents, percentiles {p50, p95, p99}, uptime {h24, d7, d30}. All arrays and objects have correct structure."
+
+  - task: "Badge variants (style/metric/icon) - GET /api/badge/:id with query params"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js, lib/monitor.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Badge supports 3 styles (flat/plastic/for-the-badge), 3 metrics (status/uptime/response_time), and icon parameter. All combinations return valid SVG with Cache-Control."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - All 10 badge variants tested (9 style×metric combinations + 1 with icon). All return 200, Content-Type: image/svg+xml, contain '<svg', and have Cache-Control header. Sizes range from 743-846 bytes."
+
+  - task: "Pause/unpause endpoint - POST /api/endpoints/:id/pause"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js, lib/monitor.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Toggle endpoint pause state. When paused, dashboard verdict shows 'paused' and cron scheduler skips it."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/endpoints/{id}/pause with {paused:true} returns 200 {paused:true}. Dashboard confirms verdict='paused'. Unpause with {paused:false} returns {paused:false} and restores normal verdict."
+
+  - task: "Maintenance mode - POST /api/endpoints/:id/maintenance"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js, lib/monitor.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Toggle endpoint maintenance status. When in maintenance, dashboard verdict shows 'maintenance' and cron scheduler skips it."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/endpoints/{id}/maintenance with {maintenance:true} returns 200 {maintenance:true}. Dashboard confirms verdict='maintenance'. Setting {maintenance:false} restores normal verdict."
+
+  - task: "Test URL without creating endpoint - POST /api/test-url"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js, lib/monitor.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Test a URL with expected status without creating an endpoint. Returns {statusCode, responseTime, verdict, errored, attempts}."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/test-url with {url, expectedStatus} returns 200 with {statusCode:200, responseTime:149ms, verdict:'up', errored:false, attempts:1}. Verified no new endpoint was created (count unchanged)."
+
+  - task: "Check duplicate URL - POST /api/check-duplicate"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Check if a URL already exists in endpoints collection. Returns {exists:bool}."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/check-duplicate with existing URL (https://api.github.com) returns {exists:true}. Non-existing URL returns {exists:false}. Both return 200."
+
+  - task: "Email subscription - POST /api/subscribe"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Subscribe email for notifications. Validates email format and stores in subscribers collection."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/subscribe with valid email returns 200 {subscribed:true}. Invalid email returns 400 with error message. Email validation working correctly."
+
+  - task: "Rollups generation - POST /api/rollups"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js, lib/monitor.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Build daily rollups for last 30 days. Aggregates pings by day with uptime, latency stats. Used for heatmap and status page."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - POST /api/rollups returns 200 {rollups:true}. Rollups are generated and used by /api/status heatmap correctly."
+
+  - task: "Status page with heatmap - GET /api/status"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js, lib/monitor.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Public status page with 30-day heatmap per endpoint, uptime windows (h24/d7/d30), incidents timeline, overall status."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - GET /api/status returns 200 with endpoints (each has 30-item heatmap with {date, uptime}, uptime {h24, d7, d30}), incidents array, overall status, health, updatedAt. All structures correct."
+
+  - task: "Dashboard v2 with enhanced health metrics - GET /api/dashboard"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js, lib/monitor.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Dashboard with enhanced health breakdown: {up, degraded, down, maintenance, paused, total, healthy} where healthy=up+degraded. Each endpoint has verdict, pings (max 30), uptime24h, paused field."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ PASSED - GET /api/dashboard returns 200 with correct structure. Health has all required keys {up, degraded, down, maintenance, paused, total, healthy}. Verified healthy=up+degraded. Endpoints have verdict, pings (≤30), uptime24h, paused. No MongoDB _id present."
+
 frontend:
   - task: "Dashboard UI, wizard, search/filter, dark mode"
     implemented: true
@@ -225,23 +390,20 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "1.1"
-  test_sequence: 1
+  version: "1.2"
+  test_sequence: 2
   run_ui: true
 
 test_plan:
-  current_focus:
-    - "Marketing landing page at / (rebuilt) - responsive + interactions"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
     -agent: "main"
-    -message: "StatusPulse MVP built on Next.js + MongoDB (JS). Backend already passed 11/11."
-    -agent: "testing"
-    -message: "ALL BACKEND TESTS PASSED (11/11)."
-    -agent: "main"
-    -message: "FRONTEND VERIFICATION REQUESTED BY USER for the marketing landing page at / (base URL). Check: (1) Responsive at 375px, 768px, 1440px - screenshot each. At 375px navbar shows a hamburger that opens an animated drawer with nav links + CTA; desktop nav links hidden. Bento feature grid & comparison cards stack to 1 column on mobile. Hero headline scales down; lime keyword chips ('never sleep', 'your monitoring') wrap without overflow. (2) FAQ accordion expands answer + rotates chevron on click. (3) Theme toggle switches dark/light. (4) All 'Start Monitoring Free' CTAs (navbar, hero, comparison, final CTA) navigate to /dashboard; 'View live status' -> /status. (5) Anchor links (#how,#features,#compare,#faq) scroll to sections. Report overflow/overlap/broken nav. Do NOT modify backend."
+    -message: "v2 BACKEND UPGRADE — please test all new/changed API routes (base URL, /api prefix, MongoDB, UUID ids). Logic lives in lib/monitor.js. (1) POST /api/seed idempotent; POST /api/reset reseeds (5 endpoints w/ paused,status,nextPingAt,consecutiveFailures fields + rollups). (2) POST /api/cron/ping returns {ok,due,total} (interval-aware: only endpoints whose nextPingAt<=now get pinged; should not error). (3) POST /api/rollups returns {rollups:true}. (4) GET /api/dashboard -> health now has {up,degraded,down,maintenance,paused,total,healthy} where healthy=up+degraded; each endpoint has verdict,pings,uptime24h,paused. (5) GET /api/status -> each endpoint has heatmap (30 items {date,uptime}) + uptime{h24,d7,d30}; incidents[]; overall. (6) GET /api/endpoints/{id}/detail -> {endpoint,verdict,history[],heatmap[30],incidents[],percentiles{p50,p95,p99},uptime{h24,d7,d30}}. (7) POST /api/endpoints/{id}/test -> {ping}. (8) POST /api/endpoints/{id}/pause body{paused:true/false} -> toggles; verify dashboard verdict becomes 'paused'. (9) POST /api/endpoints/{id}/maintenance body{maintenance:true/false} -> verify dashboard verdict becomes 'maintenance' then back. (10) POST /api/test-url body{url,expectedStatus} -> {statusCode,responseTime,verdict} WITHOUT creating an endpoint. (11) POST /api/check-duplicate body{url} -> {exists:bool} (true for an existing seeded url, false for random). (12) POST /api/subscribe body{email} -> {subscribed:true}; invalid email -> 400. (13) Badge variants GET /api/badge/{id}?style=flat|plastic|for-the-badge&metric=status|uptime|response_time&icon=1 -> Content-Type image/svg+xml, body contains '<svg', Cache-Control header present; test all 3 styles x 3 metrics = 9 combos return 200 SVG. (14) CRUD: POST /api/endpoints (creates with interval, returns UUID), PUT, DELETE (also clears pings+rollups). Verify no 500s and correct shapes. Do NOT test frontend or SSE stream."
     -agent: "testing"
     -message: "✅ MARKETING LANDING PAGE FULLY VERIFIED - ALL TESTS PASSED (17/17). Responsive design works perfectly at all breakpoints (1440x900, 768x1024, 375x812). Mobile hamburger menu with animated drawer functions correctly. All lime chips wrap without overflow. FAQ accordion, theme toggle, and all navigation links work as expected. No horizontal overflow, no overlapping elements, no broken navigation. Screenshots captured at all viewports. Both /dashboard and /status routes are accessible and functional."
+    -agent: "testing"
+    -message: "✅ STATUSPULSE v2 BACKEND FULLY TESTED - ALL 15 TESTS PASSED (15/15). Comprehensive backend API testing completed successfully: (1) POST /api/seed - idempotent seeding ✅ (2) POST /api/rollups - rollup generation ✅ (3) POST /api/cron/ping - interval-aware scheduler with atomic lock, due=0 when no endpoints due ✅ (4) GET /api/dashboard - enhanced health metrics {up,degraded,down,maintenance,paused,total,healthy}, healthy=up+degraded verified, all endpoints have verdict/pings/uptime24h/paused ✅ (5) GET /api/status - 30-day heatmap per endpoint, uptime windows (h24/d7/d30), incidents timeline, overall status ✅ (6) GET /api/endpoints - list with UUID ids, no MongoDB _id ✅ (7) GET /api/endpoints/{id}/detail - endpoint detail with percentiles (p50/p95/p99), 30-item heatmap, incidents, uptime windows ✅ (8) POST /api/endpoints/{id}/test - test endpoint now ✅ (9) POST /api/endpoints/{id}/pause - pause/unpause toggle, dashboard verdict='paused' verified ✅ (10) POST /api/endpoints/{id}/maintenance - maintenance mode toggle, dashboard verdict='maintenance' verified ✅ (11) GET /api/badge/{id} - all 10 badge variants tested (3 styles × 3 metrics + icon), all return valid SVG with Cache-Control ✅ (12) POST /api/test-url - test URL without creating endpoint ✅ (13) POST /api/check-duplicate - duplicate URL detection ✅ (14) POST /api/subscribe - email subscription with validation (400 for invalid email) ✅ (15) Full CRUD lifecycle - CREATE/UPDATE/DELETE with UUID ids, pings/rollups cleanup on delete ✅. NO 500 ERRORS. All HTTP codes correct, all JSON shapes verified, all response structures match specifications. Backend is production-ready."

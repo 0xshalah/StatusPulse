@@ -25,6 +25,7 @@ import {
   Database,
 } from 'lucide-react'
 import LandingNav from './LandingNav'
+import Particles from './Particles'
 import { Reveal, CountUp, MagneticButton, ScrollProgress, EASE } from './helpers'
 import StatusDot from '@/components/statuspulse/StatusDot'
 import { Button } from '@/components/ui/button'
@@ -200,6 +201,7 @@ export default function LandingClient() {
         {/* ============================= HERO ============================= */}
         <section className="relative overflow-hidden dark:starfield">
           <div className="pointer-events-none absolute inset-0 grid-overlay" aria-hidden="true" />
+          <Particles count={20} />
           <div className="pointer-events-none absolute left-1/2 top-0 h-[440px] w-[860px] -translate-x-1/2 rounded-full bg-primary/15 blur-[130px]" aria-hidden="true" />
           <div className="relative mx-auto max-w-[1100px] px-4 pb-16 pt-28 text-center sm:px-6 sm:pb-20 sm:pt-32">
             <motion.div
@@ -433,13 +435,24 @@ export default function LandingClient() {
               ))}
             </div>
             <Reveal delay={0.2} className="mt-16 text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2px] text-muted-foreground">Trusted by developers from</p>
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 opacity-70">
-                {LOGOS.map((l) => (
-                  <span key={l} className="font-display text-xl font-bold tracking-tight text-foreground/70 grayscale transition-colors hover:text-foreground">
-                    {l}
-                  </span>
-                ))}
+              <p className="text-xs font-semibold uppercase tracking-[0.2px] text-muted-foreground">Built with open-source tools</p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-5 text-foreground/55">
+                <span className="flex items-center gap-2 grayscale transition hover:text-foreground hover:grayscale-0">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12c2.4 0 4.63-.7 6.5-1.9L8.2 8.9v6.6H6.6V6.3h1.9l10 13.2A11.96 11.96 0 0 0 24 12c0-6.63-5.37-12-12-12zm5 6.3h1.6v7.7L17 11.6V6.3z"/></svg>
+                  <span className="font-display text-sm font-semibold">Next.js</span>
+                </span>
+                <span className="flex items-center gap-2 grayscale transition hover:text-foreground hover:grayscale-0">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l11 19H1L12 3z"/></svg>
+                  <span className="font-display text-sm font-semibold">Vercel</span>
+                </span>
+                <span className="flex items-center gap-2 grayscale transition hover:text-foreground hover:grayscale-0">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1.6 3.2 5 5.6 5 10.7 0 4.1-2.4 6.9-4.4 8L12 22l-.6-1.3C9.4 19.6 7 16.8 7 12.7 7 7.6 10.4 5.2 12 2z"/></svg>
+                  <span className="font-display text-sm font-semibold">MongoDB</span>
+                </span>
+                <span className="flex items-center gap-2 grayscale transition hover:text-foreground hover:grayscale-0">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.5 9.2C7.3 6.1 9.1 4.6 12 4.6c3.5 0 3.9 2.2 5.7 2.6 1.2.3 2.2-.1 3.3-1.2-.8 3.1-2.6 4.6-5.5 4.6-3.5 0-3.9-2.2-5.7-2.6-1.2-.3-2.3.1-3.3 1.2zM1 14.6c.8-3.1 2.6-4.6 5.5-4.6 3.5 0 3.9 2.2 5.7 2.6 1.2.3 2.2-.1 3.3-1.2-.8 3.1-2.6 4.6-5.5 4.6-3.5 0-3.9-2.2-5.7-2.6-1.2-.3-2.3.1-3.3 1.2z"/></svg>
+                  <span className="font-display text-sm font-semibold">Tailwind</span>
+                </span>
               </div>
             </Reveal>
           </div>
@@ -470,7 +483,7 @@ export default function LandingClient() {
               </div>
             </Reveal>
             <Reveal delay={0.15} className="mt-8">
-              <p className="text-center text-xs uppercase tracking-[0.2px] text-muted-foreground">Built with</p>
+              <p className="text-center text-xs uppercase tracking-[0.2px] text-muted-foreground">Powered by</p>
               <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
                 {BUILT_WITH.map((b) => (
                   <span key={b.label} className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm">
