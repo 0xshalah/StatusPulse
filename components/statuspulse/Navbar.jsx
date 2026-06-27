@@ -18,7 +18,7 @@ export default function Navbar({ children }) {
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
             <Link
-              href="/"
+              href="/dashboard"
               className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               Dashboard
