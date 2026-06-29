@@ -24,6 +24,10 @@ StatusPulse monitors your API endpoints in real-time. Add any HTTP(S) endpoint, 
 
 🔗 **[statuspulse-vvy0.onrender.com](https://statuspulse-vvy0.onrender.com)**
 
+![Dashboard Screenshot](assets/dashboard.png)
+
+![Landing Page](assets/landing.png)
+
 | Page | Description |
 |------|-------------|
 | `/` | Series-A landing page with animated mock dashboard |
