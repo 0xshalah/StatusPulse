@@ -1,0 +1,26 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Maintenance Window Set",
+  "description": "Test maintenance window: set valid window, confirm it saves",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse-vvy0.onrender.com/endpoints/d9eea9eb-8106-4c9d-80c8-990b46846fc6",
+      "description": "Open endpoint detail page"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Maintenance Window",
+      "description": "Maintenance window section is visible"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Save Window",
+      "description": "Save button is visible"
+    }
+  ]
+}
