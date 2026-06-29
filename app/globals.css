@@ -101,4 +101,28 @@
     -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 100%);
     mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 100%);
   }
+  /* View Transitions API — theme toggle circle animation */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  ::view-transition-old(root) { z-index: 999; }
+  ::view-transition-new(root) { z-index: 1; }
+  [data-transition-mode='sunrise']::view-transition-old(root) { z-index: 1; }
+  [data-transition-mode='sunrise']::view-transition-new(root) { z-index: 999; }
+  ::view-transition-old(root) {
+    animation: theme-shrink 0.4s ease-out forwards;
+  }
+  ::view-transition-new(root) {
+    animation: theme-expand 0.5s ease-in forwards;
+  }
+  @keyframes theme-shrink {
+    from { clip-path: circle(var(--tx-radius) at var(--tx-x) var(--tx-y)); }
+    to   { clip-path: circle(0px at var(--tx-x) var(--tx-y)); }
+  }
+  @keyframes theme-expand {
+    from { clip-path: circle(0px at var(--tx-x) var(--tx-y)); }
+    to   { clip-path: circle(var(--tx-radius) at var(--tx-x) var(--tx-y)); }
+  }
 }

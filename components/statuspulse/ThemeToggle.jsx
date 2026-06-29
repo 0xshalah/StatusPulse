@@ -1,19 +1,51 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useTheme } from 'next-themes'
 import { Moon, Sun, Monitor } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-// Tri-state: Dark -> Light -> System -> Dark
 const ORDER = ['dark', 'light', 'system']
 const ICONS = { dark: Moon, light: Sun, system: Monitor }
 const LABELS = { dark: 'Dark', light: 'Light', system: 'System' }
+
+function supportsViewTransition() {
+  return typeof document !== 'undefined' && 'startViewTransition' in document
+}
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
+
+  const toggle = useCallback((e) => {
+    const current = theme && ORDER.includes(theme) ? theme : 'system'
+    const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length]
+    if (!supportsViewTransition()) { setTheme(next); return }
+
+    const x = e.clientX
+    const y = e.clientY
+    const maxRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    )
+    document.documentElement.style.setProperty('--tx-x', `${x}px`)
+    document.documentElement.style.setProperty('--tx-y', `${y}px`)
+    document.documentElement.style.setProperty('--tx-radius', `${maxRadius}px`)
+
+    // Light→Dark = sunset (OLD shrinks), Dark→Light = sunrise (NEW expands)
+    const isSunrise = current === 'dark' && next === 'light'
+    document.documentElement.setAttribute('data-transition-mode', isSunrise ? 'sunrise' : 'sunset')
+
+    const transition = document.startViewTransition(() => setTheme(next))
+    transition.finished.then(() => {
+      document.documentElement.removeAttribute('data-transition-mode')
+      document.documentElement.style.removeProperty('--tx-x')
+      document.documentElement.style.removeProperty('--tx-y')
+      document.documentElement.style.removeProperty('--tx-radius')
+    })
+  }, [theme, setTheme])
+
   if (!mounted) return <div className="h-9 w-9" />
   const current = theme && ORDER.includes(theme) ? theme : 'system'
   const Icon = ICONS[current]
@@ -24,7 +56,7 @@ export default function ThemeToggle() {
       size="icon"
       aria-label={`Theme: ${LABELS[current]}. Switch to ${LABELS[next]}`}
       title={`Theme: ${LABELS[current]} → ${LABELS[next]}`}
-      onClick={() => setTheme(next)}
+      onClick={toggle}
       className="rounded-full text-muted-foreground hover:text-foreground"
     >
       <Icon className="h-[18px] w-[18px]" />
