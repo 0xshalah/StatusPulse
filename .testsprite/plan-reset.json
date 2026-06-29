@@ -1,0 +1,32 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Reset Filters Button",
+  "description": "Test Reset button resets both search and filter to all",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse-vvy0.onrender.com/dashboard",
+      "description": "Open dashboard"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "text=Down",
+      "description": "Click Down filter tab"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "button[aria-label='Reset filters']",
+      "description": "Click Reset button"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "button[value='all']",
+      "description": "All tab should be selected after reset"
+    }
+  ]
+}

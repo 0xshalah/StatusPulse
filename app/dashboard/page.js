@@ -111,7 +111,7 @@ function App() {
               )}
             </div>
             {(search || filter !== 'all') && (
-              <button onClick={() => setSearch('')} className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="Reset filters">
+              <button onClick={() => { setSearch(''); setFilter('all') }} className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="Reset filters">
                 <RotateCcw className="h-3.5 w-3.5" /> Reset
               </button>
             )}
