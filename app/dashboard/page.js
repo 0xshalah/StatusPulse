@@ -92,11 +92,11 @@ function App() {
               <div className="mt-5 flex flex-wrap items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={reseed} className="gap-1.5 text-muted-foreground"><RotateCcw className="h-3.5 w-3.5" /> Reset demo data</Button>
                 <Button variant="ghost" size="sm" onClick={() => {
-                  const first = data.endpoints[0]
-                  if (!first) return toast.error('No endpoints to copy')
+                  if (!data.endpoints.length) return toast.error('No endpoints to copy')
                   const base = typeof window !== 'undefined' ? window.location.origin : ''
-                  navigator.clipboard.writeText(`![${first.name}](${base}/api/badge/${first.id})`).then(
-                    () => toast.success(`Copied badge for ${first.name}`),
+                  const badges = data.endpoints.map((ep) => `![${ep.name}](${base}/api/badge/${ep.id})`).join('\n')
+                  navigator.clipboard.writeText(badges).then(
+                    () => toast.success(`Copied ${data.endpoints.length} badge(s)`),
                     () => toast.error('Copy failed')
                   )
                 }} className="gap-1.5 text-muted-foreground"><Code2 className="h-3.5 w-3.5" /> Copy all badges</Button>
