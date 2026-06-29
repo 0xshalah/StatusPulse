@@ -41,6 +41,15 @@
 26. TestSprite reran --all: "Alert Settings Modal" — PASSED
 27. Suite: 3 core tests still green after maintenance window
 
+### Day 1 — Iteration 4: Security Hardening (Jun 29)
+28. Ran vulnscan on statuspulse-vvy0.onrender.com — found 2 critical + 5 other findings
+29. CRITICAL #1: Missing HSTS (Strict-Transport-Security) header — SSL stripping risk. Fixed: added max-age=31536000; includeSubDomains; preload
+30. MEDIUM: CORS wildcard (*) — any origin could make cross-origin requests. Fixed: restricted to specific origin
+31. MEDIUM: Missing X-Content-Type-Options: nosniff · Referrer-Policy · Permissions-Policy. Fixed: added all 3
+32. MEDIUM: X-Frame-Options: ALLOWALL allowed clickjacking. Fixed: changed to SAMEORIGIN
+33. FALSE POSITIVE: SSTI template injection (Smarty) — StatusPulse is Next.js/React, not PHP. Landing page doesn't render URL params. Documented.
+34. Security headers hardened. Rescan pending.
+
 ### Day 1 — [Jun 30]
 <!-- Agent: add entries below as you build, test, fix, rerun -->
 <!-- Format: number. What you did → TestSprite test describe → result → fix → rerun result -->
