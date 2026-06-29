@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useTheme } from 'next-themes'
 import { Moon, Sun, Monitor } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -16,12 +16,21 @@ function supportsViewTransition() {
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const ticking = useRef(false)
   useEffect(() => setMounted(true), [])
 
   const toggle = useCallback((e) => {
+    if (ticking.current) return
+    ticking.current = true
+
     const current = theme && ORDER.includes(theme) ? theme : 'system'
     const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length]
-    if (!supportsViewTransition()) { setTheme(next); return }
+
+    if (!supportsViewTransition()) {
+      setTheme(next)
+      ticking.current = false
+      return
+    }
 
     const x = e.clientX
     const y = e.clientY
@@ -29,20 +38,27 @@ export default function ThemeToggle() {
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y)
     )
+    const isSunrise = current === 'dark' && next === 'light'
+
+    // Set CSS custom properties and transition mode BEFORE startViewTransition
     document.documentElement.style.setProperty('--tx-x', `${x}px`)
     document.documentElement.style.setProperty('--tx-y', `${y}px`)
     document.documentElement.style.setProperty('--tx-radius', `${maxRadius}px`)
-
-    // Light→Dark = sunset (OLD shrinks), Dark→Light = sunrise (NEW expands)
-    const isSunrise = current === 'dark' && next === 'light'
     document.documentElement.setAttribute('data-transition-mode', isSunrise ? 'sunrise' : 'sunset')
 
-    const transition = document.startViewTransition(() => setTheme(next))
+    // Force synchronous layout so CSS vars + attribute are applied before snapshot
+    void document.documentElement.offsetHeight
+
+    const transition = document.startViewTransition(() => {
+      setTheme(next)
+    })
+
     transition.finished.then(() => {
       document.documentElement.removeAttribute('data-transition-mode')
       document.documentElement.style.removeProperty('--tx-x')
       document.documentElement.style.removeProperty('--tx-y')
       document.documentElement.style.removeProperty('--tx-radius')
+      ticking.current = false
     })
   }, [theme, setTheme])
 
