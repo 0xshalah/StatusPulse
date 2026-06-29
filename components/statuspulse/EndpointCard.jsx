@@ -42,20 +42,20 @@ export default function EndpointCard({ endpoint, onEdit, onDelete, onPause, onTe
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-5"
     >
       <div className="absolute inset-x-0 top-0 h-[3px] opacity-80" style={{ background: `linear-gradient(90deg, ${s.color}, transparent)` }} />
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="mt-1"><StatusDot verdict={endpoint.verdict} /></div>
-          <div className="min-w-0">
-            <Link href={`/endpoints/${endpoint.id}`} className="truncate font-display text-base font-semibold leading-tight hover:text-primary">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          <div className="mt-1 shrink-0"><StatusDot verdict={endpoint.verdict} /></div>
+          <div className="min-w-0 flex-1">
+            <Link href={`/endpoints/${endpoint.id}`} className="block truncate font-display text-base font-semibold leading-tight hover:text-primary">
               {endpoint.name}
             </Link>
-            <a href={endpoint.url} target="_blank" rel="noreferrer" className="mt-0.5 flex items-center gap-1 truncate font-mono text-xs text-muted-foreground hover:text-primary">
-              <span className="truncate">{endpoint.url}</span>
+            <a href={endpoint.url} target="_blank" rel="noreferrer" className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+              <span className="truncate font-mono">{endpoint.url}</span>
               <ExternalLink className="h-3 w-3 shrink-0" />
             </a>
           </div>
         </div>
-        <span className="shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.25px]" style={{ backgroundColor: `${s.color}22`, color: s.color }}>
+        <span className="shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.25px] whitespace-nowrap" style={{ backgroundColor: `${s.color}22`, color: s.color }}>
           {s.label}
         </span>
       </div>
