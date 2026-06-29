@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Plus, Search, RotateCcw, ServerCrash, Radio } from 'lucide-react'
+import { Plus, Search, RotateCcw, ServerCrash, Radio, Bell } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'
 import HealthScore from '@/components/statuspulse/HealthScore'
 import EndpointCard from '@/components/statuspulse/EndpointCard'
 import AddEndpointWizard from '@/components/statuspulse/AddEndpointWizard'
+import SlackSettings from '@/components/statuspulse/SlackSettings'
 import { useStatusStream } from '@/hooks/useStatusStream'
 import { api, timeAgo } from '@/lib/statuspulse'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,7 @@ function App() {
   const [wizardOpen, setWizardOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [lastSweep, setLastSweep] = useState(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const onData = useCallback((res) => {
     if (res && res.endpoints) {
@@ -66,6 +68,9 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar>
+        <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)} className="rounded-full text-muted-foreground hover:text-foreground" aria-label="Alert settings">
+          <Bell className="h-[18px] w-[18px]" />
+        </Button>
         <Button onClick={() => { setEditing(null); setWizardOpen(true) }} className="gap-1.5">
           <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add endpoint</span>
         </Button>
@@ -134,6 +139,7 @@ function App() {
       </div>
 
       <AddEndpointWizard open={wizardOpen} onOpenChange={setWizardOpen} editing={editing} onSaved={async () => onData(await api('/dashboard'))} />
+      <SlackSettings open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   )
 }

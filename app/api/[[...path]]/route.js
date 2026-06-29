@@ -24,6 +24,27 @@ async function handler(request, { params }) {
     if (route === '/reset' && method === 'POST') return cors(NextResponse.json(await M.resetData(db)))
     if (route === '/rollups' && method === 'POST') return cors(NextResponse.json(await M.buildRollups(db)))
 
+    // Settings (Slack webhook)
+    if (route === '/settings' && method === 'GET') return cors(NextResponse.json(await M.getSettings(db)))
+    if (route === '/settings' && method === 'PUT') {
+      const b = await request.json()
+      return cors(NextResponse.json(await M.updateSettings(db, b)))
+    }
+    if (route === '/settings/test' && method === 'POST') {
+      const settings = await M.getSettings(db)
+      if (!settings.slackWebhookUrl) return cors(NextResponse.json({ error: 'webhook URL not set' }, { status: 400 }))
+      try {
+        await fetch(settings.slackWebhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: ':white_check_mark: *StatusPulse* — Slack webhook test successful! Your alerts are configured correctly.' }),
+        })
+        return cors(NextResponse.json({ sent: true }))
+      } catch (e) {
+        return cors(NextResponse.json({ error: e.message }, { status: 500 }))
+      }
+    }
+
     // Server-side cron (Vercel Cron or in-process scheduler calls this)
     if (route === '/cron/ping' && (method === 'POST' || method === 'GET')) {
       const res = await M.runDueChecks(db)
