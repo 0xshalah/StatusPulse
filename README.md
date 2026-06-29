@@ -76,7 +76,7 @@ StatusPulse monitors your API endpoints in real-time. Add any HTTP(S) endpoint, 
 ## The Loop
 
 ```
-Claude Code (Maker)  →  TestSprite CLI (Checker)  →  Failure Bundle  →  Fix  →  Rerun
+OpenCode + Emergent (Maker)  →  TestSprite CLI (Checker)  →  Failure Bundle  →  Fix  →  Rerun
 ```
 
 | Metric | Count |
@@ -216,7 +216,7 @@ testsprite test list --project dc688ee6-3d53-4cd9-a8a2-21229ef20a01
 | **Participant** | Shalahuddin Al-Ayyubi (@0xshalah) |
 | **Discord** | shalahuddin02 |
 | **TestSprite** | awgpro020345@gmail.com |
-| **Maker** | Claude Code |
+| **Maker** | OpenCode + Emergent |
 | **Checker** | TestSprite CLI |
 
 ---
