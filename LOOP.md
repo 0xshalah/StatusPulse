@@ -13,6 +13,12 @@
 4. TestSprite ran "Status Page + Theme Toggle" (test_be20bda2) — PASSED (13/13)
 5. Baseline suite: 2 tests banked. Ready for feature loop.
 
+### Day 1 — Iteration 1: Slack Webhook Alerts (Jun 29)
+6. Added Slack webhook alert feature: sendSlackNotification in monitor.js + settings API + SlackSettings UI modal in dashboard
+7. TestSprite reran --all: "Landing Page + Dashboard Flow" (test_945b6fe5) — PASSED
+8. TestSprite reran --all: "Status Page + Theme Toggle" (test_be20bda2) — PASSED
+9. Feature shipped clean; 2 tests still banked. Suite stable after new code.
+
 ### Day 1 — [Jun 30]
 <!-- Agent: add entries below as you build, test, fix, rerun -->
 <!-- Format: number. What you did → TestSprite test describe → result → fix → rerun result -->
