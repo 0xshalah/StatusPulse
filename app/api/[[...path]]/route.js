@@ -135,6 +135,8 @@ async function handler(request, { params }) {
         ;['name', 'url'].forEach((k) => b[k] !== undefined && (u[k] = b[k]))
         if (b.expectedStatus !== undefined) u.expectedStatus = Number(b.expectedStatus)
         if (b.interval !== undefined) u.interval = Number(b.interval)
+        if (b.maintenanceStart !== undefined) u.maintenanceStart = b.maintenanceStart
+        if (b.maintenanceEnd !== undefined) u.maintenanceEnd = b.maintenanceEnd
         await db.collection('endpoints').updateOne({ id }, { $set: u })
         const updated = await db.collection('endpoints').findOne({ id })
         return cors(NextResponse.json(M.clean(updated)))

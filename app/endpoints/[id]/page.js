@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Gauge, Activity, Timer, Zap, Pause, Play, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, Gauge, Activity, Timer, Zap, Pause, Play, Pencil, Trash2, CalendarClock } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'
 import StatusDot from '@/components/statuspulse/StatusDot'
@@ -23,6 +23,9 @@ export default function EndpointDetail() {
   const [d, setD] = useState(null)
   const [loading, setLoading] = useState(true)
   const [wizardOpen, setWizardOpen] = useState(false)
+  const [maintStart, setMaintStart] = useState('')
+  const [maintEnd, setMaintEnd] = useState('')
+  const [maintError, setMaintError] = useState('')
 
   const load = useCallback(async () => {
     try { setD(await api(`/endpoints/${id}/detail`)) } catch { toast.error('Failed to load') } finally { setLoading(false) }
@@ -39,6 +42,12 @@ export default function EndpointDetail() {
   const test = async () => { await api(`/endpoints/${id}/test`, { method: 'POST' }); toast.success('Re-checked'); load() }
   const pause = async () => { await api(`/endpoints/${id}/pause`, { method: 'POST', body: JSON.stringify({ paused: !ep.paused }) }); load() }
   const del = async () => { await api(`/endpoints/${id}`, { method: 'DELETE' }); toast.success('Deleted'); router.push('/dashboard') }
+  const saveMaintenance = async () => {
+    setMaintError('')
+    await api(`/endpoints/${id}`, { method: 'PUT', body: JSON.stringify({ maintenanceStart: maintStart, maintenanceEnd: maintEnd }) })
+    toast.success('Maintenance window saved')
+    load()
+  }
 
   return (
     <Shell>
@@ -73,6 +82,27 @@ export default function EndpointDetail() {
         <Stat label="Uptime 24h" value={fmtPct(d.uptime.h24)} icon={Activity} />
         <Stat label="Uptime 7d" value={fmtPct(d.uptime.d7)} icon={Activity} />
         <Stat label="Uptime 30d" value={fmtPct(d.uptime.d30)} icon={Activity} />
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-border bg-card p-5">
+        <h2 className="font-display text-lg font-semibold flex items-center gap-2"><CalendarClock className="h-5 w-5 text-lime" /> Maintenance Window</h2>
+        {ep.maintenanceStart && ep.maintenanceEnd ? (
+          <p className="mt-2 font-mono text-sm">
+            Scheduled maintenance: <span className="text-primary">{new Date(ep.maintenanceStart).toLocaleString()}</span> → <span className="text-primary">{new Date(ep.maintenanceEnd).toLocaleString()}</span>
+          </p>
+        ) : <p className="mt-2 text-sm text-muted-foreground">No maintenance window set.</p>}
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label htmlFor="maint-start" className="mb-1 block text-xs font-medium text-muted-foreground">Start (datetime-local)</label>
+            <input id="maint-start" type="datetime-local" value={maintStart} onChange={(e) => setMaintStart(e.target.value)} className="w-full rounded-lg border border-border bg-muted px-3 py-2 font-mono text-sm focus:border-primary focus:outline-none" />
+          </div>
+          <div>
+            <label htmlFor="maint-end" className="mb-1 block text-xs font-medium text-muted-foreground">End (datetime-local)</label>
+            <input id="maint-end" type="datetime-local" value={maintEnd} onChange={(e) => setMaintEnd(e.target.value)} className="w-full rounded-lg border border-border bg-muted px-3 py-2 font-mono text-sm focus:border-primary focus:outline-none" />
+          </div>
+        </div>
+        {maintError && <p className="mt-2 text-sm text-status-down" id="maint-error">{maintError}</p>}
+        <Button onClick={saveMaintenance} size="sm" className="mt-3 gap-1.5"><CalendarClock className="h-4 w-4" /> Save Window</Button>
       </div>
 
       <div className="mt-6 rounded-2xl border border-border bg-card p-5">
