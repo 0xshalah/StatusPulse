@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, Settings, Check, X, Loader2 } from 'lucide-react'
+import { Bell, Check, X, Loader2, Link2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { api } from '@/lib/statuspulse'
@@ -9,9 +9,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-export default function SlackSettings({ open, onOpenChange }) {
-  const [webhookUrl, setWebhookUrl] = useState('')
+export default function AlertSettings({ open, onOpenChange }) {
+  const [tab, setTab] = useState('slack')
+  const [slackUrl, setSlackUrl] = useState('')
+  const [discordUrl, setDiscordUrl] = useState('')
   const [notifyOnDown, setNotifyOnDown] = useState(true)
   const [notifyOnDegraded, setNotifyOnDegraded] = useState(true)
   const [notifyOnRecovery, setNotifyOnRecovery] = useState(true)
@@ -22,7 +25,8 @@ export default function SlackSettings({ open, onOpenChange }) {
     if (open) {
       api('/settings').then((s) => {
         if (s) {
-          setWebhookUrl(s.slackWebhookUrl || '')
+          setSlackUrl(s.slackWebhookUrl || '')
+          setDiscordUrl(s.discordWebhookUrl || '')
           setNotifyOnDown(s.notifyOnDown !== false)
           setNotifyOnDegraded(s.notifyOnDegraded !== false)
           setNotifyOnRecovery(s.notifyOnRecovery !== false)
@@ -36,7 +40,7 @@ export default function SlackSettings({ open, onOpenChange }) {
     try {
       await api('/settings', {
         method: 'PUT',
-        body: JSON.stringify({ slackWebhookUrl: webhookUrl, notifyOnDown, notifyOnDegraded, notifyOnRecovery }),
+        body: JSON.stringify({ slackWebhookUrl: slackUrl, discordWebhookUrl: discordUrl, notifyOnDown, notifyOnDegraded, notifyOnRecovery }),
       })
       toast.success('Alert settings saved')
       onOpenChange(false)
@@ -44,13 +48,17 @@ export default function SlackSettings({ open, onOpenChange }) {
     setLoading(false)
   }
 
-  const testWebhook = async () => {
+  const testChannel = async (channel) => {
     setTesting(true)
     try {
-      const r = await api('/settings/test', { method: 'POST' })
-      if (r.sent) toast.success('Test notification sent to Slack!')
-      else toast.error(r.error || 'Test failed')
-    } catch { toast.error('Test failed') }
+      const body = channel === 'slack'
+        ? JSON.stringify({ text: ':white_check_mark: *StatusPulse* — Webhook test successful!' })
+        : JSON.stringify({ content: ':white_check_mark: **StatusPulse** — Webhook test successful!' })
+      const url = channel === 'slack' ? slackUrl : discordUrl
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+      if (res.ok) toast.success(`${channel === 'slack' ? 'Slack' : 'Discord'} test sent!`)
+      else toast.error('Webhook rejected')
+    } catch { toast.error('Connection failed') }
     setTesting(false)
   }
 
@@ -71,26 +79,55 @@ export default function SlackSettings({ open, onOpenChange }) {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink/10">
                   <Bell className="h-4 w-4 text-primary" />
                 </div>
-                <h2 className="font-display text-lg font-bold">Alert Settings</h2>
+                <h2 className="font-display text-lg font-bold">Alert Channels</h2>
               </div>
               <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="rounded-full">
                 <X className="h-4 w-4" />
               </Button>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="slack-url" className="text-sm font-medium">Slack Webhook URL</Label>
-                <Input
-                  id="slack-url"
-                  placeholder="https://hooks.slack.com/services/..."
-                  value={webhookUrl}
-                  onChange={(e) => setWebhookUrl(e.target.value)}
-                  className="mt-1.5 font-mono text-xs"
-                />
-              </div>
+            <Tabs value={tab} onValueChange={setTab} className="mb-4">
+              <TabsList className="w-full">
+                <TabsTrigger value="slack" className="flex-1">Slack</TabsTrigger>
+                <TabsTrigger value="discord" className="flex-1">Discord</TabsTrigger>
+              </TabsList>
+            </Tabs>
 
-              <div className="space-y-3">
+            <div className="space-y-4">
+              {tab === 'slack' && (
+                <div>
+                  <Label htmlFor="slack-url" className="text-sm font-medium">Slack Webhook URL</Label>
+                  <Input
+                    id="slack-url"
+                    placeholder="https://hooks.slack.com/services/..."
+                    value={slackUrl}
+                    onChange={(e) => setSlackUrl(e.target.value)}
+                    className="mt-1.5 font-mono text-xs"
+                  />
+                  <Button variant="outline" size="sm" onClick={() => testChannel('slack')} disabled={testing || !slackUrl} className="mt-2 gap-1.5">
+                    {testing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                    Test Slack
+                  </Button>
+                </div>
+              )}
+              {tab === 'discord' && (
+                <div>
+                  <Label htmlFor="discord-url" className="text-sm font-medium">Discord Webhook URL</Label>
+                  <Input
+                    id="discord-url"
+                    placeholder="https://discord.com/api/webhooks/..."
+                    value={discordUrl}
+                    onChange={(e) => setDiscordUrl(e.target.value)}
+                    className="mt-1.5 font-mono text-xs"
+                  />
+                  <Button variant="outline" size="sm" onClick={() => testChannel('discord')} disabled={testing || !discordUrl} className="mt-2 gap-1.5">
+                    {testing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                    Test Discord
+                  </Button>
+                </div>
+              )}
+
+              <div className="space-y-3 pt-2 border-t border-border">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm">Notify on Down</Label>
                   <Switch id="notify-down" checked={notifyOnDown} onCheckedChange={setNotifyOnDown} />
@@ -105,16 +142,10 @@ export default function SlackSettings({ open, onOpenChange }) {
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-2">
-                <Button variant="outline" onClick={testWebhook} disabled={testing || !webhookUrl} className="gap-1.5">
-                  {testing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                  Test
-                </Button>
-                <Button onClick={save} disabled={loading} className="flex-1 gap-1.5">
-                  {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Settings className="h-3.5 w-3.5" />}
-                  Save
-                </Button>
-              </div>
+              <Button onClick={save} disabled={loading} className="w-full gap-1.5">
+                {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                Save Settings
+              </Button>
             </div>
           </motion.div>
         </motion.div>

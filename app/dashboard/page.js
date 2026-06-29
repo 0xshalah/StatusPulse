@@ -8,7 +8,7 @@ import Navbar from '@/components/statuspulse/Navbar'
 import HealthScore from '@/components/statuspulse/HealthScore'
 import EndpointCard from '@/components/statuspulse/EndpointCard'
 import AddEndpointWizard from '@/components/statuspulse/AddEndpointWizard'
-import SlackSettings from '@/components/statuspulse/SlackSettings'
+import AlertSettings from '@/components/statuspulse/SlackSettings'
 import { useStatusStream } from '@/hooks/useStatusStream'
 import { api, timeAgo } from '@/lib/statuspulse'
 import { Button } from '@/components/ui/button'
@@ -139,7 +139,7 @@ function App() {
       </div>
 
       <AddEndpointWizard open={wizardOpen} onOpenChange={setWizardOpen} editing={editing} onSaved={async () => onData(await api('/dashboard'))} />
-      <SlackSettings open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <AlertSettings open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   )
 }
