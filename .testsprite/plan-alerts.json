@@ -1,0 +1,50 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Alert Settings Modal",
+  "description": "Test Slack/Discord alert settings modal open, tab switch, inputs, and save",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse-vvy0.onrender.com/dashboard",
+      "description": "Open dashboard"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "[aria-label='Alert settings']",
+      "description": "Click alert settings bell icon"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Alert Channels",
+      "description": "Alert settings modal is open"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "text=Discord",
+      "description": "Switch to Discord tab"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Discord Webhook URL",
+      "description": "Discord webhook URL input is visible"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "text=Slack",
+      "description": "Switch back to Slack tab"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Save Settings",
+      "description": "Save button is visible"
+    }
+  ]
+}

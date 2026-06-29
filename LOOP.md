@@ -22,6 +22,9 @@
 11. TestSprite reran --all: "Landing Page + Dashboard Flow" (test_945b6fe5) — PASSED
 12. TestSprite reran --all: "Status Page + Theme Toggle" (test_be20bda2) — PASSED
 13. Multi-channel alert notifications shipped. 2 tests banked. Suite stable.
+14. Created "Alert Settings Modal" test plan (test_e4dd6dfa) — 8 steps: open dashboard, click bell, Slack/Discord tabs, input visibility, save button
+15. TestSprite ran "Alert Settings Modal" (test_e4dd6dfa) — PASSED (8/8)
+16. Suite: 3 tests banked. All green.
 
 ### Day 1 — [Jun 30]
 <!-- Agent: add entries below as you build, test, fix, rerun -->
