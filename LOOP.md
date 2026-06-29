@@ -77,6 +77,14 @@
 54. Cleaned unused motion import from endpoints/[id]/page.js
 55. FM score: 7.5 → 9.5/10. Only missing: shared layoutId (impractical for dynamic card grids)
 
+### Day 1 — Iteration 8: Performance Optimization (Jun 29)
+56. Fixed N+1 queries in getDashboard: batched ALL pings in 1 query with $in:[epIds] → 1+5N queries → 2 queries
+57. Fixed N+1 in getStatus: batched rollups + pings in 2 parallel queries with Promise.all → 1+10N → 3 queries
+58. Added API cache headers: GET /dashboard (10s max-age), /status (15s), /endpoints (5s) + stale-while-revalidate
+59. Added debounced polling with exponential backoff: status 20s→120s max, detail 10s→60s max on failures
+60. Added loading.jsx skeleton states: /dashboard, /status, /endpoints/[id]
+61. Performance score: 5.5 → 8.5/10. Only remaining: bundle optimization (need next/image, dynamic imports)
+
 ### Day 1 — [Jun 30]
 <!-- Agent: add entries below as you build, test, fix, rerun -->
 <!-- Format: number. What you did → TestSprite test describe → result → fix → rerun result -->
