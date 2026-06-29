@@ -107,14 +107,17 @@
     animation: none;
     mix-blend-mode: normal;
   }
+  /* Sunset (Light→Dark): OLD on top shrinks → reveals NEW behind */
   ::view-transition-old(root) { z-index: 999; }
   ::view-transition-new(root) { z-index: 1; }
-  [data-transition-mode='sunrise']::view-transition-old(root) { z-index: 1; }
-  [data-transition-mode='sunrise']::view-transition-new(root) { z-index: 999; }
-  ::view-transition-old(root) {
+  :root:not([data-transition-mode]) ::view-transition-old(root),
+  [data-transition-mode='sunset'] ::view-transition-old(root) {
     animation: theme-shrink 0.4s ease-out forwards;
   }
-  ::view-transition-new(root) {
+  /* Sunrise (Dark→Light): NEW on top expands → covers OLD behind */
+  [data-transition-mode='sunrise'] ::view-transition-old(root) { z-index: 1; }
+  [data-transition-mode='sunrise'] ::view-transition-new(root) {
+    z-index: 999;
     animation: theme-expand 0.5s ease-in forwards;
   }
   @keyframes theme-shrink {
