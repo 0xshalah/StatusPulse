@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Plus, Search, RotateCcw, ServerCrash, Radio, Bell } from 'lucide-react'
+import { Plus, Search, RotateCcw, ServerCrash, Radio, Bell, X } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'
 import HealthScore from '@/components/statuspulse/HealthScore'
@@ -100,9 +100,21 @@ function App() {
 
       <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search endpoints…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          <div className="flex items-center gap-2">
+            <div className="relative w-full sm:max-w-xs">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input placeholder="Search endpoints…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 pr-8" />
+              {search && (
+                <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Clear search">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            {(search || filter !== 'all') && (
+              <button onClick={() => setSearch('')} className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="Reset filters">
+                <RotateCcw className="h-3.5 w-3.5" /> Reset
+              </button>
+            )}
           </div>
           <Tabs value={filter} onValueChange={setFilter}>
             <TabsList>
