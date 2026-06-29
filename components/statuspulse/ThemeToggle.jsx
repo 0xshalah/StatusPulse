@@ -38,26 +38,31 @@ export default function ThemeToggle() {
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y)
     )
-    const isSunrise = current === 'dark' && next === 'light'
 
-    // Set CSS custom properties and transition mode BEFORE startViewTransition
-    document.documentElement.style.setProperty('--tx-x', `${x}px`)
-    document.documentElement.style.setProperty('--tx-y', `${y}px`)
-    document.documentElement.style.setProperty('--tx-radius', `${maxRadius}px`)
-    document.documentElement.setAttribute('data-transition-mode', isSunrise ? 'sunrise' : 'sunset')
+    // Determine actual visual transition: resolve system preference
+    const html = document.documentElement
+    const isCurrentlyDark = html.classList.contains('dark')
+    const willBeDark = next === 'dark' || (next === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    const isSunrise = isCurrentlyDark && !willBeDark
 
-    // Force synchronous layout so CSS vars + attribute are applied before snapshot
-    void document.documentElement.offsetHeight
+    // Set CSS vars + attribute BEFORE taking snapshot
+    html.style.setProperty('--tx-x', `${x}px`)
+    html.style.setProperty('--tx-y', `${y}px`)
+    html.style.setProperty('--tx-radius', `${maxRadius}px`)
+    html.setAttribute('data-transition-mode', isSunrise ? 'sunrise' : 'sunset')
+
+    // Force browser to apply styles before snapshot
+    void html.offsetHeight
 
     const transition = document.startViewTransition(() => {
       setTheme(next)
     })
 
     transition.finished.then(() => {
-      document.documentElement.removeAttribute('data-transition-mode')
-      document.documentElement.style.removeProperty('--tx-x')
-      document.documentElement.style.removeProperty('--tx-y')
-      document.documentElement.style.removeProperty('--tx-radius')
+      html.removeAttribute('data-transition-mode')
+      html.style.removeProperty('--tx-x')
+      html.style.removeProperty('--tx-y')
+      html.style.removeProperty('--tx-radius')
       ticking.current = false
     })
   }, [theme, setTheme])
