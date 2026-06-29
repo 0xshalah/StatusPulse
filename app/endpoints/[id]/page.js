@@ -44,6 +44,10 @@ export default function EndpointDetail() {
   const del = async () => { await api(`/endpoints/${id}`, { method: 'DELETE' }); toast.success('Deleted'); router.push('/dashboard') }
   const saveMaintenance = async () => {
     setMaintError('')
+    if (maintStart && maintEnd && new Date(maintEnd) <= new Date(maintStart)) {
+      setMaintError('End time must be after start time')
+      return
+    }
     await api(`/endpoints/${id}`, { method: 'PUT', body: JSON.stringify({ maintenanceStart: maintStart, maintenanceEnd: maintEnd }) })
     toast.success('Maintenance window saved')
     load()

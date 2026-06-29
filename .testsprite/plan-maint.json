@@ -1,0 +1,40 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Maintenance Window Validation",
+  "description": "Test maintenance window form: set end before start, expect validation error",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse-vvy0.onrender.com/endpoints/d9eea9eb-8106-4c9d-80c8-990b46846fc6",
+      "description": "Open endpoint detail page"
+    },
+    {
+      "type": "action",
+      "action": "fill",
+      "selector": "#maint-start",
+      "value": "2026-07-01T10:00",
+      "description": "Set maintenance start to July 1 10:00 AM"
+    },
+    {
+      "type": "action",
+      "action": "fill",
+      "selector": "#maint-end",
+      "value": "2026-07-01T09:00",
+      "description": "Set maintenance end to July 1 9:00 AM (before start!)"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "text=Save Window",
+      "description": "Click save"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "#maint-error",
+      "description": "Error message shown: end must be after start"
+    }
+  ]
+}
