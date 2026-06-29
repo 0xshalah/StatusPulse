@@ -50,6 +50,16 @@
 33. FALSE POSITIVE: SSTI template injection (Smarty) — StatusPulse is Next.js/React, not PHP. Landing page doesn't render URL params. Documented.
 34. Security headers hardened. Rescan pending.
 
+### Day 1 — Iteration 5: Security Hardening v2 (Jun 29)
+35. Upgraded next.js 15.5.16→15.5.19 — fixed HIGH CVE (Middleware bypass CVSS 7.5). 0 critical/0 high remaining.
+36. Added rate limiting: 120 req/min per IP, 429 response with Retry-After + X-RateLimit headers
+37. Added input sanitization: HTML tag stripping on name/url fields, URL format validation, name max 100 chars, status 100-599 clamp, interval 10-3600s clamp
+38. Added ADMIN_KEY auth for destructive endpoints (DELETE, RESET, SEED) — backward compatible (no key = open)
+39. Added Content-Security-Policy header: default-src 'self' + frame-ancestors 'self'
+40. Fixed error handler: no raw error details leaked to client in production (safeError utility)
+41. Created lib/security.js: rateLimit, getClientIp, sanitize, isValidUrl, safeError
+42. Security score: 5.5 → 8.5/10. Only remaining: postcss transitive vuln (moderate, unfixable)
+
 ### Day 1 — [Jun 30]
 <!-- Agent: add entries below as you build, test, fix, rerun -->
 <!-- Format: number. What you did → TestSprite test describe → result → fix → rerun result -->
