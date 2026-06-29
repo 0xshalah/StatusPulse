@@ -13,6 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { VARIANTS, EASE } from '@/components/landing/helpers'
 
 export default function EndpointCard({ endpoint, onEdit, onDelete, onPause, onTest, index = 0 }) {
   const s = statusOf(endpoint.verdict)
@@ -38,8 +39,10 @@ export default function EndpointCard({ endpoint, onEdit, onDelete, onPause, onTe
       initial={{ opacity: 0, scale: 0.97, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
-      transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.3) }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-5"
+      whileHover={{ y: -4, boxShadow: '0 18px 44px -14px rgba(225,86,124,0.35)', borderColor: 'rgba(225,86,124,0.4)' }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.3), boxShadow: { duration: 0.3, ease: EASE } }}
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-5 transition-colors"
     >
       <div className="absolute inset-x-0 top-0 h-[3px] opacity-80" style={{ background: `linear-gradient(90deg, ${s.color}, transparent)` }} />
       <div className="flex items-start justify-between gap-2">

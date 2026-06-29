@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { ArrowLeft, Gauge, Activity, Timer, Zap, Pause, Play, Pencil, Trash2, CalendarClock } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'

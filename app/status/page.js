@@ -58,7 +58,7 @@ export default function StatusPage() {
             : data?.endpoints.map((ep, i) => {
               const s = statusOf(ep.verdict)
               return (
-                <motion.div key={ep.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-2xl border border-border bg-card p-4">
+                <motion.div key={ep.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} whileHover={{ y: -2, borderColor: 'rgba(225,86,124,0.3)' }} transition={{ delay: i * 0.05 }} className="rounded-2xl border border-border bg-card p-4 transition-colors">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
                       <StatusDot verdict={ep.verdict} />
