@@ -4,7 +4,7 @@
 
 [![Live](https://img.shields.io/badge/live-statuspulse.onrender.com-34D399?style=flat-square)](https://statuspulse-vvy0.onrender.com)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](./LICENSE)
-[![Made with](https://img.shields.io/badge/made%20with-Claude%20Code%20%2B%20TestSprite%20CLI-E1567C?style=flat-square)](https://www.testsprite.com/hackathon-s3)
+[![Made with](https://img.shields.io/badge/made%20with-OpenCode%20%2B%20TestSprite%20CLI-E1567C?style=flat-square)](https://www.testsprite.com/hackathon-s3)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-TestSprite%20gated-34D399?style=flat-square)](./.github/workflows/testsprite.yml)
 
 ![API Gateway](https://statuspulse-vvy0.onrender.com/api/badge/d9eea9eb-8106-4c9d-80c8-990b46846fc6)
