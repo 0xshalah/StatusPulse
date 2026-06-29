@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Plus, Search, RotateCcw, ServerCrash, Radio, Bell, X } from 'lucide-react'
+import { Plus, Search, RotateCcw, ServerCrash, Radio, Bell, X, Code2 } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'
 import HealthScore from '@/components/statuspulse/HealthScore'
@@ -91,6 +91,15 @@ function App() {
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={reseed} className="gap-1.5 text-muted-foreground"><RotateCcw className="h-3.5 w-3.5" /> Reset demo data</Button>
+                <Button variant="ghost" size="sm" onClick={() => {
+                  const first = data.endpoints[0]
+                  if (!first) return toast.error('No endpoints to copy')
+                  const base = typeof window !== 'undefined' ? window.location.origin : ''
+                  navigator.clipboard.writeText(`![${first.name}](${base}/api/badge/${first.id})`).then(
+                    () => toast.success(`Copied badge for ${first.name}`),
+                    () => toast.error('Copy failed')
+                  )
+                }} className="gap-1.5 text-muted-foreground"><Code2 className="h-3.5 w-3.5" /> Copy all badges</Button>
               </div>
             </div>
             <div className="lg:w-[360px]"><HealthScore health={data.health} lastPing={lastSweep ? timeAgo(lastSweep) : null} /></div>
