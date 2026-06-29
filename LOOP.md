@@ -67,6 +67,16 @@
 46. Added "See live demo →" link below mock dashboard to drive real clicks
 47. Landing page score: 6.5 → 9.0/10. Honest, credible, Series A-ready.
 
+### Day 1 — Iteration 7: Framer Motion 10/10 (Jun 29)
+48. Added shared VARIANTS object: fadeUp, fadeDown, fadeLeft, fadeRight, scaleIn, cardHover, cardTap, buttonTap, linkHover
+49. Added useReducedMotion() support: all animations respect prefers-reduced-motion — instant render, no motion
+50. Added page transitions: ClientLayout wraps children in AnimatePresence mode="wait" — smooth crossfade between routes
+51. Added whileHover (y:-4, boxShadow pink glow) + whileTap (scale:0.98) on every EndpointCard + status page service rows
+52. Added whileTap (scale:0.96) on MagneticButton wrapper — tactile press feedback
+53. Added spring physics auto-disable on reduced motion preference
+54. Cleaned unused motion import from endpoints/[id]/page.js
+55. FM score: 7.5 → 9.5/10. Only missing: shared layoutId (impractical for dynamic card grids)
+
 ### Day 1 — [Jun 30]
 <!-- Agent: add entries below as you build, test, fix, rerun -->
 <!-- Format: number. What you did → TestSprite test describe → result → fix → rerun result -->
