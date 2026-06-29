@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import * as M from '@/lib/monitor'
+import { rateLimit, getClientIp, sanitize, safeError, isValidUrl } from '@/lib/security'
+
+const DESTRUCTIVE_ROUTES = ['/seed', '/reset', '/delete']
+function requireAdmin(request) {
+  const key = process.env.ADMIN_KEY
+  if (!key) return true // no key set = open (backward compatible for hackathon)
+  const auth = request.headers.get('authorization')
+  return auth === `Bearer ${key}`
+}
 
 function cors(res) {
-  res.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || '*')
+  res.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || 'https://statuspulse-vvy0.onrender.com')
   res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   return res
@@ -12,11 +21,27 @@ export async function OPTIONS() {
   return cors(new NextResponse(null, { status: 200 }))
 }
 
+const BODY_LIMIT = 1024 * 64 // 64 KB
+
 async function handler(request, { params }) {
+  const ip = getClientIp(request)
+  const rl = rateLimit(ip, 120, 60000)
+  if (!rl.allowed) {
+    return cors(NextResponse.json(
+      { error: 'Too many requests', retryAfter: rl.retryAfter },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter), 'X-RateLimit-Limit': String(rl.limit), 'X-RateLimit-Remaining': String(rl.remaining) } }
+    ))
+  }
+
   const { path = [] } = await params
   const route = `/${path.join('/')}`
   const method = request.method
   try {
+    const isDestructive = DESTRUCTIVE_ROUTES.some((r) => route === r || route.startsWith(r)) || method === 'DELETE'
+    if (isDestructive && !requireAdmin(request)) {
+      return cors(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+    }
+
     const db = await M.connect()
 
     if ((route === '/' || route === '/root') && method === 'GET') return cors(NextResponse.json({ message: 'StatusPulse API' }))
@@ -70,8 +95,9 @@ async function handler(request, { params }) {
     }
     if (route === '/subscribe' && method === 'POST') {
       const b = await request.json()
-      if (!b.email || !/^[^@]+@[^@]+\.[^@]+$/.test(b.email)) return cors(NextResponse.json({ error: 'valid email required' }, { status: 400 }))
-      await db.collection('subscribers').updateOne({ email: b.email }, { $set: { email: b.email, subscribedAt: new Date() } }, { upsert: true })
+      const email = sanitize(b.email)
+      if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) return cors(NextResponse.json({ error: 'valid email required' }, { status: 400 }))
+      await db.collection('subscribers').updateOne({ email }, { $set: { email, subscribedAt: new Date() } }, { upsert: true })
       return cors(NextResponse.json({ subscribed: true }))
     }
 
@@ -82,13 +108,17 @@ async function handler(request, { params }) {
     }
     if (route === '/endpoints' && method === 'POST') {
       const b = await request.json()
-      if (!b.name || !b.url) return cors(NextResponse.json({ error: 'name and url required' }, { status: 400 }))
+      const epName = sanitize(b.name)
+      const epUrl = sanitize(b.url)
+      if (!epName || !epUrl) return cors(NextResponse.json({ error: 'name and url required' }, { status: 400 }))
+      if (!isValidUrl(epUrl)) return cors(NextResponse.json({ error: 'invalid url format' }, { status: 400 }))
+      if (epName.length > 100) return cors(NextResponse.json({ error: 'name too long (max 100 chars)' }, { status: 400 }))
       const ep = {
         id: uuidv4(),
-        name: b.name,
-        url: b.url,
-        expectedStatus: Number(b.expectedStatus) || 200,
-        interval: Number(b.interval) || 60,
+        name: epName,
+        url: epUrl,
+        expectedStatus: Math.min(599, Math.max(100, Number(b.expectedStatus) || 200)),
+        interval: Math.min(3600, Math.max(10, Number(b.interval) || 60)),
         paused: false,
         status: 'active',
         consecutiveFailures: 0,
@@ -132,9 +162,10 @@ async function handler(request, { params }) {
       if (method === 'PUT') {
         const b = await request.json()
         const u = {}
-        ;['name', 'url'].forEach((k) => b[k] !== undefined && (u[k] = b[k]))
-        if (b.expectedStatus !== undefined) u.expectedStatus = Number(b.expectedStatus)
-        if (b.interval !== undefined) u.interval = Number(b.interval)
+        if (b.name !== undefined) { u.name = sanitize(b.name); if (u.name.length > 100) return cors(NextResponse.json({ error: 'name too long' }, { status: 400 })) }
+        if (b.url !== undefined) { u.url = sanitize(b.url); if (!isValidUrl(u.url)) return cors(NextResponse.json({ error: 'invalid url format' }, { status: 400 })) }
+        if (b.expectedStatus !== undefined) u.expectedStatus = Math.min(599, Math.max(100, Number(b.expectedStatus)))
+        if (b.interval !== undefined) u.interval = Math.min(3600, Math.max(10, Number(b.interval)))
         if (b.maintenanceStart !== undefined) u.maintenanceStart = b.maintenanceStart
         if (b.maintenanceEnd !== undefined) u.maintenanceEnd = b.maintenanceEnd
         await db.collection('endpoints').updateOne({ id }, { $set: u })
@@ -203,8 +234,8 @@ async function handler(request, { params }) {
 
     return cors(NextResponse.json({ error: `Route ${route} not found` }, { status: 404 }))
   } catch (error) {
-    console.error('API Error:', error)
-    return cors(NextResponse.json({ error: 'Internal server error', detail: String(error) }, { status: 500 }))
+    console.error('API Error:', error.message)
+    return cors(NextResponse.json(safeError(error), { status: 500 }))
   }
 }
 
