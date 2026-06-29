@@ -110,13 +110,47 @@
 
 ---
 
-### Iteration 7 — Live Loop Verification
+### Iteration 7 — View Transitions API Theme Toggle (FAIL → FIX)
 
 | # | Action | TestSprite | Result |
 |---|--------|-----------|--------|
-| 56 | Full suite rerun against live Render deployment | `test rerun --all` | **3/3 PASSED** — all tests banked |
-| 57 | Dashboard loads with 5 endpoints, SSE streaming active | Verified via TestSprite video | Status grid renders correctly |
-| 58 | Alert settings modal: Slack/Discord tabs, input, test, save buttons | Verified via TestSprite video | All interactions functional |
+| 56 | Added View Transitions API circle animation to theme toggle: sunset (shrink) / sunrise (expand) | — | `ThemeToggle.jsx` updated, CSS added to `globals.css` |
+| 57 | Deployed — animation not appearing at all | Manual test | **FAILED** — no transition visible |
+| 58 | Debugged: `[data-transition-mode]` attribute selector cannot target `::view-transition-old(root)` pseudo-element (not a DOM descendant) | Root cause analysis | CSS specificity issue |
+| 59 | **FIX:** Rewrote to use CSS custom properties (`--tx-old-animation`, `--tx-new-animation`, `--tx-old-z`, `--tx-new-z`). JS sets properties on `<html>`, CSS reads via `var()`. | `ThemeToggle.jsx` + `globals.css` | Committed |
+| 60 | Deployed — both directions working, but double-animation (OLD shrink + NEW expand simultaneously) | Manual test | **PARTIAL FAIL** — only one element should animate per direction |
+| 61 | **FIX:** Sunset mode: only `--tx-old-animation=theme-shrink`. Sunrise mode: only `--tx-new-animation=theme-expand`. | `globals.css` | Committed |
+| 62 | Deployed — animation disappeared again (conflicting `:not()` selector removed animation entirely) | Manual test | **FAILED** |
+| 63 | **FIX:** Removed `:root:not([data-transition-mode])` selector. Used only `var()` fallbacks. Clean separation. | `globals.css` | Committed |
+| 64 | Deployed — still no animation. Detected `next-themes` state='system' not matching visual dark class | Manual test | **FAILED** |
+| 65 | **FIX:** Changed detection from `next-themes` state to `html.classList.contains('dark')`. Simplified to dark/light only. | `ThemeToggle.jsx` | Committed |
+| 66 | Deployed — animation FINALLY working. Sunset: shrink to click point. Sunrise: expand from click point. | Manual test | **PASSED** |
+| 67 | Reran baseline suite (verify theme toggle doesn't break CTA navigation) | test_945b6fe5 | **PASSED** |
+| 68 | 5 FAIL→FIX cycles in one feature. Persistence shipped. | — | View Transitions live |
+
+---
+
+### Iteration 8 — Reset Filters Button (FAIL → FIX)
+
+| # | Action | TestSprite | Result |
+|---|--------|-----------|--------|
+| 69 | Added "Reset" button to dashboard — appears when search or filter is active. Clears search input + filter dropdown. | — | `app/dashboard/page.js` |
+| 70 | **BUG introduced:** Reset button only called `setSearch('')` — forgot to reset `filter` to 'all'. User clicking "Reset" sees cleared search but filter still on "Down". | Manual test | **FAILED** — filter not reset |
+| 71 | Created "Reset Filters Button" test plan (4 steps): navigate → click Down → click Reset → verify All tab selected | plan-reset.json | Awaiting TestSprite execution (Render cold start delay) |
+| 72 | **FIX:** Changed onClick to `() => { setSearch(''); setFilter('all') }` — now fully resets both search and filter. | `app/dashboard/page.js:116` | Committed in commit `902b119` |
+| 73 | Reran baseline suite (verify dashboard interactions still work) | test_945b6fe5 | **PASSED** |
+| 74 | Bug: incomplete state reset. Fix: one-line change. Evidence: git diff between `943af7b` and `902b119`. | Commit history | Loop documented |
+
+---
+
+### Iteration 9 — Full Verification
+
+| # | Action | TestSprite | Result |
+|---|--------|-----------|--------|
+| 75 | Full suite rerun against live deployment | `test rerun --all` | **3/5 PASSED** — 2 maintenance window tests pending (Render free tier timeout on client-rendered page) |
+| 76 | Landing page CTA navigation | test_945b6fe5 | **PASSED** |
+| 77 | Status page + theme toggle | test_be20bda2 | **PASSED** |
+| 78 | Alert settings modal | test_e4dd6dfa | **PASSED** |
 
 ---
 
@@ -124,16 +158,15 @@
 
 | Metric | Count |
 |--------|:---:|
-| Total iterations | 7 |
-| FAIL → FIX cycles | 1 (maintenance window validation) |
-| Tests created | 4 (945b6fe5, be20bda2, e4dd6dfa, 3192354e) |
+| Total iterations | 9 |
+| FAIL → FIX cycles | **3** (maintenance window, View Transitions ×5, reset filters) |
+| Tests created | 6 (945b6fe5, be20bda2, e4dd6dfa, 3192354e, maint-set, plan-reset) |
 | Tests banked (green) | 3 |
-| TestSprite reruns | 16 |
-| Features shipped | 6 (alerts, maintenance, security, landing, FM, performance) |
-| Security score | 5.5 → 8.5 |
-| Performance score | 5.5 → 8.5 |
-| Landing page score | 6.5 → 9.0 |
-| Framer Motion score | 7.5 → 9.5 |
+| TestSprite reruns | 18 |
+| Features shipped | 8 |
+| Commits | 17+ in 24 hours |
+| Lines of code | ~3,500+ across 25 files |
 
+**Evidence:** Full commit history at https://github.com/0xshalah/StatusPulse/commits/main  
 **Live URL:** https://statuspulse-vvy0.onrender.com  
 **TestSprite Dashboard:** https://www.testsprite.com/dashboard/tests/dc688ee6-3d53-4cd9-a8a2-21229ef20a01
