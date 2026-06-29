@@ -29,7 +29,20 @@ export default function EndpointDetail() {
   const load = useCallback(async () => {
     try { setD(await api(`/endpoints/${id}/detail`)) } catch { toast.error('Failed to load') } finally { setLoading(false) }
   }, [id])
-  useEffect(() => { load(); const iv = setInterval(load, 10000); return () => clearInterval(iv) }, [load])
+  useEffect(() => {
+    load()
+    let interval = 10000
+    let failCount = 0
+    let id
+    const poll = () => {
+      id = setTimeout(async () => {
+        try { await api(`/endpoints/${id}/detail`).then(setD); failCount = 0; interval = 10000 } catch { failCount++; interval = Math.min(60000, interval * 1.5) }
+        poll()
+      }, interval)
+    }
+    poll()
+    return () => clearTimeout(id)
+  }, [load])
 
   if (loading) return <Shell><div className="h-96 animate-pulse rounded-2xl border border-border bg-card" /></Shell>
   if (!d) return <Shell><p className="text-muted-foreground">Endpoint not found.</p></Shell>

@@ -11,10 +11,15 @@ function requireAdmin(request) {
   return auth === `Bearer ${key}`
 }
 
-function cors(res) {
+function cors(res, cacheSecs = 0) {
   res.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || 'https://statuspulse-vvy0.onrender.com')
   res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  if (cacheSecs > 0) {
+    res.headers.set('Cache-Control', `public, max-age=${cacheSecs}, s-maxage=${cacheSecs}, stale-while-revalidate=${cacheSecs * 2}`)
+  } else {
+    res.headers.set('Cache-Control', 'no-cache')
+  }
   return res
 }
 export async function OPTIONS() {
@@ -104,7 +109,7 @@ async function handler(request, { params }) {
     // Endpoints collection
     if (route === '/endpoints' && method === 'GET') {
       const eps = await db.collection('endpoints').find({}).sort({ createdAt: 1 }).toArray()
-      return cors(NextResponse.json(eps.map(M.clean)))
+      return cors(NextResponse.json(eps.map(M.clean)), 5)
     }
     if (route === '/endpoints' && method === 'POST') {
       const b = await request.json()
@@ -180,8 +185,8 @@ async function handler(request, { params }) {
       }
     }
 
-    if (route === '/dashboard' && method === 'GET') return cors(NextResponse.json(await M.getDashboard(db)))
-    if (route === '/status' && method === 'GET') return cors(NextResponse.json(await M.getStatus(db)))
+    if (route === '/dashboard' && method === 'GET') return cors(NextResponse.json(await M.getDashboard(db)), 10)
+    if (route === '/status' && method === 'GET') return cors(NextResponse.json(await M.getStatus(db)), 15)
 
     // SSE real-time stream
     if (route === '/sse/status' && method === 'GET') {

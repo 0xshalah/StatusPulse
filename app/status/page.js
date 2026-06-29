@@ -17,7 +17,20 @@ export default function StatusPage() {
   const [subscribing, setSubscribing] = useState(false)
 
   const load = async () => { try { setData(await api('/status')) } catch {} finally { setLoading(false) } }
-  useEffect(() => { load(); const id = setInterval(load, 20000); return () => clearInterval(id) }, [])
+  useEffect(() => {
+    load()
+    let interval = 20000
+    let failCount = 0
+    let id
+    const poll = () => {
+      id = setTimeout(async () => {
+        try { await api('/status').then(setData); failCount = 0; interval = 20000 } catch { failCount++; interval = Math.min(120000, interval * 1.5) }
+        poll()
+      }, interval)
+    }
+    poll()
+    return () => clearTimeout(id)
+  }, [])
 
   const subscribe = async () => {
     setSubscribing(true)
