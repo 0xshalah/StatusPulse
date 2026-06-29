@@ -1,0 +1,32 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Landing Page + Dashboard Flow",
+  "description": "Test landing page load, CTA click, and dashboard navigation",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse-vvy0.onrender.com",
+      "description": "Open landing page"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Start Monitoring Free",
+      "description": "CTA button is visible on landing page"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "text=Start Monitoring Free",
+      "description": "Click CTA to navigate to dashboard"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Dashboard",
+      "description": "Dashboard page loaded with title"
+    }
+  ]
+}

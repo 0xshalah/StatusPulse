@@ -1,0 +1,38 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Public Status Page + Theme Toggle",
+  "description": "Test public /status page and dark/light mode toggle",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse-vvy0.onrender.com/status",
+      "description": "Open public status page"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Uptime",
+      "description": "Uptime section visible on status page"
+    },
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse-vvy0.onrender.com/dashboard",
+      "description": "Return to dashboard"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "[aria-label='Toggle theme']",
+      "description": "Toggle dark/light mode"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Add endpoint",
+      "description": "Dashboard still functional after theme toggle"
+    }
+  ]
+}
