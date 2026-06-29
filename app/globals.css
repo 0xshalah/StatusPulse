@@ -107,25 +107,26 @@
     animation: none;
     mix-blend-mode: normal;
   }
-  /* Default: OLD on top */
-  ::view-transition-old(root) { z-index: 999; }
-  ::view-transition-new(root) { z-index: 1; }
-  /* Sunset (Light→Dark): OLD shrinks → reveals NEW behind */
-  [data-transition-mode='sunset'] ::view-transition-old(root) {
-    animation: theme-shrink 0.4s ease-out forwards;
+  ::view-transition-old(root) {
+    z-index: var(--tx-old-z, 999);
+    animation-name: var(--tx-old-animation, none);
+    animation-duration: 0.4s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
   }
-  /* Sunrise (Dark→Light): NEW on top + expands → covers OLD */
-  [data-transition-mode='sunrise'] ::view-transition-new(root) { z-index: 999; }
-  [data-transition-mode='sunrise'] ::view-transition-old(root) { z-index: 1; }
-  [data-transition-mode='sunrise'] ::view-transition-new(root) {
-    animation: theme-expand 0.5s ease-in forwards;
+  ::view-transition-new(root) {
+    z-index: var(--tx-new-z, 1);
+    animation-name: var(--tx-new-animation, none);
+    animation-duration: 0.5s;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
   }
   @keyframes theme-shrink {
-    from { clip-path: circle(var(--tx-radius) at var(--tx-x) var(--tx-y)); }
-    to   { clip-path: circle(0px at var(--tx-x) var(--tx-y)); }
+    from { clip-path: circle(var(--tx-radius, 9999px) at var(--tx-x, 50%) var(--tx-y, 50%)); }
+    to   { clip-path: circle(0px at var(--tx-x, 50%) var(--tx-y, 50%)); }
   }
   @keyframes theme-expand {
-    from { clip-path: circle(0px at var(--tx-x) var(--tx-y)); }
-    to   { clip-path: circle(var(--tx-radius) at var(--tx-x) var(--tx-y)); }
+    from { clip-path: circle(0px at var(--tx-x, 50%) var(--tx-y, 50%)); }
+    to   { clip-path: circle(var(--tx-radius, 9999px) at var(--tx-x, 50%) var(--tx-y, 50%)); }
   }
 }

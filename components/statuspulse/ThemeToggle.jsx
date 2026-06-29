@@ -37,19 +37,27 @@ export default function ThemeToggle() {
     )
     const isSunrise = isCurrentlyDark // dark→light = sunrise
 
+    // Set animation via CSS custom properties (inherited by view-transition pseudo-elements)
     html.style.setProperty('--tx-x', `${x}px`)
     html.style.setProperty('--tx-y', `${y}px`)
     html.style.setProperty('--tx-radius', `${maxRadius}px`)
-    html.setAttribute('data-transition-mode', isSunrise ? 'sunrise' : 'sunset')
+    html.style.setProperty('--tx-old-animation', isSunrise ? 'none' : 'theme-shrink')
+    html.style.setProperty('--tx-new-animation', isSunrise ? 'theme-expand' : 'none')
+    // z-index swap for sunrise: NEW on top
+    html.style.setProperty('--tx-old-z', isSunrise ? '1' : '999')
+    html.style.setProperty('--tx-new-z', isSunrise ? '999' : '1')
 
     void html.offsetHeight
 
     const transition = document.startViewTransition(() => setTheme(next))
     transition.finished.then(() => {
-      html.removeAttribute('data-transition-mode')
       html.style.removeProperty('--tx-x')
       html.style.removeProperty('--tx-y')
       html.style.removeProperty('--tx-radius')
+      html.style.removeProperty('--tx-old-animation')
+      html.style.removeProperty('--tx-new-animation')
+      html.style.removeProperty('--tx-old-z')
+      html.style.removeProperty('--tx-new-z')
       ticking.current = false
     })
   }, [setTheme])
