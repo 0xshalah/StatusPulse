@@ -106,35 +106,6 @@ async function handler(request, { params }) {
       return cors(NextResponse.json({ subscribed: true }))
     }
 
-    // Endpoints collection
-    if (route === '/endpoints' && method === 'GET') {
-      const eps = await db.collection('endpoints').find({}).sort({ createdAt: 1 }).toArray()
-      return cors(NextResponse.json(eps.map(M.clean)), 5)
-    }
-    if (route === '/endpoints' && method === 'POST') {
-      const b = await request.json()
-      const epName = sanitize(b.name)
-      const epUrl = sanitize(b.url)
-      if (!epName || !epUrl) return cors(NextResponse.json({ error: 'name and url required' }, { status: 400 }))
-      if (!isValidUrl(epUrl)) return cors(NextResponse.json({ error: 'invalid url format' }, { status: 400 }))
-      if (epName.length > 100) return cors(NextResponse.json({ error: 'name too long (max 100 chars)' }, { status: 400 }))
-      const ep = {
-        id: uuidv4(),
-        name: epName,
-        url: epUrl,
-        expectedStatus: Math.min(599, Math.max(100, Number(b.expectedStatus) || 200)),
-        interval: Math.min(3600, Math.max(10, Number(b.interval) || 60)),
-        paused: false,
-        status: 'active',
-        consecutiveFailures: 0,
-        nextPingAt: new Date(),
-        createdAt: new Date(),
-      }
-      await db.collection('endpoints').insertOne({ ...ep })
-      M.pingOneNow(db, ep.id).catch(() => {})
-      return cors(NextResponse.json(ep))
-    }
-
     // Single endpoint operations
     if (path[0] === 'endpoints' && path[1]) {
       const id = path[1]
@@ -163,25 +134,6 @@ async function handler(request, { params }) {
         const b = await request.json().catch(() => ({}))
         await db.collection('endpoints').updateOne({ id }, { $set: { status: b.maintenance ? 'maintenance' : 'active' } })
         return cors(NextResponse.json({ id, maintenance: !!b.maintenance }))
-      }
-      if (method === 'PUT') {
-        const b = await request.json()
-        const u = {}
-        if (b.name !== undefined) { u.name = sanitize(b.name); if (u.name.length > 100) return cors(NextResponse.json({ error: 'name too long' }, { status: 400 })) }
-        if (b.url !== undefined) { u.url = sanitize(b.url); if (!isValidUrl(u.url)) return cors(NextResponse.json({ error: 'invalid url format' }, { status: 400 })) }
-        if (b.expectedStatus !== undefined) u.expectedStatus = Math.min(599, Math.max(100, Number(b.expectedStatus)))
-        if (b.interval !== undefined) u.interval = Math.min(3600, Math.max(10, Number(b.interval)))
-        if (b.maintenanceStart !== undefined) u.maintenanceStart = b.maintenanceStart
-        if (b.maintenanceEnd !== undefined) u.maintenanceEnd = b.maintenanceEnd
-        await db.collection('endpoints').updateOne({ id }, { $set: u })
-        const updated = await db.collection('endpoints').findOne({ id })
-        return cors(NextResponse.json(M.clean(updated)))
-      }
-      if (method === 'DELETE') {
-        await db.collection('endpoints').deleteOne({ id })
-        await db.collection('pings').deleteMany({ endpointId: id })
-        await db.collection('rollups').deleteMany({ endpointId: id })
-        return cors(NextResponse.json({ deleted: true, id }))
       }
     }
 

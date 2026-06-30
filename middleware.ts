@@ -1,7 +1,12 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
 
+const AUTH_CONFIGURED = !!(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET)
+
 export default auth((req) => {
+  // If GitHub OAuth is not yet configured, skip auth checks
+  if (!AUTH_CONFIGURED) return NextResponse.next()
+
   const { pathname } = req.nextUrl
 
   // Allow auth routes
