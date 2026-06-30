@@ -10,7 +10,7 @@
 
 | # | Action | TestSprite | Result |
 |---|--------|-----------|--------|
-| 1 | Deployed StatusPulse to Render | — | Live at https://statuspulse-vvy0.onrender.com |
+| 1 | Deployed StatusPulse | — | Live at https://statuspulse.edgeone.dev |
 | 2 | Created TestSprite project dc688ee6 | — | Frontend project, target URL set |
 | 3 | Created "Landing Page + Dashboard Flow" | test_945b6fe5 (4 steps) | **PASSED** (3/3) — baseline banked |
 | 4 | Created "Status Page + Theme Toggle" | test_be20bda2 (5 steps) | **PASSED** (13/13) — baseline banked |
@@ -171,22 +171,21 @@
 
 | Metric | Count |
 |--------|:---:|
-| Total iterations | 15 |
+| Total iterations | 17 |
 | FAIL → FIX cycles | **4** (maintenance window, View Transitions ×5, reset filters, copy all badges) |
 | Tests created | 10 |
 | Tests banked (green) | 7 |
 | TestSprite reruns | 30+ |
-| Features shipped | 15 |
-| Commits | 25+ |
+| Features shipped | 20 |
+| Commits | 30+ |
 | TypeScript files | 20+ |
 | Route handlers | 17 domain-specific |
 | Architecture phases | 4 (Auth+Prisma, Route Sep, BullMQ+Docker, Hardening) |
 | CI/CD | ✅ GitHub Actions gate |
 | Unit tests | 12/12 passing |
-| Lines of code | ~3,500+ across 25 files |
+| OAuth | ✅ GitHub configured |
 
-**Evidence:** Full commit history at https://github.com/0xshalah/StatusPulse/commits/main  
-**Live URL:** https://statuspulse-vvy0.onrender.com  
+**Live URL:** https://statuspulse.edgeone.dev  
 **TestSprite Dashboard:** https://www.testsprite.com/dashboard/tests/dc688ee6-3d53-4cd9-a8a2-21229ef20a01
 
 ---
@@ -230,6 +229,25 @@
 112. Verified `.github/workflows/testsprite.yml` — triggers on push + PR, ubuntu-latest, Node 20, runs `test run --all`, uploads failure artifacts
 113. Created "Endpoint Creation Validation" test — wizard open/close, form visibility. TestSprite ran (test_284ccfda) — PASSED
 114. Created "SVG Badge Rendering" test — click badge button, verify toast confirmation. TestSprite ran — PASSED
-115. Maintenance Window Set + Validation now PASSED after re-architecture deploy to Render
+115. Maintenance Window Set + Validation now PASSED after re-architecture deploy
 116. README updated: added 4-phase re-architecture summary, updated counts to 14 iterations/10 tests/7 banked/30+ reruns
 117. Suite: 7 tests banked. CI/CD gate active.
+
+### Day 2 — Iteration 16: Series A UI/UX Polish (Jul 1)
+118. Added sign-in page 10/10: split layout, trust signals, loading spinner, disabled state, redirect indicator, OAuth setup guide
+119. Added user session to Navbar: avatar + name when logged in, "Sign in" button when not, SessionProvider wrapper
+120. Landing page mock dashboard now fetches real API data — shows live endpoint count and health status
+121. HealthScore animated number transition: count-up animation on healthy count change
+122. Sparkline hover tooltip: mouse-over shows exact ms value with vertical guide line
+123. All pages upgraded with retry logic (3 attempts with backoff) + better loading/error states
+124. TestSprite reran --all: "Landing Page + Dashboard Flow" — PASSED
+125. TestSprite reran --all: "Status Page + Theme Toggle" — PASSED
+126. TestSprite reran --all: "Alert Settings Modal" — PASSED
+127. Suite: 7 tests banked. Series A UI/UX complete.
+
+### Day 2 — Iteration 17: EdgeOne Migration (Jul 1)
+128. Migrated deployment from Render to EdgeOne: https://statuspulse.edgeone.dev
+129. Updated all 9 test plans with new URLs and endpoint IDs
+130. Configured GitHub OAuth credentials (AUTH_GITHUB_ID, AUTH_GITHUB_SECRET, AUTH_SECRET)
+131. TestSprite full QA: 7/9 tests PASSED on EdgeOne, 1 blocked (badge rendering), 1 failed (fill action unsupported)
+132. Final suite: 7 tests banked on new deployment
