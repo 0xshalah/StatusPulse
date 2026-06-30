@@ -15,7 +15,7 @@ export default function SignIn() {
       {/* Left: Brand + Trust */}
       <div className="hidden flex-1 flex-col justify-between bg-muted/30 p-12 lg:flex">
         <div>
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 mb-16">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
@@ -23,7 +23,7 @@ export default function SignIn() {
             </span>
             <span className="font-display text-xl font-bold tracking-tight">StatusPulse</span>
           </Link>
-          <div className="mt-16 max-w-sm">
+          <div className="max-w-sm">
             <h1 className="font-display text-3xl font-bold leading-tight">
               Monitor your APIs.<br />
               <span className="text-primary">Never miss a beat.</span>
@@ -65,7 +65,7 @@ export default function SignIn() {
       <div className="flex flex-1 items-center justify-center px-6">
         <div className="w-full max-w-sm">
           {/* Mobile-only logo */}
-          <Link href="/" className="mb-10 flex items-center gap-2 lg:hidden">
+          <Link href="/" className="mb-12 flex items-center gap-2 lg:hidden">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />

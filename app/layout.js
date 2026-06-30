@@ -6,6 +6,7 @@ import ClientLayout from '@/components/ClientLayout'
 export const metadata = {
   title: 'StatusPulse — API Status Monitor',
   description: 'Real-time API endpoint monitoring, uptime tracking, public status pages and embeddable SVG badges.',
+  icons: { icon: '/favicon.svg' },
 }
 
 export default function RootLayout({ children }) {
