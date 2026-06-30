@@ -173,9 +173,9 @@
 |--------|:---:|
 | Total iterations | 17 |
 | FAIL → FIX cycles | **4** (maintenance window, View Transitions ×5, reset filters, copy all badges) |
-| Tests created | 10 |
+| Tests created | 17 |
 | Tests banked (green) | 7 |
-| TestSprite reruns | 30+ |
+| TestSprite reruns | 35+ |
 | Features shipped | 20 |
 | Commits | 30+ |
 | TypeScript files | 20+ |
@@ -251,3 +251,9 @@
 130. Configured GitHub OAuth credentials (AUTH_GITHUB_ID, AUTH_GITHUB_SECRET, AUTH_SECRET)
 131. TestSprite full QA: 7/9 tests PASSED on EdgeOne, 1 blocked (badge rendering), 1 failed (fill action unsupported)
 132. Final suite: 7 tests banked on new deployment
+
+### Day 2 — Iteration 18: Test Maximization (Jul 1)
+133. Created 3 API endpoint tests: GET /api/health → "healthy", GET /api/badge → SVG content, GET nonexistent → "not found"
+134. Created 4 deep assertion tests: dashboard filter counts (All/Up/Degraded/Down), status page Services+Incident, auth gate 401, sign-in page render
+135. Rewrote 4 failing test plans for auth compatibility + removed unsupported actions
+136. Suite: 17 test plans total. Dashboard, status, API health, badge, auth page, wizard, filters, alerts modal.
