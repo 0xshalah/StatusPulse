@@ -39,7 +39,7 @@ model Endpoint {
 
   @@index([userId])
   @@index([nextPingAt])
-  @@map("endpoints_next")
+  @@map("endpoints")
 }
 
 model Ping {
@@ -53,5 +53,5 @@ model Ping {
   attempts     Int       @default(1)
 
   @@index([endpointId, timestamp])
-  @@map("pings_next")
+  @@map("pings")
 }
