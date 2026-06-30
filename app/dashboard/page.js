@@ -169,11 +169,20 @@ function App() {
             </div>
           ) : filtered.length === 0 ? (
             data.endpoints.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-                <ServerCrash className="h-10 w-10 text-muted-foreground" />
-                <p className="mt-3 font-display text-lg font-semibold">No endpoints found</p>
-                <p className="mt-1 text-sm text-muted-foreground">Add your first endpoint to start monitoring.</p>
-                <Button className="mt-4 gap-1.5" onClick={() => { setEditing(null); setWizardOpen(true) }}><Plus className="h-4 w-4" /> Add endpoint</Button>
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Plus className="h-7 w-7" />
+                </div>
+                <p className="mt-4 font-display text-xl font-bold">Start monitoring your APIs</p>
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground">Add your first endpoint and StatusPulse will ping it every 60 seconds from our server-side scheduler.</p>
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <span className="rounded-full bg-muted px-3 py-1 font-mono">1. Click Add endpoint</span>
+                  <span className="hidden sm:inline text-muted-foreground/40">→</span>
+                  <span className="rounded-full bg-muted px-3 py-1 font-mono">2. Paste your API URL</span>
+                  <span className="hidden sm:inline text-muted-foreground/40">→</span>
+                  <span className="rounded-full bg-muted px-3 py-1 font-mono">3. Watch it go live</span>
+                </div>
+                <Button className="mt-6 gap-1.5" onClick={() => { setEditing(null); setWizardOpen(true) }}><Plus className="h-4 w-4" /> Add endpoint</Button>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">

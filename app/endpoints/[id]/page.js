@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Gauge, Activity, Timer, Zap, Pause, Play, Pencil, Trash2, CalendarClock } from 'lucide-react'
+import { ArrowLeft, Gauge, Activity, Timer, Zap, Pause, Play, Pencil, Trash2, CalendarClock, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'
 import StatusDot from '@/components/statuspulse/StatusDot'
@@ -83,7 +83,13 @@ export default function EndpointDetail() {
 
   return (
     <Shell>
-      <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to dashboard</Link>
+      <nav className="flex items-center gap-1.5 text-sm text-muted-foreground" aria-label="Breadcrumb">
+        <Link href="/" className="hover:text-foreground">StatusPulse</Link>
+        <ChevronRight className="h-3.5 w-3.5" />
+        <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
+        <ChevronRight className="h-3.5 w-3.5" />
+        <span className="font-medium text-foreground truncate max-w-[200px]">{ep.name}</span>
+      </nav>
       <div className="mt-4 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-start gap-3">
           <div className="mt-1"><StatusDot verdict={d.verdict} /></div>
