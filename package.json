@@ -9,7 +9,8 @@
         "build": "next build",
         "build:worker": "tsup",
         "start": "next start",
-        "start:worker": "node dist/worker/index.js"
+        "start:worker": "node dist/worker/index.js",
+        "test": "vitest run"
     },
     "dependencies": {
         "@hookform/resolvers": "5.1.1",
@@ -85,7 +86,8 @@
         "postcss": "8",
         "tailwindcss": "3.4.1",
         "tsup": "^8.5.1",
-        "typescript": "5.8.2"
+        "typescript": "5.8.2",
+        "vitest": "^4.1.9"
     },
     "resolutions": {
         "follow-redirects": "1.16.0",
