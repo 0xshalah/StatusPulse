@@ -1,25 +1,23 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
 
-const AUTH_CONFIGURED = !!(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET)
-
 export default auth((req) => {
-  // If GitHub OAuth is not yet configured, skip auth checks
-  if (!AUTH_CONFIGURED) return NextResponse.next()
-
   const { pathname } = req.nextUrl
 
-  // Allow auth routes
+  // Allow auth routes unconditionally
   if (pathname.startsWith('/api/auth/')) return NextResponse.next()
 
-  // Allow public GET requests (dashboard, status, badge, endpoint list)
+  // Public read-only endpoints — no auth required
   if (req.method === 'GET') return NextResponse.next()
 
-  // Block unauthenticated mutations (POST, PUT, DELETE, PATCH)
+  // All mutations (POST, PUT, DELETE, PATCH) require authentication
   if (!req.auth) {
     return NextResponse.json(
-      { error: 'Authentication required for this operation' },
-      { status: 401 }
+      { error: 'Authentication required', code: 'UNAUTHORIZED' },
+      {
+        status: 401,
+        headers: { 'WWW-Authenticate': 'Bearer' },
+      }
     )
   }
 
