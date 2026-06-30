@@ -1,30 +1,51 @@
 # StatusPulse — Product Requirements Document
 
-> **Version:** 2.0 (Post-Hackathon)  
-> **Status:** MVP Complete · Production Planning  
+> **Version:** 2.1 (Revised)  
+> **Status:** Hackathon Prototype · Pre-Production  
 > **Last Updated:** June 29, 2026
 
 ---
 
 ## Executive Summary
 
-StatusPulse is an open-source API endpoint monitoring platform that provides real-time uptime tracking, public status pages, embeddable SVG badges, and multi-channel alerting. Built during TestSprite Hackathon Season 3 with a self-verifying AI agent loop (Claude Code + TestSprite CLI), the MVP achieved 10 iterations with 4 FAIL→FIX cycles, proving the viability of agent-driven development.
+StatusPulse is an open-source API endpoint monitoring tool — real-time dashboard, public status pages, embeddable SVG badges, Slack/Discord alerts. Built in 24 hours during TestSprite Hackathon Season 3 with a self-verifying AI agent loop (Claude Code + TestSprite CLI): 10 iterations, 84 LOOP.md entries, 4 FAIL→FIX cycles.
 
-The next phase transforms StatusPulse from a single-tenant hackathon project into a production-grade, multi-tenant SaaS platform.
+**Current state:** A functional prototype. The next phase is a **re-architecture** — not a refactor — to make it production-grade. Timeline: 8-12 weeks, not 2-4.
+
+**Core differentiator:** Open-source + self-hosted. StatusPulse competes on freedom (you own your monitoring), not on being a cheaper UptimeRobot.
+
+---
+
+## Honest Assessment
+
+### What the Prototype Proves
+- ✅ Agent-driven development works: 19 commits, 4 genuine FAIL→FIX cycles in 24 hours
+- ✅ Full-stack Next.js 15 + MongoDB Atlas + Render deployment pipeline
+- ✅ Rich UX: SSE streaming, Framer Motion animations, View Transitions API
+- ✅ Security basics: HSTS, CSP, rate limiting, input sanitization
+
+### What the Prototype Is NOT
+- ❌ Production-ready architecture: 250-line catch-all API route, no separation of concerns
+- ❌ Type-safe: Pure JavaScript, no compile-time guarantees
+- ❌ Scalable: In-memory rate limiter, no database indexes, no connection retry
+- ❌ Secure: No authentication, credentials in plaintext env vars
+- ❌ Tested: Zero unit/integration tests, only external TestSprite E2E
+
+**This is a proof of concept. Treating it as an MVP that just needs polish is the planning fallacy.**
 
 ---
 
 ## Problem Statement
 
 ### Current State
-Development teams deploy APIs without continuous verification. Existing monitoring tools (UptimeRobot, BetterStack, Pingdom) are:
+Development teams deploy APIs without continuous verification. Existing tools are:
 - **Expensive** — $7–$34/month for basic features
 - **Closed-source** — no self-hosting, no auditability
 - **Limited** — no embeddable badges, no public status pages on free tiers
-- **Non-agentic** — no CLI or API designed for AI coding agents to self-verify
+- **Non-agentic** — no CLI or API for AI coding agents to self-verify
 
 ### Target Outcome
-A free, open-source alternative that developers can self-host in 2 minutes or use as a managed service — with a CLI designed for AI agents to verify their own work.
+A free, open-source, **self-hosted** monitoring tool that developers can deploy in 2 minutes via Docker. A managed SaaS tier may follow — but self-hosting is the primary differentiator, not an afterthought.
 
 ---
 
@@ -32,7 +53,7 @@ A free, open-source alternative that developers can self-host in 2 minutes or us
 
 | Persona | Needs | JTBD |
 |---------|-------|------|
-| **Solo Developer** | Monitor 5-10 personal projects, free, simple | "I want to know my API is down before my users do" |
+| **Solo Developer** | Docker pull, env vars, running in 120 seconds | "I want to know my API is down before my users do" |
 | **Startup CTO** | Public status page, team alerts, embeddable badges | "I want my customers to trust our uptime" |
 | **AI Coding Agent** | CLI-based verification, machine-readable failure bundles | "I want to verify the code I just wrote actually works" |
 | **Platform Engineer** | Self-hosted, auditable, open-source, API-driven | "I want to own my monitoring infrastructure" |
@@ -41,97 +62,133 @@ A free, open-source alternative that developers can self-host in 2 minutes or us
 
 ## User Stories
 
-### Must Have (P0) — MVP Complete ✅
+### P0 — Critical (Must Ship First)
 | ID | Story | Status |
 |----|-------|:------:|
-| US-01 | As a user, I can add an HTTP(S) endpoint to monitor | ✅ |
-| US-02 | As a user, I can see real-time status (up/degraded/down) for all endpoints | ✅ |
-| US-03 | As a user, I can view a public status page with uptime history | ✅ |
-| US-04 | As a user, I can embed a live SVG badge in my README | ✅ |
-| US-05 | As a user, I receive Slack/Discord alerts when endpoints go down | ✅ |
-| US-06 | As a user, I can set maintenance windows for planned downtime | ✅ |
+| US-01 | As a developer, I can `docker compose up` and have StatusPulse running in 2 minutes | ❌ |
+| US-02 | As a user, I can log in with GitHub OAuth (basic, not multi-tenant) | ❌ |
+| US-03 | As a user, my endpoints are private to my account | ❌ |
+| US-04 | As a user, I can add/monitor/delete HTTP(S) endpoints | ✅ MVP |
+| US-05 | As a user, monitoring continues even when I close my browser | ✅ MVP |
+| US-06 | As a user, I can see real-time status on a dashboard | ✅ MVP |
 
-### Should Have (P1) — Next Sprint
-| ID | Story | Priority |
-|----|-------|:--------:|
-| US-07 | As a user, I can sign up/login with email or GitHub OAuth | 🔴 |
-| US-08 | As a user, my endpoints are private to my account | 🔴 |
-| US-09 | As a user, I can create multiple projects with separate status pages | 🟡 |
-| US-10 | As a user, I can customize my status page domain (CNAME) | 🟡 |
-| US-11 | As a user, I receive email alerts (SendGrid/Resend) | 🟡 |
-| US-12 | As a user, I can view historical analytics (90-day retention) | 🟡 |
+### P1 — Important (Ship After P0)
+| ID | Story | Status |
+|----|-------|:------:|
+| US-07 | As a user, I can view a public status page with uptime history | ✅ MVP |
+| US-08 | As a user, I receive Slack/Discord alerts when endpoints go down | ✅ MVP |
+| US-09 | As a user, I can embed a live SVG badge in my README | ✅ MVP |
+| US-10 | As a user, I can configure monitoring intervals per endpoint | ✅ MVP |
+| US-11 | As a user, I can set maintenance windows | ✅ MVP |
+| US-12 | As a user, I receive email alerts (SendGrid/Resend) | ❌ |
 
-### Could Have (P2) — Future
-| ID | Story | Priority |
-|----|-------|:--------:|
-| US-13 | As a user, I can set up incident templates and postmortems | 🟢 |
-| US-14 | As a user, I can integrate with PagerDuty/Opsgenie | 🟢 |
-| US-15 | As a user, I can monitor TCP/ICMP in addition to HTTP(S) | 🟢 |
-| US-16 | As a user, I can export metrics to Prometheus/Grafana | 🟢 |
-| US-17 | As a developer, I can use the REST API with API keys | 🟢 |
-| US-18 | As an AI agent, I can drive the full verify→fix loop via MCP Server | 🟢 |
+### P2 — Nice to Have
+| ID | Story |
+|----|-------|
+| US-13 | As a user, I can create multiple projects with separate status pages |
+| US-14 | As a user, I can customize my status page domain (CNAME) |
+| US-15 | As a user, I can view historical analytics (90-day retention) |
+| US-16 | As a user, I can integrate with PagerDuty/Opsgenie |
+| US-17 | As a user, I can export metrics to Prometheus/Grafana |
+| US-18 | As a developer, I can use the REST API with API keys |
 
 ---
 
-## Feature Specification
+## Architecture v2: Corrected
 
-### 1. Authentication & Multi-Tenancy
-```
-POST   /api/auth/signup        → Create account (email + password)
-POST   /api/auth/login         → JWT token
-GET    /api/auth/session       → Validate token
-POST   /api/auth/oauth/github  → GitHub OAuth flow
-```
-- **Provider:** NextAuth.js v5 or Clerk
-- **Session:** JWT with refresh tokens, 7-day expiry
-- **Data isolation:** All queries scoped to `userId`
+### Design Principles
+1. **Self-hosted first, SaaS second.** The Docker image is the product. Managed hosting is optional.
+2. **Right tool for the job.** No serverless for persistent workers. No microservices for a monitoring tool.
+3. **Security before observability.** Auth and secret management ship before dashboards and metrics.
 
-### 2. API Architecture (Refactored)
+### Deployment
 ```
-Current (MVP):  app/api/[[...path]]/route.js    ← 250 lines, all-in-one
-
-Target (v2):    app/api/
-                ├── auth/        → Auth handlers
-                ├── endpoints/   → CRUD endpoints
-                ├── pings/       → Ping history
-                ├── alerts/      → Webhook configuration
-                ├── status/      → Public status data
-                ├── badge/       → SVG badge generation
-                ├── projects/    → Multi-project support
-                ├── settings/    → User preferences
-                └── webhooks/    → Incoming alert callbacks
+┌──────────────────────────────────────────┐
+│              Docker Host (VPS)            │
+│  ┌────────────────────────────────────┐  │
+│  │          docker-compose.yml         │  │
+│  │  ┌──────────┐ ┌────────┐ ┌───────┐ │  │
+│  │  │ Next.js   │ │ Redis  │ │MongoDB│ │  │
+│  │  │ :3000     │ │ :6379  │ │:27017 │ │  │
+│  │  │ (Web+API) │ │(Cache) │ │(Data) │ │  │
+│  │  └──────────┘ └────────┘ └───────┘ │  │
+│  │  ┌──────────┐                      │  │
+│  │  │ BullMQ    │ ← Background workers │  │
+│  │  │ Worker    │    (ping scheduler)  │  │
+│  │  └──────────┘                      │  │
+│  └────────────────────────────────────┘  │
+│        │                          │       │
+│   Traefik/Caddy            Nginx reverse │
+│   (Auto SSL)               proxy         │
+└──────────────────────────────────────────┘
 ```
-- **Validation:** Zod schemas per route
-- **Middleware:** Rate limit, auth, input sanitization
-- **Response:** Consistent envelope `{ data, error, meta }`
 
-### 3. Database Schema (TypeScript + Indexes)
-```typescript
-// prisma/schema.prisma
+**Why Docker, not Vercel:**
+- Vercel serverless functions timeout at 10-60s → can't run persistent ping workers
+- BullMQ requires a background process → fundamentally incompatible with serverless
+- Docker eliminates cold start entirely (process is always running)
+- $6/month VPS vs $20/month Vercel Pro for comparable performance
+- One `docker compose up` = complete deployment, zero platform lock-in
+
+### Internal Architecture
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── auth/       → NextAuth.js (GitHub OAuth)
+│   │   ├── endpoints/  → CRUD handlers
+│   │   ├── pings/      → Ping history
+│   │   ├── alerts/     → Webhook config
+│   │   ├── status/     → Public status data
+│   │   └── badge/      → SVG badge generation
+│   ├── (dashboard)/    → Protected routes
+│   └── (status)/       → Public routes
+├── workers/
+│   ├── scheduler.ts    → BullMQ ping job processor
+│   └── alerts.ts       → BullMQ alert dispatcher
+├── lib/
+│   ├── monitor/        → Ping engine + retry logic
+│   ├── auth/           → Auth utilities
+│   ├── security/       → Rate limit, sanitize, CSP
+│   └── db/             → MongoDB connection pool + retry
+└── types/              → TypeScript definitions
+```
+
+---
+
+## Corrected Priority Order
+
+The original PRD had the order wrong. Here's the real priority, based on what kills the product first:
+
+| # | Task | Why First |
+|:--:|------|-----------|
+| **1** | **Stabilize monitoring engine** | Core product. Unreliable pings = dead product, regardless of how clean the schema is |
+| **2** | **Add GitHub OAuth (minimal)** | Anyone can DELETE your endpoints right now. Security P0, not P2 |
+| **3** | **Dockerize** | Eliminates cold start, enables persistent workers, makes self-hosting real |
+| **4** | **TypeScript migration** | Incremental, file-by-file. Start with API routes, then workers, then UI |
+| **5** | **Database indexes + connection retry** | Only matters at scale. N+1 with 50 endpoints is fine. Fix when it hurts |
+| **6** | **Split API routes** | Already functional. Refactor as part of TypeScript migration |
+| **7** | **Structured logging + health checks** | Prerequisite for production monitoring of the monitor |
+| **8** | **Email alerts (SendGrid)** | Most-requested feature after Slack/Discord |
+
+---
+
+## Database Schema (TypeScript + Prisma)
+
+```prisma
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   name      String?
   avatar    String?
-  createdAt DateTime @default(now())
-  projects  Project[]
-}
-
-model Project {
-  id        String     @id @default(cuid())
-  userId    String
-  user      User       @relation(fields: [userId], references: [id])
-  name      String
-  slug      String     @unique
   endpoints Endpoint[]
-  createdAt DateTime   @default(now())
-  @@index([userId])
+  createdAt DateTime  @default(now())
 }
 
 model Endpoint {
   id               String   @id @default(cuid())
-  projectId        String
-  project          Project  @relation(fields: [projectId], references: [id])
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
   name             String
   url              String
   expectedStatus   Int      @default(200)
@@ -144,7 +201,8 @@ model Endpoint {
   nextPingAt       DateTime?
   pings            Ping[]
   createdAt        DateTime @default(now())
-  @@index([projectId])
+
+  @@index([userId])
   @@index([nextPingAt])
 }
 
@@ -156,82 +214,10 @@ model Ping {
   statusCode   Int
   responseTime Int
   verdict      String
+
   @@index([endpointId, timestamp])
   @@index([timestamp])
 }
-
-model AlertConfig {
-  id               String   @id @default(cuid())
-  projectId        String
-  slackWebhookUrl  String?
-  discordWebhookUrl String?
-  emailAlerts      Boolean  @default(false)
-  notifyOnDown     Boolean  @default(true)
-  notifyOnDegraded Boolean  @default(true)
-  notifyOnRecovery Boolean  @default(true)
-  @@index([projectId])
-}
-```
-
-### 4. Scheduler (Production)
-```
-Current: setInterval in instrumentation.js → fetch localhost API
-
-Target:  BullMQ + Redis
-  - Jobs queued per endpoint interval
-  - Retry with exponential backoff
-  - Dead letter queue for persistent failures
-  - Horizontally scalable (multiple workers)
-  - Dashboard for queue monitoring
-```
-
-### 5. Observability
-```
-Logging:    Pino (structured JSON) → stdout
-Metrics:    Prometheus (request duration, ping latency, error rate)
-Tracing:    OpenTelemetry (span all external calls)
-Alerts:     Sentry (error tracking) + health check endpoint
-Dashboard:  Grafana (real-time metrics visualization)
-```
-
----
-
-## Technical Architecture (v2)
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        Cloudflare                            │
-│  ┌──────────┐  ┌──────────┐  ┌─────────────┐               │
-│  │ DNS/CNAME│  │   CDN    │  │ WAF / DDoS  │               │
-│  └──────────┘  └──────────┘  └─────────────┘               │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     Vercel / Railway (Pro)                   │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │              Next.js 15 (App Router)                  │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐             │  │
-│  │  │ Auth     │ │ Projects │ │ Settings │             │  │
-│  │  │ (Clerk)  │ │ CRUD     │ │ Profile  │             │  │
-│  │  └──────────┘ └──────────┘ └──────────┘             │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐             │  │
-│  │  │ Status   │ │ Badges   │ │ Alerts   │             │  │
-│  │  │ Pages    │ │ SVG Gen  │ │ Webhooks │             │  │
-│  │  └──────────┘ └──────────┘ └──────────┘             │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-          ┌───────────────────┼──────────────────┐
-          ▼                   ▼                   ▼
-┌──────────────────┐ ┌──────────────┐ ┌──────────────────┐
-│   MongoDB Atlas  │ │    Redis     │ │   BullMQ Queue   │
-│   (Primary)      │ │   (Cache)    │ │   (Scheduler)    │
-│   • Users        │ │   • Session  │ │   • Ping jobs    │
-│   • Projects     │ │   • Rate lim │ │   • Alert jobs   │
-│   • Endpoints    │ │   • Rollups  │ │   • Rollup jobs  │
-│   • Pings        │ │              │ │                  │
-└──────────────────┘ └──────────────┘ └──────────────────┘
 ```
 
 ---
@@ -240,145 +226,113 @@ Dashboard:  Grafana (real-time metrics visualization)
 
 | Category | Requirement | Target |
 |----------|-------------|:------:|
+| **Deployment** | Time from `git clone` to running | < 120s via Docker |
 | **Performance** | API response time (p95) | < 200ms |
-| **Performance** | Dashboard FCP (First Contentful Paint) | < 1.5s |
-| **Performance** | Cold start (serverless) | < 3s |
-| **Availability** | Uptime SLA | 99.9% |
-| **Scalability** | Concurrent users | 1,000+ |
-| **Scalability** | Endpoints monitored | 50,000+ |
-| **Security** | OWASP Top 10 | All mitigated |
-| **Security** | SOC 2 Type II | Target Q3 2027 |
+| **Performance** | Dashboard FCP | < 1.5s |
+| **Availability** | Docker host uptime | 99.9% (depends on VPS) |
+| **Scalability** | Endpoints per instance | 5,000+ (with indexes) |
+| **Security** | Authentication | GitHub OAuth mandatory for mutations |
+| **Security** | Secrets | Environment variables, never in code |
 | **Accessibility** | WCAG 2.1 AA | All pages |
-| **Browser Support** | Modern browsers | Chrome, Firefox, Safari, Edge (last 2 versions) |
-| **Data Privacy** | GDPR compliant | EU user data rights |
-| **Backup** | Database backups | Daily, 30-day retention |
-| **Disaster Recovery** | RTO / RPO | < 4 hours / < 1 hour |
+| **Browser Support** | Modern browsers | Chrome, Firefox, Safari, Edge |
 
 ---
 
 ## Competitive Analysis
 
-| Feature | StatusPulse | UptimeRobot | BetterStack | Pingdom |
-|---------|:---:|:---:|:---:|:---:|
-| **Free tier** | ✅ Forever | ✅ 50 monitors | ❌ | ❌ |
-| **Open source** | ✅ Apache 2.0 | ❌ | ❌ | ❌ |
-| **Self-hosted** | ✅ Next.js+MongoDB | ❌ | ❌ | ❌ |
-| **Public status page** | ✅ Custom domain | ✅ | ✅ | ✅ |
-| **SVG badges** | ✅ 3 styles×3 metrics | ❌ | ✅ | ❌ |
-| **Slack alerts** | ✅ | ✅ | ✅ | ✅ |
-| **Discord alerts** | ✅ | ❌ | ❌ | ❌ |
-| **AI agent CLI** | ✅ TestSprite MCP | ❌ | ❌ | ❌ |
-| **Multi-user** | 🔜 v2 | ✅ | ✅ | ✅ |
-| **API** | 🔜 v2 | ✅ | ✅ | ✅ |
-| **Pricing** | Free | $7-34/mo | $25-300/mo | $10-100/mo |
+| Feature | StatusPulse | UptimeRobot | BetterStack |
+|---------|:---:|:---:|:---:|
+| **Self-hosted** | ✅ Docker | ❌ | ❌ |
+| **Open source** | ✅ Apache 2.0 | ❌ | ❌ |
+| **Free tier** | ✅ Forever | ✅ 50 monitors | ❌ |
+| **Public status page** | ✅ | ✅ | ✅ |
+| **SVG badges** | ✅ 3 styles | ❌ | ✅ |
+| **Slack alerts** | ✅ | ✅ | ✅ |
+| **Discord alerts** | ✅ | ❌ | ❌ |
+| **AI agent CLI** | ✅ TestSprite | ❌ | ❌ |
+| **Pricing** | Free (self-host) | $7-34/mo | $25-300/mo |
 
 ---
 
 ## Risk Register
 
-| Risk | Probability | Impact | Mitigation |
+| Risk | P | I | Mitigation |
 |------|:---:|:---:|------------|
-| MongoDB connection failure | Medium | High | Connection pool + retry + failover |
-| Rate limit bypass | Low | Medium | Redis-based distributed rate limiter |
-| Credential exposure | Low | Critical | Secrets manager, env encryption, audit log |
-| Free tier abuse | High | Medium | Hard rate limits, API key validation |
-| Render cold start timeout | High | Medium | Migrate to Vercel Pro or Railway Pro |
-| Data loss | Low | Critical | Daily backups, point-in-time recovery |
-| Dependency vulnerability | Medium | High | Dependabot, weekly audit, SBOM |
+| MongoDB connection failure | M | H | Connection pool + retry + health check |
+| Credential exposure | L | C | Never commit secrets, `.env.example` only |
+| Scheduler failure (missed pings) | M | H | BullMQ dead letter queue + alert on stall |
+| Docker image bloat | M | M | Multi-stage build, Alpine base, < 200MB |
+| Free tier abuse (SaaS later) | H | M | Hard rate limits, API key validation |
+| Dependency vulnerability | M | H | Dependabot + weekly `npm audit` |
 
----
-
-## Success Metrics
-
-| Metric | Current (MVP) | Target (v2) | Target (v3) |
-|--------|:---:|:---:|:---:|
-| **Registered users** | 1 (dev) | 100 | 1,000 |
-| **Monitored endpoints** | 5 (seed) | 500 | 10,000 |
-| **Status pages published** | 1 | 50 | 500 |
-| **Badge impressions/day** | — | 10,000 | 100,000 |
-| **GitHub stars** | 0 | 100 | 1,000 |
-| **NPM downloads/week** | — | 50 | 500 |
-| **Time to first ping** | 60s | 30s | 10s |
-| **Uptime (platform)** | — | 99.9% | 99.99% |
+P = Probability, I = Impact. C = Critical, H = High, M = Medium, L = Low.
 
 ---
 
 ## Development Roadmap
 
-### Phase 1: Production Foundation (Weeks 1-2)
-- [ ] Migrate to TypeScript + Zod validation
-- [ ] Split API routes into domain-specific handlers
-- [ ] Add MongoDB indexes + connection retry
-- [ ] Add unit + integration tests (Vitest)
-- [ ] Set up CI/CD with staging environment
+### Phase 1: Core Stability (Weeks 1-4)
+- [ ] **Monitoring engine:** Rewrite scheduler with BullMQ + Redis
+- [ ] **Connection resilience:** MongoDB retry logic + connection pool
+- [ ] **Docker:** `Dockerfile` + `docker-compose.yml` with Next.js + Redis + MongoDB
+- [ ] **Auth:** GitHub OAuth via NextAuth.js (protect mutations, public GETs remain open)
+- [ ] **Health check:** `GET /api/health` returning DB + Redis + scheduler status
+- [ ] **Structured logging:** Pino JSON logs to stdout
 
-### Phase 2: Auth & Multi-Tenancy (Weeks 3-4)
-- [ ] Integrate NextAuth.js (GitHub OAuth + email/password)
-- [ ] Add user-scoped data isolation
-- [ ] Multi-project support
-- [ ] API key generation for programmatic access
+### Phase 2: Production Hardening (Weeks 5-8)
+- [ ] **TypeScript:** Incremental migration, starting with API routes + workers
+- [ ] **Database:** Add Prisma migrations + indexes
+- [ ] **Tests:** Vitest unit tests for ping engine + alert dispatcher
+- [ ] **Email alerts:** SendGrid integration
+- [ ] **CI/CD:** GitHub Actions build + test + push Docker image to GHCR
+- [ ] **API split:** Domain-specific route handlers (part of TS migration)
 
-### Phase 3: Production Infrastructure (Weeks 5-6)
-- [ ] Migrate to Vercel Pro (no cold start, edge functions)
-- [ ] Redis for caching + distributed rate limiting
-- [ ] BullMQ for job queue (scheduler rewrite)
-- [ ] Pino structured logging + Prometheus metrics
+### Phase 3: Scale (Weeks 9-12)
+- [ ] **Multi-project:** Per-user project isolation
+- [ ] **Prometheus metrics:** `/api/metrics` endpoint
+- [ ] **API keys:** Programmatic access for CI/CD pipelines
+- [ ] **Status page custom domain:** CNAME support
+- [ ] **PagerDuty/Opsgenie:** Webhook integrations
+- [ ] **Performance:** Add database indexes for scale > 1000 endpoints
 
-### Phase 4: Scale & Monetize (Weeks 7-8)
-- [ ] Free tier: 5 endpoints, 1 project
-- [ ] Pro tier ($9/mo): 50 endpoints, custom domain, teams
-- [ ] Enterprise tier ($49/mo): unlimited, SSO, SLA
-- [ ] Stripe integration for payments
-
-### Phase 5: Ecosystem (Ongoing)
+### Phase 4: Ecosystem (Ongoing)
 - [ ] NPM package: `npx statuspulse init`
 - [ ] MCP Server for AI coding agents
 - [ ] Terraform provider for IaC monitoring
-- [ ] Community-contributed integrations (Datadog, Grafana, PagerDuty)
+- [ ] Managed hosting tier (optional, not a priority)
+- [ ] Community integrations (Datadog, Grafana)
+
+---
+
+## Success Metrics
+
+| Metric | Current | Phase 1 | Phase 2 | Phase 3 |
+|--------|:---:|:---:|:---:|:---:|
+| **Docker deploy time** | — | < 120s | < 90s | < 60s |
+| **GitHub stars** | 0 | 50 | 200 | 1,000 |
+| **Self-hosted instances** | 1 | 20 | 100 | 500 |
+| **Test coverage** | 0% | 30% | 60% | 80% |
+| **TypeScript coverage** | 0% | 20% | 60% | 100% |
+| **p95 API latency** | ~500ms | < 300ms | < 200ms | < 100ms |
 
 ---
 
 ## Appendices
 
-### A. Glossary
+### A. Key Decisions Log
+| Decision | Rationale |
+|----------|-----------|
+| Docker over Vercel | Persistent workers incompatible with serverless. Cold start eliminated. |
+| GitHub OAuth only (not Clerk) | Minimal auth surface. Add email/password later when needed. |
+| BullMQ over setInterval | Retry logic, dead letter queue, horizontal scaling, job observability. |
+| Self-hosted first, SaaS later | Differentiator. Don't compete with UptimeRobot on their terms. |
+| TypeScript file-by-file, not big bang | Incremental migration is lower risk. `allowJs: true` + gradual adoption. |
+
+### B. Glossary
 | Term | Definition |
 |------|------------|
 | **Endpoint** | An HTTP(S) URL being monitored |
 | **Verdict** | Current state: up, degraded, down, maintenance, paused |
 | **Ping** | A single health check attempt against an endpoint |
-| **Rollup** | Pre-aggregated daily uptime/latency data |
-| **SSE** | Server-Sent Events — real-time push from server to client |
-| **Failure Bundle** | TestSprite artifact: failing step, screenshots, DOM, root cause, fix |
-
-### B. Repository
-```
-StatusPulse/
-├── prisma/               # Database schema + migrations
-│   └── schema.prisma
-├── src/
-│   ├── app/              # Next.js App Router
-│   │   ├── api/          # Domain-separated API routes
-│   │   ├── (dashboard)/  # Dashboard routes
-│   │   ├── (status)/     # Public status routes
-│   │   └── (auth)/       # Auth routes
-│   ├── components/       # React components
-│   ├── lib/              # Business logic
-│   │   ├── monitor/      # Ping engine
-│   │   ├── scheduler/    # BullMQ job queue
-│   │   ├── alerts/       # Notification dispatcher
-│   │   ├── badge/        # SVG badge generator
-│   │   └── security/     # Auth, rate limit, sanitize
-│   ├── hooks/            # React hooks
-│   └── types/            # TypeScript type definitions
-├── tests/                # Vitest unit + integration
-├── e2e/                  # Playwright E2E
-├── .github/workflows/    # CI/CD
-└── docs/                 # Documentation
-```
-
-### C. References
-- Next.js Documentation: https://nextjs.org/docs
-- Clerk Authentication: https://clerk.com/docs
-- Prisma ORM: https://www.prisma.io/docs
-- BullMQ Queue: https://docs.bullmq.io
-- TestSprite CLI: https://github.com/TestSprite/testsprite-cli
+| **BullMQ** | Redis-backed job queue for Node.js — handles scheduler + retries |
+| **Docker Compose** | Multi-container orchestration: 1 command = full stack |
