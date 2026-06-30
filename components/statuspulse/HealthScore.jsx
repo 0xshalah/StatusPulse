@@ -1,7 +1,29 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Activity } from 'lucide-react'
+
+function AnimatedNumber({ value }) {
+  const [display, setDisplay] = useState(value)
+  const prev = useRef(value)
+  useEffect(() => {
+    const start = prev.current
+    const end = value
+    const duration = 600
+    const startTime = performance.now()
+    function tick(now) {
+      const elapsed = now - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setDisplay(Math.round(start + (end - start) * eased))
+      if (progress < 1) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+    prev.current = value
+  }, [value])
+  return <span className="font-mono-nums">{display}</span>
+}
 
 export default function HealthScore({ health = {}, lastPing }) {
   const { healthy = 0, total = 0, up = 0, degraded = 0, down = 0, maintenance = 0, paused = 0 } = health
@@ -21,7 +43,7 @@ export default function HealthScore({ health = {}, lastPing }) {
       <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2px] text-muted-foreground"><Activity className="h-4 w-4 text-primary" /> System Health</div>
       <div className="mt-4 flex flex-wrap items-end gap-x-4 gap-y-2">
         <div className="font-display text-5xl font-bold leading-none sm:text-6xl">
-          <span className="font-mono-nums">{healthy}</span><span className="text-muted-foreground">/{total}</span>
+          <AnimatedNumber value={healthy} /><span className="text-muted-foreground">/{total}</span>
         </div>
         <div className="pb-1">
           <p className="text-sm text-muted-foreground">endpoints healthy</p>
@@ -34,7 +56,7 @@ export default function HealthScore({ health = {}, lastPing }) {
       <div className="mt-3 flex flex-wrap gap-2">
         {chips.map((c) => (
           <span key={c.l} className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-xs" style={{ backgroundColor: `${c.c}1f`, color: c.c }}>
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: c.c }} />{c.n} {c.l}
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: c.c }} /> {c.n} {c.l}
           </span>
         ))}
       </div>
