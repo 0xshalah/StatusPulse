@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
+import * as M from '@/lib/monitor'
 import { updateEndpointSchema } from '@/lib/validations/endpoint'
 import { apiSuccess, apiError } from '@/lib/api-response'
+import { sanitize, isValidUrl } from '@/lib/security'
 
 export async function GET(
   _request: NextRequest,
@@ -9,9 +10,10 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const endpoint = await db.endpoint.findUnique({ where: { id } })
-    if (!endpoint) return apiError(new Error('Endpoint not found'), 404)
-    return apiSuccess(endpoint)
+    const db = await M.connect()
+    const ep = await db.collection('endpoints').findOne({ id })
+    if (!ep) return apiError(new Error('Endpoint not found'), 404)
+    return apiSuccess(M.clean(ep))
   } catch (error) {
     return apiError(error)
   }
@@ -27,14 +29,23 @@ export async function PUT(
     const parsed = updateEndpointSchema.safeParse(body)
     if (!parsed.success) return apiError(parsed.error)
 
-    const existing = await db.endpoint.findUnique({ where: { id } })
+    const db = await M.connect()
+    const existing = await db.collection('endpoints').findOne({ id })
     if (!existing) return apiError(new Error('Endpoint not found'), 404)
 
-    const endpoint = await db.endpoint.update({
-      where: { id },
-      data: parsed.data,
-    })
-    return apiSuccess(endpoint)
+    const u: Record<string, unknown> = {}
+    if (parsed.data.name !== undefined) { u.name = parsed.data.name; if (u.name && (u.name as string).length > 100) return apiError(new Error('Name too long'), 400) }
+    if (parsed.data.url !== undefined) { u.url = parsed.data.url }
+    if (parsed.data.expectedStatus !== undefined) u.expectedStatus = Math.min(599, Math.max(100, parsed.data.expectedStatus))
+    if (parsed.data.interval !== undefined) u.interval = Math.min(3600, Math.max(10, parsed.data.interval))
+    if (parsed.data.paused !== undefined) u.paused = parsed.data.paused
+    if (parsed.data.maintenanceStart !== undefined) u.maintenanceStart = parsed.data.maintenanceStart
+    if (parsed.data.maintenanceEnd !== undefined) u.maintenanceEnd = parsed.data.maintenanceEnd
+    if (parsed.data.status !== undefined) u.status = parsed.data.status
+
+    await db.collection('endpoints').updateOne({ id }, { $set: u })
+    const updated = await db.collection('endpoints').findOne({ id })
+    return apiSuccess(M.clean(updated!))
   } catch (error) {
     return apiError(error)
   }
@@ -46,11 +57,13 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const existing = await db.endpoint.findUnique({ where: { id } })
+    const db = await M.connect()
+    const existing = await db.collection('endpoints').findOne({ id })
     if (!existing) return apiError(new Error('Endpoint not found'), 404)
 
-    await db.endpoint.delete({ where: { id } })
-    await db.ping.deleteMany({ where: { endpointId: id } })
+    await db.collection('endpoints').deleteOne({ id })
+    await db.collection('pings').deleteMany({ endpointId: id })
+    await db.collection('rollups').deleteMany({ endpointId: id })
     return apiSuccess({ deleted: true, id })
   } catch (error) {
     return apiError(error)

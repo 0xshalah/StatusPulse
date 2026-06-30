@@ -1,14 +1,16 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
+import { v4 as uuidv4 } from 'uuid'
+import * as M from '@/lib/monitor'
 import { createEndpointSchema } from '@/lib/validations/endpoint'
 import { apiSuccess, apiError } from '@/lib/api-response'
 
 export async function GET() {
   try {
-    const endpoints = await db.endpoint.findMany({
-      orderBy: { createdAt: 'asc' },
-    })
-    return apiSuccess(endpoints)
+    const db = await M.connect()
+    const endpoints = await db.collection('endpoints').find({}).sort({ createdAt: 1 }).toArray()
+    const res = apiSuccess(endpoints.map(M.clean))
+    res.headers.set('Cache-Control', 'public, max-age=5, s-maxage=5, stale-while-revalidate=10')
+    return res
   } catch (error) {
     return apiError(error)
   }
@@ -21,16 +23,25 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) return apiError(parsed.error)
 
     const { name, url, expectedStatus, interval } = parsed.data
-    const endpoint = await db.endpoint.create({
-      data: {
-        name,
-        url,
-        expectedStatus,
-        interval,
-        nextPingAt: new Date(),
-      },
-    })
-    return apiSuccess(endpoint, 201)
+    const db = await M.connect()
+
+    const ep = {
+      id: uuidv4(),
+      name,
+      url,
+      expectedStatus,
+      interval,
+      paused: false,
+      status: 'active',
+      consecutiveFailures: 0,
+      nextPingAt: new Date(),
+      createdAt: new Date(),
+    }
+
+    await db.collection('endpoints').insertOne({ ...ep })
+    M.pingOneNow(db, ep.id).catch(() => {})
+
+    return apiSuccess(ep, 201)
   } catch (error) {
     return apiError(error)
   }
