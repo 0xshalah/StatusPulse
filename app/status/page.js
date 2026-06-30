@@ -18,7 +18,7 @@ export default function StatusPage() {
   const [subscribing, setSubscribing] = useState(false)
 
   const load = useCallback(async () => {
-    try { setData(await api('/status')); setError(false) } catch { setError(true) } finally { setLoading(false) }
+    try { setData(await api('/status')); setError(false) } catch (e) { setError(true) } finally { setLoading(false) }
   }, [])
   useEffect(() => {
     let cancelled = false

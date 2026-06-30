@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import {
   Activity,
   ArrowRight,
@@ -125,12 +126,22 @@ function MiniSpark({ color = '#34D399', data = [20, 16, 22, 10, 18, 8, 16, 12, 1
   )
 }
 
-function MockDashboard() {
-  const rows = [
+function MockDashboard({ endpoints, health }) {
+  const hasLive = endpoints && endpoints.length > 0
+  const liveRows = hasLive ? endpoints.slice(0, 3).map((ep) => ({
+    name: ep.name,
+    v: ep.verdict,
+    rt: ep.latest ? `${ep.latest.responseTime}ms` : '—',
+    color: ep.verdict === 'up' ? '#34D399' : ep.verdict === 'degraded' ? '#FBBF24' : '#F87171',
+    data: (ep.pings || []).slice(-11).map((p) => p.responseTime > 2000 ? 22 : Math.max(6, Math.round(p.responseTime / 100))),
+  })) : null
+  const rows = liveRows || [
     { name: 'API Gateway', v: 'up', rt: '182ms', color: '#34D399', data: [16, 14, 18, 12, 20, 10, 16, 13, 19, 9, 15] },
     { name: 'Payments API', v: 'down', rt: '1.04s', color: '#F87171', data: [10, 18, 9, 20, 11, 19, 8, 21, 10, 18, 12] },
     { name: 'Search Service', v: 'degraded', rt: '905ms', color: '#FBBF24', data: [8, 20, 9, 22, 7, 21, 8, 20, 6, 19, 9] },
   ]
+  const healthy = health ? `${health.healthy}` : '2'
+  const total = health ? `${health.total}` : '3'
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card glow-pink">
       <div className="flex items-center gap-1.5 border-b border-border px-4 py-3">
@@ -143,8 +154,8 @@ function MockDashboard() {
         <div className="flex items-center justify-between rounded-xl bg-muted/40 px-4 py-3">
           <div className="text-xs uppercase tracking-wide text-muted-foreground">System health</div>
           <div className="font-mono text-sm font-semibold">
-            <span className="text-status-up">2</span>
-            <span className="text-muted-foreground">/3 healthy</span>
+            <span className="text-status-up">{healthy}</span>
+            <span className="text-muted-foreground">/{total} healthy</span>
           </div>
         </div>
         <div className="mt-3 space-y-2.5">
@@ -187,6 +198,12 @@ function BentoTile({ icon: Icon, title, body, className = '', delay = 0, big = f
 
 /* ----------------------------------- PAGE ---------------------------------- */
 export default function LandingClient() {
+  const [liveData, setLiveData] = useState(null)
+  useEffect(() => {
+    fetch('/api/dashboard').then(r => r.json()).then(setLiveData).catch(() => {})
+  }, [])
+  const dashEndpoints = liveData?.endpoints
+  const dashHealth = liveData?.health
   return (
     <div className="min-h-screen bg-background">
       <ScrollProgress />
@@ -260,7 +277,7 @@ export default function LandingClient() {
               className="mx-auto mt-16 max-w-2xl"
             >
               <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
-                <MockDashboard />
+                <MockDashboard endpoints={dashEndpoints} health={dashHealth} />
               </motion.div>
               <p className="mt-4 text-center font-mono text-xs text-muted-foreground">
                 <Link href="/dashboard" className="underline decoration-muted-foreground/30 underline-offset-4 hover:text-primary">See live demo →</Link>
@@ -308,7 +325,7 @@ export default function LandingClient() {
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.7, ease: EASE }}
             >
-              <MockDashboard />
+              <MockDashboard endpoints={dashEndpoints} health={dashHealth} />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 24 }}
