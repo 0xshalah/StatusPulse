@@ -2,6 +2,9 @@ import { Queue, Worker } from 'bullmq'
 import { redis } from './redis'
 import { pingProcessor, type PingJobData } from './ping.processor'
 import { db } from './prisma'
+import { createLogger } from '../lib/logger'
+
+const logger = createLogger('worker')
 
 const PING_QUEUE = 'statuspulse:pings'
 const SCHEDULER_INTERVAL = parseInt(process.env.SCHEDULER_INTERVAL || '20000', 10)
@@ -22,11 +25,11 @@ const pingWorker = new Worker<PingJobData>(PING_QUEUE, pingProcessor, {
 })
 
 pingWorker.on('completed', (job) => {
-  console.log(`[worker] ping completed: ${job.data.endpointId} → ${job.returnvalue?.verdict}`)
+  logger.info({ endpointId: job.data.endpointId, verdict: job.returnvalue?.verdict }, 'ping completed')
 })
 
 pingWorker.on('failed', (job, err) => {
-  console.error(`[worker] ping failed: ${job?.data.endpointId}`, err.message)
+  logger.error({ endpointId: job?.data.endpointId, error: err.message }, 'ping failed')
 })
 
 async function enqueueDueChecks() {
@@ -57,15 +60,14 @@ async function enqueueDueChecks() {
     }
 
     if (endpoints.length > 0) {
-      console.log(`[scheduler] enqueued ${endpoints.length} ping jobs`)
+      logger.info({ count: endpoints.length }, 'enqueued ping jobs')
     }
   } catch (error) {
-    console.error('[scheduler] error:', error instanceof Error ? error.message : error)
+    logger.error({ error: error instanceof Error ? error.message : String(error) }, 'scheduler error')
   }
 }
 
-console.log('[worker] StatusPulse worker starting...')
-console.log(`[worker] scheduler interval: ${SCHEDULER_INTERVAL}ms`)
+logger.info({ interval: SCHEDULER_INTERVAL }, 'StatusPulse worker starting')
 
 // Initial run
 enqueueDueChecks()
@@ -75,7 +77,7 @@ setInterval(enqueueDueChecks, SCHEDULER_INTERVAL)
 
 // Graceful shutdown
 async function shutdown() {
-  console.log('[worker] shutting down...')
+  logger.info('worker shutting down')
   await pingWorker.close()
   await pingQueue.close()
   await redis.quit()

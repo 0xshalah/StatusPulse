@@ -22,7 +22,6 @@ export async function register() {
       return
     }
     await post('/api/rollups')
-    console.log('[StatusPulse] server scheduler booted')
   }
   setTimeout(boot, 3000)
 

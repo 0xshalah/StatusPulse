@@ -31,12 +31,10 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
-      - NODE_ENV=production
       - DATABASE_URL=mongodb://mongo:27017/statuspulse
-      - AUTH_SECRET=${AUTH_SECRET:-change-me-in-production}
-      - AUTH_GITHUB_ID=${AUTH_GITHUB_ID:-}
-      - AUTH_GITHUB_SECRET=${AUTH_GITHUB_SECRET:-}
     depends_on:
       mongo:
         condition: service_healthy
@@ -52,11 +50,11 @@ services:
       context: .
       dockerfile: Dockerfile.worker
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      - NODE_ENV=production
       - DATABASE_URL=mongodb://mongo:27017/statuspulse
       - REDIS_URL=redis://redis:6379
-      - SCHEDULER_INTERVAL=20000
     depends_on:
       mongo:
         condition: service_healthy
@@ -70,6 +68,17 @@ services:
         reservations:
           memory: 128M
           cpus: "0.25"
+
+  dozzle:
+    image: amir20/dozzle:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOZZLE_LEVEL=info
+      - DOZZLE_NO_ANALYTICS=true
 
 volumes:
   mongo_data:
