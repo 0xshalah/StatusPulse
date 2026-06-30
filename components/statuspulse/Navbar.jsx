@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Activity, Github } from 'lucide-react'
+import { Activity, Github, LogIn } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 import { Button } from '@/components/ui/button'
 
@@ -34,6 +34,12 @@ export default function Navbar({ children }) {
         <div className="flex items-center gap-2">
           {children}
           <ThemeToggle />
+          <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+            <Link href="/auth/signin">
+              <LogIn className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign in</span>
+            </Link>
+          </Button>
           <Button asChild variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground">
             <a href="https://github.com" target="_blank" rel="noreferrer" aria-label="GitHub">
               <Github className="h-[18px] w-[18px]" />
