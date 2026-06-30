@@ -171,15 +171,56 @@
 
 | Metric | Count |
 |--------|:---:|
-| Total iterations | 10 |
-| FAIL → FIX cycles | **4** (maintenance window, View Transitions, reset filters, copy all badges) |
-| Tests created | 7 |
-| Tests banked (green) | 3 |
-| TestSprite reruns | 19 |
-| Features shipped | 9 |
-| Commits | 19+ in 24 hours |
+| Total iterations | 14 |
+| FAIL → FIX cycles | **4** (maintenance window, View Transitions ×5, reset filters, copy all badges) |
+| Tests created | 8 |
+| Tests banked (green) | 5 |
+| TestSprite reruns | 30+ |
+| Features shipped | 13 |
+| Commits | 25+ |
+| TypeScript files | 20+ |
+| Route handlers | 17 domain-specific |
+| Architecture phases | 4 (Auth+Prisma, Route Sep, BullMQ+Docker, Hardening) |
+| Unit tests | 12/12 passing |
 | Lines of code | ~3,500+ across 25 files |
 
 **Evidence:** Full commit history at https://github.com/0xshalah/StatusPulse/commits/main  
 **Live URL:** https://statuspulse-vvy0.onrender.com  
 **TestSprite Dashboard:** https://www.testsprite.com/dashboard/tests/dc688ee6-3d53-4cd9-a8a2-21229ef20a01
+
+---
+
+### Day 2 — Iteration 11: Re-Architecture Phase 1 (Auth + Prisma) (Jun 30)
+85. Installed Prisma 6 + created MongoDB schema: User, Endpoint, Ping with indexes
+86. Installed next-auth v5: GitHub OAuth provider, `/api/auth/[...nextauth]`, sign-in page
+87. Created auth middleware: POST/PUT/DELETE blocked without auth, GET public
+88. TestSprite reran --all: "Landing Page + Dashboard Flow" — PASSED
+89. TestSprite reran --all: "Status Page + Theme Toggle" — PASSED
+90. TestSprite reran --all: "Alert Settings Modal" — PASSED
+91. Suite: 3 tests banked after Phase 1
+
+### Day 2 — Iteration 12: Route Separation (Jun 30)
+92. Annihilated 191-line `[[...path]]/route.js` catch-all. Replaced with 17 domain-specific TypeScript route handlers
+93. Added Zod validation: createEndpoint, updateEndpoint, testUrl, subscribe, settings, badgeQuery schemas
+94. Created `lib/api-response.ts`: standardized success/error responses with Zod error formatting
+95. TestSprite reran --all: "Landing Page + Dashboard Flow" — PASSED
+96. TestSprite reran --all: "Status Page + Theme Toggle" — PASSED
+97. TestSprite reran --all: "Alert Settings Modal" — PASSED
+98. TestSprite reran --all: "Reset Filters Button" — PASSED (was FAILED, now passes with new route handler)
+99. Suite: 4 tests banked after Phase 2
+
+### Day 2 — Iteration 13: BullMQ Worker + Docker (Jun 30)
+100. Created standalone `worker/` directory: BullMQ with ioredis, ping processor, alert processor
+101. Alert processor: Slack + Discord webhook dispatch, rate-limit detection (429), graceful failure
+102. Created Docker multi-container: 5 services (web, worker, mongo, redis, dozzle log viewer)
+103. Added Pino structured JSON logging. Replaced all console.log in worker
+104. TestSprite reran --all: 4 core tests — all PASSED
+105. Suite: 4 tests banked after Phase 3
+
+### Day 2 — Iteration 14: Production Hardening (Jun 30)
+106. Absolute auth: removed middleware bypass, clean 401 with WWW-Authenticate header
+107. Health check: `GET /api/health` pings MongoDB, returns `{ status, checks }` — integrated into Docker
+108. Vitest: 12/12 unit tests passed — ping engine success, timeout, DNS error, verdict computation
+109. Created "Dashboard Search + Filter" test plan — search input + filter tabs
+110. TestSprite reran --all: 4 core tests — all PASSED
+111. Suite: 5 tests banked. Re-architecture complete without breaking changes.

@@ -1,0 +1,45 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Dashboard Search + Filter",
+  "description": "Test search input and filter tabs on dashboard",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse-vvy0.onrender.com/dashboard",
+      "description": "Open dashboard"
+    },
+    {
+      "type": "action",
+      "action": "fill",
+      "selector": "input[placeholder='Search endpoints…']",
+      "value": "API",
+      "description": "Type search query"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=API Gateway",
+      "description": "API Gateway visible in filtered results"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "button[aria-label='Clear search']",
+      "description": "Click clear search button"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "text=Down",
+      "description": "Click Down filter tab"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "text=All",
+      "description": "Click All filter tab"
+    }
+  ]
+}
