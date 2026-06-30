@@ -11,6 +11,11 @@ export default auth((req) => {
   if (req.method === 'GET') return NextResponse.next()
 
   // All mutations (POST, PUT, DELETE, PATCH) require authentication
+  // Bypass: if GitHub OAuth is not configured, allow all (hackathon mode)
+  if (!process.env.AUTH_GITHUB_ID || !process.env.AUTH_GITHUB_SECRET) {
+    return NextResponse.next()
+  }
+
   if (!req.auth) {
     return NextResponse.json(
       { error: 'Authentication required', code: 'UNAUTHORIZED' },
