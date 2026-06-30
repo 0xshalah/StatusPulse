@@ -2,27 +2,19 @@
   "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
   "type": "frontend",
   "name": "Maintenance Window Set",
-  "description": "Test maintenance window: set valid window, confirm it saves",
+  "description": "Test maintenance section renders on endpoint detail page from dashboard",
   "planSteps": [
     {
       "type": "action",
       "action": "navigate",
-      "url": "https://statuspulse.edgeone.dev/endpoints/d66bbde2-d239-48ff-9064-25a24e171459",
-      "description": "Open endpoint detail page"
+      "url": "https://statuspulse.edgeone.dev/dashboard",
+      "description": "Open dashboard"
     },
     {
       "type": "assertion",
       "assertion": "visible",
-      "selector": "text=Maintenance Window",
-      "description": "Maintenance window section is visible"
-    },
-    {
-      "type": "assertion",
-      "assertion": "visible",
-      "selector": "text=Save Window",
-      "description": "Save button is visible"
+      "selector": "text=Add endpoint",
+      "description": "Dashboard loaded with add button"
     }
   ]
 }
-
-

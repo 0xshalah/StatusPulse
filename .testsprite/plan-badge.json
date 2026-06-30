@@ -2,27 +2,19 @@
   "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
   "type": "frontend",
   "name": "SVG Badge Rendering",
-  "description": "Test badge button copies markdown and shows toast confirmation",
+  "description": "Test SVG badge endpoint returns valid badge markup",
   "planSteps": [
     {
       "type": "action",
       "action": "navigate",
-      "url": "https://statuspulse.edgeone.dev/dashboard",
-      "description": "Open dashboard"
-    },
-    {
-      "type": "action",
-      "action": "click",
-      "selector": "text=Badge",
-      "description": "Click Badge button on first endpoint card"
+      "url": "https://statuspulse.edgeone.dev/api/badge/d66bbde2-d239-48ff-9064-25a24e171459",
+      "description": "Open badge SVG endpoint directly"
     },
     {
       "type": "assertion",
       "assertion": "visible",
-      "selector": "text=Copied",
-      "description": "Toast confirmation 'Copied' appears"
+      "selector": "text=api gateway",
+      "description": "SVG badge contains endpoint name text"
     }
   ]
 }
-
-

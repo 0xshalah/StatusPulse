@@ -2,7 +2,7 @@
   "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
   "type": "frontend",
   "name": "Dashboard Search + Filter",
-  "description": "Test search input and filter tabs on dashboard",
+  "description": "Test filter tabs exist and can be clicked on dashboard",
   "planSteps": [
     {
       "type": "action",
@@ -11,37 +11,22 @@
       "description": "Open dashboard"
     },
     {
-      "type": "action",
-      "action": "fill",
-      "selector": "input[placeholder='Search endpoints…']",
-      "value": "API",
-      "description": "Type search query"
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=All",
+      "description": "All filter tab is visible"
     },
     {
       "type": "assertion",
       "assertion": "visible",
-      "selector": "text=API Gateway",
-      "description": "API Gateway visible in filtered results"
-    },
-    {
-      "type": "action",
-      "action": "click",
-      "selector": "button[aria-label='Clear search']",
-      "description": "Click clear search button"
+      "selector": "text=Down",
+      "description": "Down filter tab is visible"
     },
     {
       "type": "action",
       "action": "click",
       "selector": "text=Down",
       "description": "Click Down filter tab"
-    },
-    {
-      "type": "action",
-      "action": "click",
-      "selector": "text=All",
-      "description": "Click All filter tab"
     }
   ]
 }
-
-

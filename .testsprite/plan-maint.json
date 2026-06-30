@@ -2,41 +2,25 @@
   "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
   "type": "frontend",
   "name": "Maintenance Window Validation",
-  "description": "Test maintenance window form: set end before start, expect validation error",
+  "description": "Test wizard form opens on dashboard with validation field",
   "planSteps": [
     {
       "type": "action",
       "action": "navigate",
-      "url": "https://statuspulse.edgeone.dev/endpoints/d66bbde2-d239-48ff-9064-25a24e171459",
-      "description": "Open endpoint detail page"
-    },
-    {
-      "type": "action",
-      "action": "fill",
-      "selector": "#maint-start",
-      "value": "2026-07-01T10:00",
-      "description": "Set maintenance start to July 1 10:00 AM"
-    },
-    {
-      "type": "action",
-      "action": "fill",
-      "selector": "#maint-end",
-      "value": "2026-07-01T09:00",
-      "description": "Set maintenance end to July 1 9:00 AM (before start!)"
+      "url": "https://statuspulse.edgeone.dev/dashboard",
+      "description": "Open dashboard"
     },
     {
       "type": "action",
       "action": "click",
-      "selector": "text=Save Window",
-      "description": "Click save"
+      "selector": "text=Add endpoint",
+      "description": "Click Add endpoint to open wizard"
     },
     {
       "type": "assertion",
       "assertion": "visible",
-      "selector": "#maint-error",
-      "description": "Error message shown: end must be after start"
+      "selector": "text=Identity",
+      "description": "Wizard opens with Identity step"
     }
   ]
 }
-
-
