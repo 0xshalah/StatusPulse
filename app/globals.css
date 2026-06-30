@@ -101,6 +101,20 @@
     -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 100%);
     mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, #000 35%, transparent 100%);
   }
+  /* Focus visible ring for keyboard navigation */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* Reduced motion — respect user preference */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
   /* View Transitions API — theme toggle circle animation */
   ::view-transition-old(root),
   ::view-transition-new(root) {
