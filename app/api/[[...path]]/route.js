@@ -125,58 +125,6 @@ async function handler(request, { params }) {
       }
     }
 
-    if (route === '/dashboard' && method === 'GET') return cors(NextResponse.json(await M.getDashboard(db)), 10)
-    if (route === '/status' && method === 'GET') return cors(NextResponse.json(await M.getStatus(db)), 15)
-
-    // SSE real-time stream
-    if (route === '/sse/status' && method === 'GET') {
-      const encoder = new TextEncoder()
-      const stream = new ReadableStream({
-        async start(controller) {
-          let closed = false
-          const send = async () => {
-            if (closed) return
-            try {
-              const data = await M.getDashboard(db)
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
-            } catch (e) {}
-          }
-          await send()
-          const iv = setInterval(send, 5000)
-          request.signal.addEventListener('abort', () => {
-            closed = true
-            clearInterval(iv)
-            try { controller.close() } catch (e) {}
-          })
-        },
-      })
-      return new NextResponse(stream, {
-        headers: {
-          'Content-Type': 'text/event-stream; charset=utf-8',
-          'Cache-Control': 'no-cache, no-transform',
-          Connection: 'keep-alive',
-          'X-Accel-Buffering': 'no',
-        },
-      })
-    }
-
-    // SVG badge with variants
-    if (path[0] === 'badge' && path[1] && method === 'GET') {
-      const url = new URL(request.url)
-      const style = url.searchParams.get('style') || 'flat'
-      const metric = url.searchParams.get('metric') || 'status'
-      const icon = url.searchParams.get('icon') === 'true' || url.searchParams.get('icon') === '1'
-      const svg = await M.badgeForEndpoint(db, path[1], { style, metric, icon })
-      return new NextResponse(svg, {
-        status: 200,
-        headers: {
-          'Content-Type': 'image/svg+xml; charset=utf-8',
-          'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=120',
-          'Access-Control-Allow-Origin': '*',
-        },
-      })
-    }
-
     return cors(NextResponse.json({ error: `Route ${route} not found` }, { status: 404 }))
   } catch (error) {
     console.error('API Error:', error.message)
