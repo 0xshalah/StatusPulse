@@ -204,6 +204,10 @@ export default function LandingClient() {
   }, [])
   const dashEndpoints = liveData?.endpoints
   const dashHealth = liveData?.health
+
+  const totalEndpoints = dashEndpoints?.length || 5
+  const successRate = dashEndpoints ? dashEndpoints.reduce((a, e) => a + (e.verdict !== 'down' ? 1 : 0), 0) / totalEndpoints * 100 : 99.9
+  const checksPerDay = totalEndpoints * (1440 / 60) // 60s interval
   return (
     <div className="min-h-screen bg-background">
       <ScrollProgress />
