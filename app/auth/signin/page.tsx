@@ -1,5 +1,6 @@
 import { Github, AlertTriangle, Shield, Lock, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import SignInButton from '@/components/auth/SignInButton'
 
 export default function SignIn() {
   const gitHubConfigured = !!(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET)
@@ -99,22 +100,9 @@ export default function SignIn() {
                 <h2 className="font-display text-2xl font-bold">Welcome back</h2>
                 <p className="mt-2 text-sm text-muted-foreground">Sign in to your account to continue</p>
               </div>
-              <form
-                action={async () => {
-                  'use server'
-                  const { signIn } = await import('@/auth')
-                  await signIn('github', { redirectTo: '/dashboard' })
-                }}
-                className="mt-8"
-              >
-                <button
-                  type="submit"
-                  className="group relative inline-flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl bg-[#24292e] px-6 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#2f363d] hover:shadow-[0_8px_30px_-8px_rgba(36,41,46,0.6)] active:scale-[0.98]"
-                >
-                  <Github className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-                  Sign in with GitHub
-                </button>
-              </form>
+              <div className="mt-8">
+                <SignInButton />
+              </div>
               <div className="mt-6 space-y-3">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Shield className="h-3.5 w-3.5 text-status-up" />
