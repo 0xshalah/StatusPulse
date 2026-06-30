@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Plus, Search, RotateCcw, ServerCrash, Radio, Bell, X, Code2 } from 'lucide-react'
+import { Plus, Search, RotateCcw, ServerCrash, Radio, Bell, X, Code2, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'
 import HealthScore from '@/components/statuspulse/HealthScore'
@@ -33,23 +33,43 @@ function App() {
     }
   }, [])
 
-  useEffect(() => { api('/dashboard').then(onData).catch(() => setLoading(false)) }, [onData])
-  useStatusStream(onData) // SSE real-time (polling fallback built-in)
+  useEffect(() => {
+    let cancelled = false
+    async function fetchWithRetry(attempt = 0) {
+      try {
+        const res = await api('/dashboard')
+        if (!cancelled) { onData(res); setLoading(false) }
+      } catch (e) {
+        if (!cancelled && attempt < 3) {
+          setTimeout(() => fetchWithRetry(attempt + 1), attempt * 1500)
+        } else if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+    fetchWithRetry()
+    return () => { cancelled = true }
+  }, [onData])
+  useStatusStream(onData)
+
+  const load = useCallback(async () => {
+    try { onData(await api('/dashboard')); setLoading(false) } catch { setLoading(false) }
+  }, [onData])
 
   const reseed = async () => {
-    try { await api('/reset', { method: 'POST' }); onData(await api('/dashboard')); toast.success('Demo data reset') }
+    try { await api('/reset', { method: 'POST' }); await load(); toast.success('Demo data reset') }
     catch { toast.error('Reset failed') }
   }
   const handleDelete = async (ep) => {
-    try { await api(`/endpoints/${ep.id}`, { method: 'DELETE' }); toast.success(`Deleted ${ep.name}`); onData(await api('/dashboard')) }
+    try { await api(`/endpoints/${ep.id}`, { method: 'DELETE' }); toast.success(`Deleted ${ep.name}`); load() }
     catch { toast.error('Delete failed') }
   }
   const handlePause = async (ep) => {
-    try { await api(`/endpoints/${ep.id}/pause`, { method: 'POST', body: JSON.stringify({ paused: !ep.paused }) }); toast.success(ep.paused ? 'Resumed' : 'Paused'); onData(await api('/dashboard')) }
+    try { await api(`/endpoints/${ep.id}/pause`, { method: 'POST', body: JSON.stringify({ paused: !ep.paused }) }); toast.success(ep.paused ? 'Resumed' : 'Paused'); load() }
     catch { toast.error('Action failed') }
   }
   const handleTest = async (ep) => {
-    await api(`/endpoints/${ep.id}/test`, { method: 'POST' }); onData(await api('/dashboard'))
+    await api(`/endpoints/${ep.id}/test`, { method: 'POST' }); load()
   }
 
   const counts = useMemo(() => {
@@ -137,14 +157,32 @@ function App() {
 
         <div className="mt-6">
           {loading ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{[...Array(6)].map((_, i) => <div key={i} className="h-56 animate-pulse rounded-2xl border border-border bg-card" />)}</div>
-          ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-              <ServerCrash className="h-10 w-10 text-muted-foreground" />
-              <p className="mt-3 font-display text-lg font-semibold">No endpoints found</p>
-              <p className="mt-1 text-sm text-muted-foreground">{data.endpoints.length === 0 ? 'Add your first endpoint to start monitoring.' : 'Try a different search or filter.'}</p>
-              <Button className="mt-4 gap-1.5" onClick={() => { setEditing(null); setWizardOpen(true) }}><Plus className="h-4 w-4" /> Add endpoint</Button>
+            <div className="space-y-4">
+              <div className="flex items-center justify-center py-8">
+                <div className="flex flex-col items-center gap-3">
+                  <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                  <p className="font-mono text-sm text-muted-foreground">Connecting to server…</p>
+                  <Button variant="ghost" size="sm" onClick={load} className="text-xs text-muted-foreground">Retry</Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{[...Array(6)].map((_, i) => <div key={i} className="h-56 animate-pulse rounded-2xl border border-border bg-card" />)}</div>
             </div>
+          ) : filtered.length === 0 ? (
+            data.endpoints.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
+                <ServerCrash className="h-10 w-10 text-muted-foreground" />
+                <p className="mt-3 font-display text-lg font-semibold">No endpoints found</p>
+                <p className="mt-1 text-sm text-muted-foreground">Add your first endpoint to start monitoring.</p>
+                <Button className="mt-4 gap-1.5" onClick={() => { setEditing(null); setWizardOpen(true) }}><Plus className="h-4 w-4" /> Add endpoint</Button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
+                <Search className="h-10 w-10 text-muted-foreground" />
+                <p className="mt-3 font-display text-lg font-semibold">No matching endpoints</p>
+                <p className="mt-1 text-sm text-muted-foreground">Try a different search or filter.</p>
+                <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setFilter('all') }} className="mt-2 gap-1.5 text-xs"><RotateCcw className="h-3.5 w-3.5" /> Reset filters</Button>
+              </div>
+            )
           ) : (
             <motion.div layout className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               <AnimatePresence mode="popLayout">
@@ -159,7 +197,7 @@ function App() {
         </div>
       </div>
 
-      <AddEndpointWizard open={wizardOpen} onOpenChange={setWizardOpen} editing={editing} onSaved={async () => onData(await api('/dashboard'))} />
+      <AddEndpointWizard open={wizardOpen} onOpenChange={setWizardOpen} editing={editing} onSaved={load} />
       <AlertSettings open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   )

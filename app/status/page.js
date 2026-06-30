@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle2, AlertTriangle, XCircle, Clock, ArrowUpCircle, Bell, Wrench } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, XCircle, Clock, ArrowUpCircle, Bell, Wrench, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'
 import StatusDot from '@/components/statuspulse/StatusDot'
@@ -13,23 +13,42 @@ import { Input } from '@/components/ui/input'
 export default function StatusPage() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [email, setEmail] = useState('')
   const [subscribing, setSubscribing] = useState(false)
 
-  const load = async () => { try { setData(await api('/status')) } catch {} finally { setLoading(false) } }
+  const load = useCallback(async () => {
+    try { setData(await api('/status')); setError(false) } catch { setError(true) } finally { setLoading(false) }
+  }, [])
   useEffect(() => {
-    load()
-    let interval = 20000
-    let failCount = 0
-    let id
-    const poll = () => {
-      id = setTimeout(async () => {
-        try { await api('/status').then(setData); failCount = 0; interval = 20000 } catch { failCount++; interval = Math.min(120000, interval * 1.5) }
-        poll()
-      }, interval)
+    let cancelled = false
+    async function fetchWithRetry(attempt) {
+      attempt = attempt || 0
+      try {
+        var result = await api('/status')
+        if (!cancelled) { setData(result); setError(false); setLoading(false) }
+      } catch (e) {
+        if (!cancelled && attempt < 3) {
+          setTimeout(function () { fetchWithRetry(attempt + 1) }, attempt * 1500)
+        } else if (!cancelled) {
+          setError(true); setLoading(false)
+        }
+      }
     }
-    poll()
-    return () => clearTimeout(id)
+    fetchWithRetry()
+    var pollInterval = 20000
+    var failCount = 0
+    var timer
+    function doPoll() {
+      timer = setTimeout(async function () {
+        try {
+          if (!cancelled) { setData(await api('/status')); failCount = 0; pollInterval = 20000 }
+        } catch (e) { failCount++; pollInterval = Math.min(120000, pollInterval * 1.5) }
+        if (!cancelled) doPoll()
+      }, pollInterval)
+    }
+    setTimeout(doPoll, 20000)
+    return function () { cancelled = true; clearTimeout(timer) }
   }, [])
 
   const subscribe = async () => {
@@ -67,8 +86,19 @@ export default function StatusPage() {
       <div className="mx-auto max-w-[900px] px-4 py-10 sm:px-6">
         <h2 className="font-display text-lg font-semibold">Services</h2>
         <div className="mt-4 space-y-3">
-          {loading ? [...Array(5)].map((_, i) => <div key={i} className="h-28 animate-pulse rounded-2xl border border-border bg-card" />)
-            : data?.endpoints.map((ep, i) => {
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+              <p className="font-mono text-sm text-muted-foreground">Loading status data…</p>
+              {[...Array(3)].map((_, i) => <div key={i} className="h-20 w-full animate-pulse rounded-2xl border border-border bg-card" />)}
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-12 text-center">
+              <XCircle className="h-10 w-10 text-status-down" />
+              <p className="mt-3 font-display text-lg font-semibold">Failed to load status</p>
+              <Button variant="ghost" size="sm" onClick={load} className="mt-2 gap-1.5"><RefreshCw className="h-3.5 w-3.5" /> Retry</Button>
+            </div>
+          ) : data?.endpoints.map((ep, i) => {
               const s = statusOf(ep.verdict)
               return (
                 <motion.div key={ep.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} whileHover={{ y: -2, borderColor: 'rgba(225,86,124,0.3)' }} transition={{ delay: i * 0.05 }} className="rounded-2xl border border-border bg-card p-4 transition-colors">

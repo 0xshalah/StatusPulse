@@ -30,18 +30,34 @@ export default function EndpointDetail() {
     try { setD(await api(`/endpoints/${id}/detail`)) } catch { toast.error('Failed to load') } finally { setLoading(false) }
   }, [id])
   useEffect(() => {
-    load()
-    let interval = 10000
-    let failCount = 0
-    let id
-    const poll = () => {
-      id = setTimeout(async () => {
-        try { await api(`/endpoints/${id}/detail`).then(setD); failCount = 0; interval = 10000 } catch { failCount++; interval = Math.min(60000, interval * 1.5) }
-        poll()
-      }, interval)
+    var cancelled = false
+    async function fetchWithRetry(attempt) {
+      attempt = attempt || 0
+      try {
+        var detail = await api(`/endpoints/${id}/detail`)
+        if (!cancelled) { setD(detail); setLoading(false) }
+      } catch (e) {
+        if (!cancelled && attempt < 3) {
+          setTimeout(function () { fetchWithRetry(attempt + 1) }, attempt * 1500)
+        } else if (!cancelled) {
+          toast.error('Failed to load'); setLoading(false)
+        }
+      }
     }
-    poll()
-    return () => clearTimeout(id)
+    fetchWithRetry()
+    var pollInterval = 10000
+    var failCount = 0
+    var timer
+    function doPoll() {
+      timer = setTimeout(async function () {
+        try {
+          if (!cancelled) { setD(await api(`/endpoints/${id}/detail`)); failCount = 0; pollInterval = 10000 }
+        } catch (e) { failCount++; pollInterval = Math.min(60000, pollInterval * 1.5) }
+        if (!cancelled) doPoll()
+      }, pollInterval)
+    }
+    setTimeout(doPoll, 10000)
+    return function () { cancelled = true; clearTimeout(timer) }
   }, [load])
 
   if (loading) return <Shell><div className="h-96 animate-pulse rounded-2xl border border-border bg-card" /></Shell>
