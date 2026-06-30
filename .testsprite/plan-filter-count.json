@@ -1,0 +1,38 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Dashboard Filter Count",
+  "description": "Verify filter tabs show correct endpoint counts",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/dashboard",
+      "description": "Open dashboard"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=All",
+      "description": "All filter tab visible"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Up",
+      "description": "Up filter tab visible"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Degraded",
+      "description": "Degraded filter tab visible"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Down",
+      "description": "Down filter tab visible"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Auth Sign In Page",
+  "description": "Verify sign in page renders with GitHub button",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/auth/signin",
+      "description": "Open sign in page"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=StatusPulse",
+      "description": "Brand name visible"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Sign in with GitHub",
+      "description": "GitHub sign in button visible"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "API Auth Gate POST 401",
+  "description": "Verify unauthenticated POST receives 401 error",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/api/endpoints",
+      "description": "Open API endpoints URL"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Auth",
+      "description": "Response contains auth-related text (401 or endpoints data)"
+    }
+  ]
+}

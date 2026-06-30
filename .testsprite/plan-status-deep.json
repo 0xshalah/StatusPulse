@@ -1,0 +1,26 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Status Page Uptime Data",
+  "description": "Verify status page shows uptime percentages for services",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/status",
+      "description": "Open status page"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Services",
+      "description": "Services section exists"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Incident",
+      "description": "Incident timeline section exists"
+    }
+  ]
+}
