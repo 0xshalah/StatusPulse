@@ -96,10 +96,10 @@ function App() {
                   const base = typeof window !== 'undefined' ? window.location.origin : ''
                   const badges = data.endpoints.map((ep) => `![${ep.name}](${base}/api/badge/${ep.id})`).join('\n')
                   navigator.clipboard.writeText(badges).then(
-                    () => toast.success(`Copied ${data.endpoints.length} badge(s)`),
+                    () => toast.success(`Copied ${data.endpoints.length} badge markdown(s)`),
                     () => toast.error('Copy failed')
                   )
-                }} className="gap-1.5 text-muted-foreground"><Code2 className="h-3.5 w-3.5" /> Copy all badges</Button>
+                }} className="gap-1.5 text-muted-foreground"><Code2 className="h-3.5 w-3.5" /> Copy badge markdown (all)</Button>
               </div>
             </div>
             <div className="lg:w-[360px]"><HealthScore health={data.health} lastPing={lastSweep ? timeAgo(lastSweep) : null} /></div>
