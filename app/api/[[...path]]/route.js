@@ -75,18 +75,6 @@ async function handler(request, { params }) {
       }
     }
 
-    // Server-side cron (Vercel Cron or in-process scheduler calls this)
-    if (route === '/cron/ping' && (method === 'POST' || method === 'GET')) {
-      const res = await M.runDueChecks(db)
-      return cors(NextResponse.json({ ok: true, ...res }))
-    }
-    // legacy/manual full sweep
-    if (route === '/ping-all' && method === 'POST') {
-      const eps = await db.collection('endpoints').find({}).toArray()
-      await Promise.allSettled(eps.map((e) => M.pingOneNow(db, e.id)))
-      return cors(NextResponse.json({ pinged: eps.length, total: eps.length }))
-    }
-
     // Wizard helpers
     if (route === '/test-url' && method === 'POST') {
       const b = await request.json()

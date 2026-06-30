@@ -7,7 +7,9 @@
         "dev:no-reload": "next dev --hostname 0.0.0.0 --port 3000",
         "dev:webpack": "next dev --hostname 0.0.0.0 --port 3000",
         "build": "next build",
-        "start": "next start"
+        "build:worker": "tsup",
+        "start": "next start",
+        "start:worker": "node dist/worker/index.js"
     },
     "dependencies": {
         "@hookform/resolvers": "5.1.1",
@@ -42,6 +44,7 @@
         "@tanstack/react-query": "5.56.2",
         "@tanstack/react-table": "8.21.3",
         "axios": "1.16.0",
+        "bullmq": "^5.79.2",
         "class-variance-authority": "0.7.1",
         "clsx": "2.1.1",
         "cmdk": "1.1.1",
@@ -50,6 +53,7 @@
         "embla-carousel-react": "8.6.0",
         "framer-motion": "11.18.0",
         "input-otp": "1.4.2",
+        "ioredis": "^5.11.1",
         "lodash": "4.18.1",
         "lucide-react": "0.516.0",
         "mongodb": "6.6.0",
@@ -79,6 +83,7 @@
         "globals": "16.2.0",
         "postcss": "8",
         "tailwindcss": "3.4.1",
+        "tsup": "^8.5.1",
         "typescript": "5.8.2"
     },
     "resolutions": {

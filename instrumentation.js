@@ -26,8 +26,6 @@ export async function register() {
   }
   setTimeout(boot, 3000)
 
-  // Interval-aware due-check sweep (each endpoint pinged per its own interval)
-  setInterval(() => post('/api/cron/ping'), 20000)
   // Daily rollup recompute
   setInterval(() => post('/api/rollups'), 10 * 60 * 1000)
 }
