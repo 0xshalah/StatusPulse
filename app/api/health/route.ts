@@ -1,11 +1,11 @@
-import { db } from '@/lib/db'
-import { apiError } from '@/lib/api-response'
+import * as M from '@/lib/monitor'
 
 export async function GET() {
   const checks: Record<string, string> = {}
 
   try {
-    await db.$runCommandRaw({ ping: 1 })
+    const db = await M.connect()
+    await db.command({ ping: 1 })
     checks.database = 'ok'
   } catch {
     checks.database = 'error'
