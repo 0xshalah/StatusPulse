@@ -1,0 +1,26 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "SVG Badge Rendering",
+  "description": "Test badge button copies markdown and shows toast confirmation",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse-vvy0.onrender.com/dashboard",
+      "description": "Open dashboard"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "text=Badge",
+      "description": "Click Badge button on first endpoint card"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Copied",
+      "description": "Toast confirmation 'Copied' appears"
+    }
+  ]
+}

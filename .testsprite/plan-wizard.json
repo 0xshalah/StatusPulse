@@ -1,0 +1,38 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Endpoint Creation Validation",
+  "description": "Test add-endpoint wizard opens, shows validation on empty fields, can be closed",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse-vvy0.onrender.com/dashboard",
+      "description": "Open dashboard"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "text=Add endpoint",
+      "description": "Click Add endpoint button"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Identity",
+      "description": "Wizard opens with Identity step visible"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "button[aria-label='Close']",
+      "description": "Close wizard"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Monitor every endpoint",
+      "description": "Dashboard is visible after wizard close"
+    }
+  ]
+}
