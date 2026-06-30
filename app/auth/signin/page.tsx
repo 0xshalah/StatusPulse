@@ -1,10 +1,12 @@
 import { Github, AlertTriangle, Shield, Lock, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import SignInButton from '@/components/auth/SignInButton'
 
 export const dynamic = 'force-dynamic'
 
 export default function SignIn() {
+  headers() // Force runtime evaluation of process.env
   const gitHubConfigured = !!(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET)
 
   return (
