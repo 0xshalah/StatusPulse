@@ -1,0 +1,20 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "API 404 Error Handling",
+  "description": "Test GET nonexistent endpoint returns 404",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/api/endpoints/nonexistent-id-12345",
+      "description": "Open nonexistent endpoint"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=not found",
+      "description": "Response contains 'not found' error"
+    }
+  ]
+}

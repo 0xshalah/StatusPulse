@@ -1,0 +1,20 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "API Badge SVG",
+  "description": "Test GET /api/badge/:id returns valid SVG",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/api/badge/d66bbde2-d239-48ff-9064-25a24e171459",
+      "description": "Open badge endpoint"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=api gateway",
+      "description": "SVG contains endpoint name"
+    }
+  ]
+}
