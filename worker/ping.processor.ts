@@ -14,6 +14,7 @@ export async function pingProcessor(job: Job<PingJobData>) {
   const ep = await db.endpoint.findUnique({ where: { id: endpointId } })
   if (!ep || ep.paused) return { skipped: true, reason: ep ? 'paused' : 'not_found' }
 
+  const prevVerdict = ep.lastVerdict || 'unknown'
   const result = await pingWithRetry(url, expectedStatus)
   const { verdict, consecutive } = computeVerdict(result, expectedStatus, ep.consecutiveFailures)
 
@@ -37,5 +38,5 @@ export async function pingProcessor(job: Job<PingJobData>) {
     },
   })
 
-  return { endpointId, verdict, responseTime: result.responseTime, consecutive }
+  return { endpointId, verdict, previousVerdict: prevVerdict, responseTime: result.responseTime, consecutive, endpointName: ep.name }
 }

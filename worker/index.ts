@@ -1,12 +1,14 @@
 import { Queue, Worker } from 'bullmq'
 import { redis } from './redis'
 import { pingProcessor, type PingJobData } from './ping.processor'
+import { alertProcessor, type AlertJobData } from './alert.processor'
 import { db } from './prisma'
 import { createLogger } from '../lib/logger'
 
 const logger = createLogger('worker')
 
 const PING_QUEUE = 'statuspulse:pings'
+const ALERT_QUEUE = 'statuspulse:alerts'
 const SCHEDULER_INTERVAL = parseInt(process.env.SCHEDULER_INTERVAL || '20000', 10)
 
 export const pingQueue = new Queue<PingJobData>(PING_QUEUE, {
@@ -19,17 +21,52 @@ export const pingQueue = new Queue<PingJobData>(PING_QUEUE, {
   },
 })
 
+export const alertQueue = new Queue<AlertJobData>(ALERT_QUEUE, {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 2,
+    backoff: { type: 'exponential', delay: 2000 },
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 50 },
+  },
+})
+
 const pingWorker = new Worker<PingJobData>(PING_QUEUE, pingProcessor, {
   connection: redis,
   concurrency: 10,
 })
 
-pingWorker.on('completed', (job) => {
-  logger.info({ endpointId: job.data.endpointId, verdict: job.returnvalue?.verdict }, 'ping completed')
+const alertWorker = new Worker<AlertJobData>(ALERT_QUEUE, alertProcessor, {
+  connection: redis,
+  concurrency: 5,
+})
+
+pingWorker.on('completed', async (job) => {
+  const result = job.returnvalue as { endpointId: string; verdict: string; endpointName?: string; previousVerdict?: string; skipped?: boolean }
+  if (result?.skipped) return
+  logger.info({ endpointId: result.endpointId, verdict: result.verdict }, 'ping completed')
+
+  if (result.previousVerdict && result.verdict !== result.previousVerdict) {
+    await alertQueue.add(`alert:${result.endpointId}`, {
+      endpointId: result.endpointId,
+      endpointName: result.endpointName || job.data.url,
+      endpointUrl: job.data.url,
+      verdict: result.verdict,
+      previousVerdict: result.previousVerdict,
+    })
+  }
 })
 
 pingWorker.on('failed', (job, err) => {
   logger.error({ endpointId: job?.data.endpointId, error: err.message }, 'ping failed')
+})
+
+alertWorker.on('completed', (job) => {
+  logger.info({ endpointId: job.data.endpointId, sent: job.returnvalue?.sent }, 'alert processed')
+})
+
+alertWorker.on('failed', (job, err) => {
+  logger.error({ endpointId: job?.data.endpointId, error: err.message }, 'alert failed')
 })
 
 async function enqueueDueChecks() {
@@ -78,7 +115,9 @@ setInterval(enqueueDueChecks, SCHEDULER_INTERVAL)
 // Graceful shutdown
 async function shutdown() {
   logger.info('worker shutting down')
+  await alertWorker.close()
   await pingWorker.close()
+  await alertQueue.close()
   await pingQueue.close()
   await redis.quit()
   process.exit(0)
