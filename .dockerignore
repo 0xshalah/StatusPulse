@@ -1,0 +1,15 @@
+node_modules
+.next
+dist
+.git
+.env
+.env.local
+.gitignore
+*.md
+!README.md
+assets
+tests
+test_reports
+memory
+.emergent
+.playwright-mcp
