@@ -79,13 +79,23 @@ StatusPulse monitors your API endpoints in real-time. Add any HTTP(S) endpoint, 
 OpenCode + Emergent (Maker)  →  TestSprite CLI (Checker)  →  Failure Bundle  →  Fix  →  Rerun
 ```
 
+### Re-Architecture (4 Production Phases)
+After the initial hackathon build, the codebase underwent a complete re-architecture:
+1. **Phase 1 — Auth & Database:** Prisma 6 + MongoDB schema, next-auth v5 GitHub OAuth, auth middleware
+2. **Phase 2 — Route Separation:** Annihilated 191-line catch-all → 17 TypeScript domain handlers with Zod validation
+3. **Phase 3 — Background Workers:** BullMQ standalone worker with ping + alert processors, detached from Next.js
+4. **Phase 4 — Production Hardening:** Docker 5-service deployment, Pino structured logging, health checks, Vitest unit tests, absolute auth enforcement
+
 | Metric | Count |
 |--------|:---:|
-| Iterations | 10 |
+| Iterations | 14 |
 | FAIL → FIX cycles | 4 |
-| Tests created | 7 |
-| TestSprite reruns | 19 |
-| Commits | 19+ |
+| Tests created | 10 |
+| Tests banked | 7 |
+| TestSprite reruns | 30+ |
+| Commits | 25+ |
+| TypeScript route handlers | 17 |
+| Architecture phases | 4 |
 
 **FAIL→FIX highlights:**
 1. Maintenance Window — form saved with `end < start` (no validation) → caught → added `end > start` check
@@ -93,7 +103,7 @@ OpenCode + Emergent (Maker)  →  TestSprite CLI (Checker)  →  Failure Bundle 
 3. Reset Filters — button only cleared search, forgot filter dropdown → one-line `setFilter('all')` fix
 4. Copy All Badges — button labeled "Copy ALL" but only copied first endpoint → added `.map().join()` loop
 
-📋 **Full verification log:** [LOOP.md](./LOOP.md) (84 entries)
+📋 **Full verification log:** [LOOP.md](./LOOP.md) (111 entries)
 
 ---
 

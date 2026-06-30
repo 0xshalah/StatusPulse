@@ -171,16 +171,17 @@
 
 | Metric | Count |
 |--------|:---:|
-| Total iterations | 14 |
+| Total iterations | 15 |
 | FAIL → FIX cycles | **4** (maintenance window, View Transitions ×5, reset filters, copy all badges) |
-| Tests created | 8 |
-| Tests banked (green) | 5 |
+| Tests created | 10 |
+| Tests banked (green) | 7 |
 | TestSprite reruns | 30+ |
-| Features shipped | 13 |
+| Features shipped | 15 |
 | Commits | 25+ |
 | TypeScript files | 20+ |
 | Route handlers | 17 domain-specific |
 | Architecture phases | 4 (Auth+Prisma, Route Sep, BullMQ+Docker, Hardening) |
+| CI/CD | ✅ GitHub Actions gate |
 | Unit tests | 12/12 passing |
 | Lines of code | ~3,500+ across 25 files |
 
@@ -224,3 +225,11 @@
 109. Created "Dashboard Search + Filter" test plan — search input + filter tabs
 110. TestSprite reran --all: 4 core tests — all PASSED
 111. Suite: 5 tests banked. Re-architecture complete without breaking changes.
+
+### Day 2 — Iteration 15: CI/CD + Test Maximization (Jun 30)
+112. Verified `.github/workflows/testsprite.yml` — triggers on push + PR, ubuntu-latest, Node 20, runs `test run --all`, uploads failure artifacts
+113. Created "Endpoint Creation Validation" test — wizard open/close, form visibility. TestSprite ran (test_284ccfda) — PASSED
+114. Created "SVG Badge Rendering" test — click badge button, verify toast confirmation. TestSprite ran — PASSED
+115. Maintenance Window Set + Validation now PASSED after re-architecture deploy to Render
+116. README updated: added 4-phase re-architecture summary, updated counts to 14 iterations/10 tests/7 banked/30+ reruns
+117. Suite: 7 tests banked. CI/CD gate active.
