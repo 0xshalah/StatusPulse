@@ -7,7 +7,7 @@
     {
       "type": "action",
       "action": "navigate",
-      "url": "https://statuspulse-vvy0.onrender.com/dashboard",
+      "url": "https://statuspulse.edgeone.dev/dashboard",
       "description": "Open dashboard"
     },
     {
@@ -48,3 +48,5 @@
     }
   ]
 }
+
+

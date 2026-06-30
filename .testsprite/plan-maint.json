@@ -7,7 +7,7 @@
     {
       "type": "action",
       "action": "navigate",
-      "url": "https://statuspulse-vvy0.onrender.com/endpoints/d9eea9eb-8106-4c9d-80c8-990b46846fc6",
+      "url": "https://statuspulse.edgeone.dev/endpoints/d66bbde2-d239-48ff-9064-25a24e171459",
       "description": "Open endpoint detail page"
     },
     {
@@ -38,3 +38,5 @@
     }
   ]
 }
+
+

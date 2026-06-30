@@ -7,7 +7,7 @@
     {
       "type": "action",
       "action": "navigate",
-      "url": "https://statuspulse-vvy0.onrender.com/status",
+      "url": "https://statuspulse.edgeone.dev/status",
       "description": "Open public status page"
     },
     {
@@ -19,7 +19,7 @@
     {
       "type": "action",
       "action": "navigate",
-      "url": "https://statuspulse-vvy0.onrender.com/dashboard",
+      "url": "https://statuspulse.edgeone.dev/dashboard",
       "description": "Return to dashboard"
     },
     {
@@ -36,3 +36,5 @@
     }
   ]
 }
+
+
