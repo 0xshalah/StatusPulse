@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import SignInButton from '@/components/auth/SignInButton'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export default function SignIn() {
   headers() // Force runtime evaluation of process.env
