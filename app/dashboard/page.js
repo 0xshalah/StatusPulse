@@ -10,6 +10,7 @@ import EndpointCard from '@/components/statuspulse/EndpointCard'
 import AddEndpointWizard from '@/components/statuspulse/AddEndpointWizard'
 import AlertSettings from '@/components/statuspulse/SlackSettings'
 import TestSpriteWidget from '@/components/statuspulse/TestSpriteWidget'
+import LoopControl from '@/components/statuspulse/LoopControl'
 import LoopDiagram from '@/components/statuspulse/LoopDiagram'
 import { useStatusStream } from '@/hooks/useStatusStream'
 import { api, timeAgo } from '@/lib/statuspulse'
@@ -130,6 +131,7 @@ function App() {
             </div>
             <div className="lg:w-[360px] space-y-4">
               <HealthScore health={data.health} lastPing={lastSweep ? timeAgo(lastSweep) : null} />
+              <LoopControl projectId="dc688ee6-3d53-4cd9-a8a2-21229ef20a01" />
               <TestSpriteWidget />
               <LoopDiagram />
             </div>
