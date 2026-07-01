@@ -79,10 +79,6 @@ export default function StatusPage() {
               <Input type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} className="flex-1" />
               <Button onClick={subscribe} disabled={subscribing || !email} className="gap-1.5"><Bell className="h-4 w-4" /> Get alerts</Button>
             </div>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-lime/30 bg-lime/10 px-3 py-1 text-[11px] font-medium text-lime">
-              <ShieldCheck className="h-3 w-3" />
-              Verified by TestSprite CLI · 17 test plans · CI/CD gated
-            </div>
           </motion.div>
         </div>
       </div>

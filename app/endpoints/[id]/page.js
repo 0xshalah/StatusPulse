@@ -179,6 +179,61 @@ export default function EndpointDetail() {
         )}
       </div>
 
+      {d.verdict === 'down' && (
+        <div className="mt-6 rounded-2xl border border-primary/30 bg-primary/5 p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-display text-lg font-semibold flex items-center gap-2">
+                Deep Verify with TestSprite
+                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary">Innovation</span>
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                StatusPulse detected this endpoint is down. TestSprite CLI can provide deeper analysis that ping monitoring alone cannot.
+              </p>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="flex items-start gap-2 rounded-lg bg-card/60 p-3">
+                  <span className="mt-0.5 text-xs">📸</span>
+                  <div>
+                    <p className="text-xs font-semibold">Browser Screenshot</p>
+                    <p className="text-[11px] text-muted-foreground">See exactly what users see when your endpoint fails</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 rounded-lg bg-card/60 p-3">
+                  <span className="mt-0.5 text-xs">🧬</span>
+                  <div>
+                    <p className="text-xs font-semibold">DOM Snapshot</p>
+                    <p className="text-[11px] text-muted-foreground">Readable DOM structure at point of failure</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 rounded-lg bg-card/60 p-3">
+                  <span className="mt-0.5 text-xs">🎯</span>
+                  <div>
+                    <p className="text-xs font-semibold">Root Cause</p>
+                    <p className="text-[11px] text-muted-foreground">AI-powered analysis of what broke and why</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 rounded-lg bg-card/60 p-3">
+                  <span className="mt-0.5 text-xs">🔧</span>
+                  <div>
+                    <p className="text-xs font-semibold">Fix Suggestion</p>
+                    <p className="text-[11px] text-muted-foreground">Actionable code-level fix for your agent</p>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-4 font-mono text-[11px] text-muted-foreground">
+                From terminal: <code className="rounded bg-muted px-1">testsprite test create --project dc688ee6 --plan-from plan.json --run --wait</code>
+                <br />→ returns one self-consistent failure bundle your agent can act on.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <AddEndpointWizard open={wizardOpen} onOpenChange={setWizardOpen} editing={ep} onSaved={load} />
     </Shell>
   )

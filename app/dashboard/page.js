@@ -107,10 +107,6 @@ function App() {
                 <span className={`h-1.5 w-1.5 rounded-full ${data.health.down === 0 ? 'bg-lime animate-pulse' : 'bg-status-down animate-pulse'}`} />
                 {data.health.down === 0 ? 'All systems operational' : `${data.health.down} endpoint(s) down`}
               </div>
-              <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-lime/30 bg-lime/10 px-3 py-1 text-[11px] font-medium text-lime">
-                <ShieldCheck className="h-3 w-3" />
-                Verified by TestSprite CLI · 17 test plans · CI/CD gated
-              </div>
               <h1 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl">
                 Monitor every endpoint.<br /><span className="text-primary">Catch incidents</span> before users do.
               </h1>
