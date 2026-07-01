@@ -8,6 +8,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.AUTH_GITHUB_SECRET || '',
     }),
   ],
+  secret: process.env.AUTH_SECRET || 'statuspulse-fallback-secret-change-in-production',
   callbacks: {
     session({ session }) {
       return session
