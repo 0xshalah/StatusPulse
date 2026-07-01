@@ -55,8 +55,8 @@ export default function SignIn() {
       </div>
 
       {/* Right: Logo top, form centered below */}
-      <div className="flex flex-1 flex-col items-center px-6 pt-24 gap-8">
-        <Link href="/" className="flex items-center justify-center gap-3 lg:hidden">
+      <div className="flex flex-1 flex-col items-center px-6">
+        <Link href="/" className="mt-24 mb-8 flex items-center justify-center gap-3 lg:hidden">
           <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
