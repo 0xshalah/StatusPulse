@@ -1,4 +1,4 @@
-import { Github, Shield, Lock } from 'lucide-react'
+import { Shield, Lock } from 'lucide-react'
 import Link from 'next/link'
 import SignInButton from '@/components/auth/SignInButton'
 

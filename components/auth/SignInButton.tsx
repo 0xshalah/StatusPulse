@@ -1,19 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import { signIn } from 'next-auth/react'
 import { Github, Loader2 } from 'lucide-react'
 
 export default function SignInButton() {
   const [loading, setLoading] = useState(false)
 
-  const handleSignIn = async () => {
+  const handleSignIn = () => {
     setLoading(true)
-    try {
-      const { signIn } = await import('@/auth')
-      await signIn('github', { redirectTo: '/dashboard' })
-    } catch {
-      setLoading(false)
-    }
+    signIn('github', { callbackUrl: '/dashboard' })
   }
 
   return (
