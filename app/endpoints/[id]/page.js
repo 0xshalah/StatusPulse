@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Gauge, Activity, Timer, Zap, Pause, Play, Pencil, Trash2, CalendarClock, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Gauge, Activity, Timer, Zap, Pause, Play, Pencil, Trash2, CalendarClock, ChevronRight, Shield, Loader2, ExternalLink, CheckCircle2, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'
 import StatusDot from '@/components/statuspulse/StatusDot'
@@ -25,6 +25,24 @@ export default function EndpointDetail() {
   const [maintStart, setMaintStart] = useState('')
   const [maintEnd, setMaintEnd] = useState('')
   const [maintError, setMaintError] = useState('')
+  const [verifying, setVerifying] = useState(false)
+  const [verifyResult, setVerifyResult] = useState(null)
+
+  const deepVerify = async () => {
+    setVerifying(true)
+    setVerifyResult(null)
+    try {
+      const res = await fetch('/api/testsprite/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpointId: ep.id, url: ep.url }),
+      })
+      setVerifyResult(await res.json())
+    } catch (e) {
+      setVerifyResult({ error: 'Verification failed. Run testsprite CLI manually.' })
+    }
+    setVerifying(false)
+  }
 
   const load = useCallback(async () => {
     try { setD(await api(`/endpoints/${id}/detail`)) } catch { toast.error('Failed to load') } finally { setLoading(false) }
@@ -183,9 +201,7 @@ export default function EndpointDetail() {
         <div className="mt-6 rounded-2xl border border-primary/30 bg-primary/5 p-5">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
+              <Shield className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="font-display text-lg font-semibold flex items-center gap-2">
@@ -193,41 +209,73 @@ export default function EndpointDetail() {
                 <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary">Innovation</span>
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                StatusPulse detected this endpoint is down. TestSprite CLI can provide deeper analysis that ping monitoring alone cannot.
+                StatusPulse detected this endpoint is down. TestSprite provides deeper analysis — browser screenshots, DOM snapshots, root cause, and fix suggestions — that ping monitoring alone cannot.
               </p>
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="flex items-start gap-2 rounded-lg bg-card/60 p-3">
-                  <span className="mt-0.5 text-xs">📸</span>
-                  <div>
-                    <p className="text-xs font-semibold">Browser Screenshot</p>
-                    <p className="text-[11px] text-muted-foreground">See exactly what users see when your endpoint fails</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2 rounded-lg bg-card/60 p-3">
-                  <span className="mt-0.5 text-xs">🧬</span>
-                  <div>
-                    <p className="text-xs font-semibold">DOM Snapshot</p>
-                    <p className="text-[11px] text-muted-foreground">Readable DOM structure at point of failure</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2 rounded-lg bg-card/60 p-3">
-                  <span className="mt-0.5 text-xs">🎯</span>
-                  <div>
-                    <p className="text-xs font-semibold">Root Cause</p>
-                    <p className="text-[11px] text-muted-foreground">AI-powered analysis of what broke and why</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2 rounded-lg bg-card/60 p-3">
-                  <span className="mt-0.5 text-xs">🔧</span>
-                  <div>
-                    <p className="text-xs font-semibold">Fix Suggestion</p>
-                    <p className="text-[11px] text-muted-foreground">Actionable code-level fix for your agent</p>
-                  </div>
-                </div>
+
+              <div className="mt-4">
+                <button
+                  onClick={deepVerify}
+                  disabled={verifying}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[0_0_28px_-6px_rgba(225,86,124,0.6)] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {verifying ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Running TestSprite CLI…</>
+                  ) : (
+                    <><Shield className="h-4 w-4" /> Run Deep Verify</>
+                  )}
+                </button>
               </div>
+
+              {verifyResult && (
+                <div className="mt-4 rounded-xl bg-card/80 p-4">
+                  {verifyResult.verified ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        {verifyResult.status === 'passed' ? (
+                          <CheckCircle2 className="h-5 w-5 text-status-up" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-status-down" />
+                        )}
+                        <span className="font-semibold text-sm">
+                          TestSprite {verifyResult.status === 'passed' ? 'PASSED' : 'FAILED'}
+                        </span>
+                      </div>
+                      {verifyResult.stepSummary && (
+                        <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
+                          <span>{verifyResult.stepSummary.completed} steps</span>
+                          <span className="text-status-up">{verifyResult.stepSummary.passedCount} passed</span>
+                          {verifyResult.stepSummary.failedCount > 0 && (
+                            <span className="text-status-down">{verifyResult.stepSummary.failedCount} failed</span>
+                          )}
+                        </div>
+                      )}
+                      {verifyResult.failureKind && (
+                        <p className="text-xs text-status-down">Failure: {verifyResult.failureKind} at step {verifyResult.failedStepIndex}</p>
+                      )}
+                      <a
+                        href={verifyResult.dashboardUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                      >
+                        View full report on TestSprite <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm text-muted-foreground">{verifyResult.reason || verifyResult.hint || 'Verification not available'}</p>
+                      {verifyResult.dashboardUrl && (
+                        <a href={verifyResult.dashboardUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                          TestSprite Dashboard <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <p className="mt-4 font-mono text-[11px] text-muted-foreground">
                 From terminal: <code className="rounded bg-muted px-1">testsprite test create --project dc688ee6 --plan-from plan.json --run --wait</code>
-                <br />→ returns one self-consistent failure bundle your agent can act on.
               </p>
             </div>
           </div>
