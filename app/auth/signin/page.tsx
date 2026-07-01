@@ -8,7 +8,7 @@ export default function SignIn() {
       {/* Left: Brand + Trust */}
       <div className="hidden flex-1 flex-col justify-between bg-muted/30 p-12 lg:flex">
         <div>
-          <Link href="/" className="flex items-center gap-4 mb-36">
+          <Link href="/" className="flex items-center gap-4 mb-8">
             <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
@@ -58,7 +58,7 @@ export default function SignIn() {
       <div className="flex flex-1 items-center justify-center px-6">
         <div className="w-full max-w-sm">
           {/* Mobile-only logo */}
-          <Link href="/" className="mb-14 flex items-center gap-3 lg:hidden">
+          <Link href="/" className="mb-8 flex items-center justify-center gap-3 lg:hidden">
             <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
