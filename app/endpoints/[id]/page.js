@@ -32,14 +32,10 @@ export default function EndpointDetail() {
     setVerifying(true)
     setVerifyResult(null)
     try {
-      const res = await fetch('/api/testsprite/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ endpointId: ep.id, url: ep.url }),
-      })
+      const res = await fetch(`/api/testsprite/verify?endpointId=${encodeURIComponent(ep.id)}&url=${encodeURIComponent(ep.url)}`)
       setVerifyResult(await res.json())
     } catch (e) {
-      setVerifyResult({ error: 'Verification failed. Run testsprite CLI manually.' })
+      setVerifyResult({ error: 'Verification unavailable' })
     }
     setVerifying(false)
   }
@@ -228,47 +224,36 @@ export default function EndpointDetail() {
 
               {verifyResult && (
                 <div className="mt-4 rounded-xl bg-card/80 p-4">
-                  {verifyResult.verified ? (
+                  {verifyResult.error ? (
+                    <p className="text-sm text-muted-foreground">{verifyResult.error}</p>
+                  ) : (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
-                        {verifyResult.status === 'passed' ? (
-                          <CheckCircle2 className="h-5 w-5 text-status-up" />
-                        ) : (
-                          <XCircle className="h-5 w-5 text-status-down" />
-                        )}
-                        <span className="font-semibold text-sm">
-                          TestSprite {verifyResult.status === 'passed' ? 'PASSED' : 'FAILED'}
-                        </span>
+                        <Shield className="h-4 w-4 text-lime" />
+                        <span className="font-semibold text-sm">TestSprite project ready</span>
                       </div>
-                      {verifyResult.stepSummary && (
-                        <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
-                          <span>{verifyResult.stepSummary.completed} steps</span>
-                          <span className="text-status-up">{verifyResult.stepSummary.passedCount} passed</span>
-                          {verifyResult.stepSummary.failedCount > 0 && (
-                            <span className="text-status-down">{verifyResult.stepSummary.failedCount} failed</span>
-                          )}
-                        </div>
-                      )}
-                      {verifyResult.failureKind && (
-                        <p className="text-xs text-status-down">Failure: {verifyResult.failureKind} at step {verifyResult.failedStepIndex}</p>
-                      )}
-                      <a
-                        href={verifyResult.dashboardUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                      >
-                        View full report on TestSprite <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-sm text-muted-foreground">{verifyResult.reason || verifyResult.hint || 'Verification not available'}</p>
-                      {verifyResult.dashboardUrl && (
-                        <a href={verifyResult.dashboardUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline">
-                          TestSprite Dashboard <ExternalLink className="h-3 w-3" />
+                      <div className="rounded-lg bg-muted/50 p-3 font-mono text-xs text-muted-foreground overflow-x-auto">
+                        <code>{verifyResult.cliCommand}</code>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <a
+                          href={verifyResult.dashboardUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:shadow-[0_0_20px_-4px_rgba(225,86,124,0.5)]"
+                        >
+                          Open TestSprite Dashboard <ExternalLink className="h-3 w-3" />
                         </a>
-                      )}
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(verifyResult.cliCommand)
+                            toast.success('CLI command copied')
+                          }}
+                          className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted"
+                        >
+                          Copy CLI command
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
