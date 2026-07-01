@@ -1,15 +1,8 @@
-import { Github, AlertTriangle, Shield, Lock, ExternalLink } from 'lucide-react'
+import { Github, Shield, Lock } from 'lucide-react'
 import Link from 'next/link'
-import { headers } from 'next/headers'
 import SignInButton from '@/components/auth/SignInButton'
 
-export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
-
 export default function SignIn() {
-  headers() // Force runtime evaluation of process.env
-  const gitHubConfigured = !!(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET)
-
   return (
     <div className="flex min-h-screen bg-background">
       {/* Left: Brand + Trust */}
@@ -74,52 +67,25 @@ export default function SignIn() {
             <span className="font-display text-2xl font-bold tracking-tight">StatusPulse</span>
           </Link>
 
-          {!gitHubConfigured ? (
-            <div className="rounded-2xl border border-border bg-card p-6 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/15 text-amber-500">
-                <AlertTriangle className="h-6 w-6" />
+          <div className="rounded-2xl border border-border bg-card p-8">
+            <div className="text-center">
+              <h2 className="font-display text-2xl font-bold">Welcome back</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Sign in to your account to continue</p>
+            </div>
+            <div className="mt-8">
+              <SignInButton />
+            </div>
+            <div className="mt-6 space-y-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Shield className="h-3.5 w-3.5 text-status-up" />
+                We only access your public profile — no repo access needed.
               </div>
-              <h2 className="mt-4 font-display text-xl font-bold">Authentication Not Configured</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                GitHub OAuth credentials are not set in the environment variables.
-              </p>
-              <div className="mt-6 rounded-xl bg-muted/50 p-4 text-left">
-                <p className="text-xs font-semibold">Setup instructions:</p>
-                <ol className="mt-2 list-inside list-decimal space-y-1.5 text-xs text-muted-foreground">
-                  <li>
-                    <a href="https://github.com/settings/developers" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-foreground">
-                      Create a GitHub OAuth App <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </li>
-                  <li>Callback URL: <code className="rounded bg-muted px-1 font-mono text-[11px]">{process.env.NEXT_PUBLIC_BASE_URL || 'https://statuspulse.edgeone.dev'}/api/auth/callback/github</code></li>
-                  <li>Set <code className="rounded bg-muted px-1 font-mono text-[11px]">AUTH_GITHUB_ID</code></li>
-                  <li>Set <code className="rounded bg-muted px-1 font-mono text-[11px]">AUTH_GITHUB_SECRET</code></li>
-                  <li>Set <code className="rounded bg-muted px-1 font-mono text-[11px]">AUTH_SECRET</code> (run <code className="rounded bg-muted px-1 font-mono text-[11px]">openssl rand -base64 32</code>)</li>
-                  <li>Redeploy the application</li>
-                </ol>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Lock className="h-3.5 w-3.5 text-status-up" />
+                Your data stays private. We never store GitHub tokens.
               </div>
             </div>
-          ) : (
-            <div className="rounded-2xl border border-border bg-card p-8">
-              <div className="text-center">
-                <h2 className="font-display text-2xl font-bold">Welcome back</h2>
-                <p className="mt-2 text-sm text-muted-foreground">Sign in to your account to continue</p>
-              </div>
-              <div className="mt-8">
-                <SignInButton />
-              </div>
-              <div className="mt-6 space-y-3">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Shield className="h-3.5 w-3.5 text-status-up" />
-                  We only access your public profile — no repo access needed.
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Lock className="h-3.5 w-3.5 text-status-up" />
-                  Your data stays private. We never store GitHub tokens.
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
 
           <p className="mt-6 text-center text-xs text-muted-foreground lg:hidden">
             By signing in, you agree to our{' '}
