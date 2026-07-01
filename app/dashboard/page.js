@@ -8,7 +8,7 @@ import Navbar from '@/components/statuspulse/Navbar'
 import HealthScore from '@/components/statuspulse/HealthScore'
 import EndpointCard from '@/components/statuspulse/EndpointCard'
 import AddEndpointWizard from '@/components/statuspulse/AddEndpointWizard'
-import AlertSettings from '@/components/statuspulse/SlackSettings'
+import TestSpriteWidget from '@/components/statuspulse/TestSpriteWidget'
 import { useStatusStream } from '@/hooks/useStatusStream'
 import { api, timeAgo } from '@/lib/statuspulse'
 import { Button } from '@/components/ui/button'
@@ -126,7 +126,10 @@ function App() {
                 }} className="gap-1.5 text-muted-foreground"><Code2 className="h-3.5 w-3.5" /> Copy badge markdown (all)</Button>
               </div>
             </div>
-            <div className="lg:w-[360px]"><HealthScore health={data.health} lastPing={lastSweep ? timeAgo(lastSweep) : null} /></div>
+            <div className="lg:w-[360px] space-y-4">
+              <HealthScore health={data.health} lastPing={lastSweep ? timeAgo(lastSweep) : null} />
+              <TestSpriteWidget />
+            </div>
           </div>
         </div>
       </div>
