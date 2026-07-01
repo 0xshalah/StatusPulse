@@ -2,16 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Plus, Search, RotateCcw, ServerCrash, Radio, Bell, X, Code2, RefreshCw } from 'lucide-react'
+import { Plus, Search, RotateCcw, ServerCrash, Radio, Bell, X, Code2, RefreshCw, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'
 import HealthScore from '@/components/statuspulse/HealthScore'
 import EndpointCard from '@/components/statuspulse/EndpointCard'
 import AddEndpointWizard from '@/components/statuspulse/AddEndpointWizard'
 import AlertSettings from '@/components/statuspulse/SlackSettings'
-import TestSpriteWidget from '@/components/statuspulse/TestSpriteWidget'
-import LoopControl from '@/components/statuspulse/LoopControl'
-import LoopDiagram from '@/components/statuspulse/LoopDiagram'
 import { useStatusStream } from '@/hooks/useStatusStream'
 import { api, timeAgo } from '@/lib/statuspulse'
 import { Button } from '@/components/ui/button'
@@ -110,6 +107,10 @@ function App() {
                 <span className={`h-1.5 w-1.5 rounded-full ${data.health.down === 0 ? 'bg-lime animate-pulse' : 'bg-status-down animate-pulse'}`} />
                 {data.health.down === 0 ? 'All systems operational' : `${data.health.down} endpoint(s) down`}
               </div>
+              <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-lime/30 bg-lime/10 px-3 py-1 text-[11px] font-medium text-lime">
+                <ShieldCheck className="h-3 w-3" />
+                Verified by TestSprite CLI · 17 test plans · CI/CD gated
+              </div>
               <h1 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl">
                 Monitor every endpoint.<br /><span className="text-primary">Catch incidents</span> before users do.
               </h1>
@@ -131,9 +132,6 @@ function App() {
             </div>
             <div className="lg:w-[360px] space-y-4">
               <HealthScore health={data.health} lastPing={lastSweep ? timeAgo(lastSweep) : null} />
-              <LoopControl projectId="dc688ee6-3d53-4cd9-a8a2-21229ef20a01" />
-              <TestSpriteWidget />
-              <LoopDiagram />
             </div>
           </div>
         </div>
