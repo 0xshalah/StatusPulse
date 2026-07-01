@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Gauge, Activity, Timer, Zap, Pause, Play, Pencil, Trash2, CalendarClock, ChevronRight, Shield, Loader2, ExternalLink, CheckCircle2, XCircle } from 'lucide-react'
+import { ArrowLeft, Gauge, Activity, Timer, Zap, Pause, Play, Pencil, Trash2, CalendarClock, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import Navbar from '@/components/statuspulse/Navbar'
 import StatusDot from '@/components/statuspulse/StatusDot'
@@ -25,20 +25,6 @@ export default function EndpointDetail() {
   const [maintStart, setMaintStart] = useState('')
   const [maintEnd, setMaintEnd] = useState('')
   const [maintError, setMaintError] = useState('')
-  const [verifying, setVerifying] = useState(false)
-  const [verifyResult, setVerifyResult] = useState(null)
-
-  const deepVerify = async () => {
-    setVerifying(true)
-    setVerifyResult(null)
-    try {
-      const res = await fetch(`/api/testsprite/verify?endpointId=${encodeURIComponent(ep.id)}&url=${encodeURIComponent(ep.url)}`)
-      setVerifyResult(await res.json())
-    } catch (e) {
-      setVerifyResult({ error: 'Verification unavailable' })
-    }
-    setVerifying(false)
-  }
 
   const load = useCallback(async () => {
     try { setD(await api(`/endpoints/${id}/detail`)) } catch { toast.error('Failed to load') } finally { setLoading(false) }
@@ -192,80 +178,6 @@ export default function EndpointDetail() {
           </ul>
         )}
       </div>
-
-      {d.verdict === 'down' && (
-        <div className="mt-6 rounded-2xl border border-primary/30 bg-primary/5 p-5">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
-              <Shield className="h-5 w-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="font-display text-lg font-semibold flex items-center gap-2">
-                Deep Verify with TestSprite
-                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary">Innovation</span>
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                StatusPulse detected this endpoint is down. TestSprite provides deeper analysis — browser screenshots, DOM snapshots, root cause, and fix suggestions — that ping monitoring alone cannot.
-              </p>
-
-              <div className="mt-4">
-                <button
-                  onClick={deepVerify}
-                  disabled={verifying}
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[0_0_28px_-6px_rgba(225,86,124,0.6)] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {verifying ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> Running TestSprite CLI…</>
-                  ) : (
-                    <><Shield className="h-4 w-4" /> Run Deep Verify</>
-                  )}
-                </button>
-              </div>
-
-              {verifyResult && (
-                <div className="mt-4 rounded-xl bg-card/80 p-4">
-                  {verifyResult.error ? (
-                    <p className="text-sm text-muted-foreground">{verifyResult.error}</p>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-lime" />
-                        <span className="font-semibold text-sm">TestSprite project ready</span>
-                      </div>
-                      <div className="rounded-lg bg-muted/50 p-3 font-mono text-xs text-muted-foreground overflow-x-auto">
-                        <code>{verifyResult.cliCommand}</code>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <a
-                          href={verifyResult.dashboardUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:shadow-[0_0_20px_-4px_rgba(225,86,124,0.5)]"
-                        >
-                          Open TestSprite Dashboard <ExternalLink className="h-3 w-3" />
-                        </a>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(verifyResult.cliCommand)
-                            toast.success('CLI command copied')
-                          }}
-                          className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted"
-                        >
-                          Copy CLI command
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <p className="mt-4 font-mono text-[11px] text-muted-foreground">
-                From terminal: <code className="rounded bg-muted px-1">testsprite test create --project dc688ee6 --plan-from plan.json --run --wait</code>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       <AddEndpointWizard open={wizardOpen} onOpenChange={setWizardOpen} editing={ep} onSaved={load} />
     </Shell>
