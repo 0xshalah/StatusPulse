@@ -55,44 +55,47 @@ export default function SignIn() {
       </div>
 
       {/* Right: Auth form */}
-      <div className="flex flex-1 items-start justify-center px-6 pt-24">
-        <div className="w-full max-w-sm">
-          {/* Mobile-only logo */}
-          <Link href="/" className="mb-8 flex items-center justify-center gap-3 lg:hidden">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-              </svg>
-            </span>
-            <span className="font-display text-2xl font-bold tracking-tight">StatusPulse</span>
-          </Link>
+      <div className="flex flex-1 flex-col items-center px-6 pt-12">
+        {/* Mobile logo — pinned to top */}
+        <Link href="/" className="mb-8 flex items-center justify-center gap-3 lg:hidden">
+          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          </span>
+          <span className="font-display text-2xl font-bold tracking-tight">StatusPulse</span>
+        </Link>
 
-          <div className="rounded-2xl border border-border bg-card p-8">
-            <div className="text-center">
-              <h2 className="font-display text-2xl font-bold">Welcome back</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Sign in to your account to continue</p>
-            </div>
-            <div className="mt-8">
-              <SignInButton />
-            </div>
-            <div className="mt-6 space-y-3">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Shield className="h-3.5 w-3.5 text-status-up" />
-                We only access your public profile — no repo access needed.
+        {/* Form card — vertically centered */}
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-full max-w-sm">
+            <div className="rounded-2xl border border-border bg-card p-8">
+              <div className="text-center">
+                <h2 className="font-display text-2xl font-bold">Welcome back</h2>
+                <p className="mt-2 text-sm text-muted-foreground">Sign in to your account to continue</p>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Lock className="h-3.5 w-3.5 text-status-up" />
-                Your data stays private. We never store GitHub tokens.
+              <div className="mt-8">
+                <SignInButton />
+              </div>
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Shield className="h-3.5 w-3.5 text-status-up" />
+                  We only access your public profile — no repo access needed.
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Lock className="h-3.5 w-3.5 text-status-up" />
+                  Your data stays private. We never store GitHub tokens.
+                </div>
               </div>
             </div>
+
+            <p className="mt-6 text-center text-xs text-muted-foreground lg:hidden">
+              By signing in, you agree to our{' '}
+              <Link href="#" className="underline underline-offset-2 hover:text-foreground">Terms</Link>
+              {' '}and{' '}
+              <Link href="#" className="underline underline-offset-2 hover:text-foreground">Privacy Policy</Link>.
+            </p>
           </div>
-
-          <p className="mt-6 text-center text-xs text-muted-foreground lg:hidden">
-            By signing in, you agree to our{' '}
-            <Link href="#" className="underline underline-offset-2 hover:text-foreground">Terms</Link>
-            {' '}and{' '}
-            <Link href="#" className="underline underline-offset-2 hover:text-foreground">Privacy Policy</Link>.
-          </p>
         </div>
       </div>
     </div>
