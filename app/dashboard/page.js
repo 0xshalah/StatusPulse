@@ -103,6 +103,10 @@ function App() {
               <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium uppercase tracking-[0.2px] text-muted-foreground">
                 <Radio className="h-3 w-3 animate-pulse text-lime" /> Server scheduler live · SSE stream
               </div>
+              <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                <span className={`h-1.5 w-1.5 rounded-full ${data.health.down === 0 ? 'bg-lime animate-pulse' : 'bg-status-down animate-pulse'}`} />
+                {data.health.down === 0 ? 'All systems operational' : `${data.health.down} endpoint(s) down`}
+              </div>
               <h1 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl">
                 Monitor every endpoint.<br /><span className="text-primary">Catch incidents</span> before users do.
               </h1>
