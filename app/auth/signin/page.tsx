@@ -55,7 +55,7 @@ export default function SignIn() {
       </div>
 
       {/* Right: Auth form */}
-      <div className="flex flex-1 items-center justify-center px-6">
+      <div className="flex flex-1 items-start justify-center px-6 pt-24">
         <div className="w-full max-w-sm">
           {/* Mobile-only logo */}
           <Link href="/" className="mb-8 flex items-center justify-center gap-3 lg:hidden">
