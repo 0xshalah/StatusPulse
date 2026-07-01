@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import * as M from '@/lib/monitor'
 import { createEndpointSchema } from '@/lib/validations/endpoint'
 import { apiSuccess, apiError } from '@/lib/api-response'
+import { auditLog, auditError } from '@/lib/audit'
 
 export async function GET() {
   try {
@@ -40,9 +41,11 @@ export async function POST(request: NextRequest) {
 
     await db.collection('endpoints').insertOne({ ...ep })
     M.pingOneNow(db, ep.id).catch(() => {})
+    auditLog('endpoint.created', { endpointId: ep.id, name, url })
 
     return apiSuccess(ep, 201)
   } catch (error) {
+    auditError('endpoint.create_failed', error)
     return apiError(error)
   }
 }
