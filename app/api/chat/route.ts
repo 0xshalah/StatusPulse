@@ -25,6 +25,8 @@ import { applyGuard, sanitizeError } from '@/lib/ai/guard'
 import { buildSystemPrompt } from '@/lib/ai/system-prompt'
 import { logRequestStart, logToolCall, logToolResult, logTurn, logRequestEnd, logError, logAborted, logGuardBlock, logRateLimit } from '@/lib/ai/metrics'
 import { queryCache } from '@/lib/ai/cache'
+import { resolveApiKey, resolveTavilyKey } from '@/lib/ai/env'
+import { filterSearchResults } from '@/lib/ai/content-filter'
 import { LIMITS, DEEPSEEK_BASE_URL, TAVILY_SEARCH_URL, EVENT, SSE_PREFIX, SSE_DONE } from '@/lib/ai/constants'
 import { resolveModelName } from '@/lib/ai/model'
 
@@ -112,8 +114,12 @@ export async function POST(request: NextRequest) {
   const ctxEnv: Record<string, string | undefined> = process.env as any
   const model = resolveModelName(ctxEnv)
   const baseURL = ctxEnv.AI_GATEWAY_BASE_URL || DEEPSEEK_BASE_URL
-  const apiKey = ctxEnv.AI_GATEWAY_API_KEY || process.env.AI_GATEWAY_API_KEY_DEEPSEEK || ''
-  const tavilyKey = ctxEnv.TAVILY_API_KEY || process.env.TAVILY_API_KEY || ''
+
+  // Multi-source key resolution (auto-detect EdgeOne vs local)
+  const keySource = resolveApiKey()
+  const apiKey = keySource.value
+  const tavilySource = resolveTavilyKey()
+  const tavilyKey = tavilySource.value
 
   if (!apiKey) {
     return corsResponse({ error: 'AI service not configured. Set AI_GATEWAY_API_KEY.' }, 503)
@@ -277,14 +283,17 @@ export async function POST(request: NextRequest) {
                 signal: AbortSignal.timeout(LIMITS.TAVILY_TIMEOUT_MS),
               })
               result = await searchRes.json()
-              // Extract only safe fields
+              // Content safety filter
+              const rawResults = (result.results || []).slice(0, 5)
+              const safeResults = filterSearchResults(rawResults.map((r: any) => ({
+                title: r.title,
+                url: r.url,
+                content: (r.content || '').slice(0, 300),
+              })))
               result = {
                 answer: result.answer,
-                results: (result.results || []).slice(0, 5).map((r: any) => ({
-                  title: r.title,
-                  url: r.url,
-                  content: (r.content || '').slice(0, 300),
-                })),
+                results: safeResults,
+                _filtered: safeResults.length < rawResults.length ? `${rawResults.length - safeResults.length} results filtered for safety` : undefined,
               }
             } catch (e: any) {
               result = { error: sanitizeError(e) }

@@ -93,7 +93,7 @@ export function detectInjection(input: string): InjectionResult {
   }
 
   // Low severity: excessive repetition (potential jailbreak padding)
-  const repetitionPattern = /(.{10,})\1{4,}/
+  const repetitionPattern = /(.{6,})\1{4,}/
   if (repetitionPattern.test(input)) {
     return { detected: true, pattern: 'excessive repetition', severity: 'low' }
   }
