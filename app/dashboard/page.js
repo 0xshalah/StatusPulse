@@ -107,6 +107,15 @@ function App() {
                 <span className={`h-1.5 w-1.5 rounded-full ${data.health.down === 0 ? 'bg-lime animate-pulse' : 'bg-status-down animate-pulse'}`} />
                 {data.health.down === 0 ? 'All systems operational' : `${data.health.down} endpoint(s) down`}
               </div>
+              <a
+                href="https://github.com/0xshalah/StatusPulse/blob/main/LOOP.md"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex items-center gap-2 rounded-full border border-lime/20 bg-lime/5 px-3 py-1 text-[11px] font-medium text-lime transition-colors hover:bg-lime/10"
+              >
+                <ShieldCheck className="h-3 w-3" />
+                Third-party verified · 17 test plans · 30+ reruns · View audit →
+              </a>
               <h1 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl">
                 Monitor every endpoint.<br /><span className="text-primary">Catch incidents</span> before users do.
               </h1>

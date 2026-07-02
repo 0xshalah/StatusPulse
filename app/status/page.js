@@ -79,6 +79,15 @@ export default function StatusPage() {
               <Input type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} className="flex-1" />
               <Button onClick={subscribe} disabled={subscribing || !email} className="gap-1.5"><Bell className="h-4 w-4" /> Get alerts</Button>
             </div>
+            <a
+              href="https://github.com/0xshalah/StatusPulse/blob/main/LOOP.md"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex items-center gap-2 rounded-full border border-lime/20 bg-lime/5 px-3 py-1 text-[11px] font-medium text-lime transition-colors hover:bg-lime/10"
+            >
+              <ShieldCheck className="h-3 w-3" />
+              Third-party verified · 17 test plans · 30+ reruns · View audit →
+            </a>
           </motion.div>
         </div>
       </div>
