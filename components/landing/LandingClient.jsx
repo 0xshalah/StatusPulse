@@ -493,30 +493,44 @@ export default function LandingClient() {
                 { icon: Bell, label: 'Fix', desc: 'Agent reads failures', color: 'text-status-degraded', bg: 'bg-status-degraded/10' },
                 { icon: Check, label: 'Repeat', desc: 'Rerun until pass', color: 'text-status-up', bg: 'bg-status-up/10' },
               ].map((s, i) => (
-                <Reveal key={s.label} delay={i * 0.1}>
-                  <div className="relative rounded-2xl border border-border bg-card p-6">
+                <Reveal key={s.label} delay={i * 0.15}>
+                  <motion.div
+                    whileHover={{ y: -4, borderColor: 'rgba(194,239,78,0.4)', boxShadow: '0 12px 30px -12px rgba(194,239,78,0.25)' }}
+                    transition={{ duration: 0.25, ease: EASE }}
+                    className="relative rounded-2xl border border-border bg-card p-6 transition-colors"
+                  >
                     <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-xl ${s.bg} ${s.color}`}>
                       <s.icon className="h-6 w-6" />
                     </div>
                     <p className="mt-3 font-display text-lg font-semibold">{s.label}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{s.desc}</p>
-                  </div>
+                    {i < 3 && (
+                      <motion.div
+                        initial={{ scaleX: 0 }}
+                        whileInView={{ scaleX: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: i * 0.2 + 0.4, ease: EASE }}
+                        className="absolute -right-2 top-1/2 hidden h-px w-4 origin-left bg-gradient-to-r from-lime to-transparent sm:block"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </motion.div>
                 </Reveal>
               ))}
             </div>
 
-            <Reveal delay={0.3} className="mt-10">
+            <Reveal delay={0.6} className="mt-10">
               <div className="mx-auto flex max-w-lg flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-lime" />
+                  <span className="h-2 w-2 rounded-full bg-lime animate-pulse" />
                   17 test plans
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-lime" />
+                  <span className="h-2 w-2 rounded-full bg-lime animate-pulse" style={{ animationDelay: '0.3s' }} />
                   30+ verification reruns
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-lime" />
+                  <span className="h-2 w-2 rounded-full bg-lime animate-pulse" style={{ animationDelay: '0.6s' }} />
                   4 bugs caught & fixed
                 </span>
               </div>
