@@ -1,0 +1,46 @@
+{
+  "tools": [
+    {
+      "name": "get_dashboard",
+      "description": "Get the full dashboard overview showing all monitored API endpoints with their current status (up/degraded/down/maintenance), response time, uptime percentage, and health score.",
+      "endpoint": "GET /api/dashboard",
+      "parameters": {}
+    },
+    {
+      "name": "get_health",
+      "description": "Get the overall system health check showing database status and server health.",
+      "endpoint": "GET /api/health",
+      "parameters": {}
+    },
+    {
+      "name": "get_endpoint_status",
+      "description": "Get detailed status of a specific API endpoint including current verdict, response time, uptime history, and recent pings.",
+      "endpoint": "GET /api/endpoints/{id}",
+      "parameters": {
+        "id": {
+          "type": "string",
+          "description": "The endpoint UUID (e.g. d66bbde2-d239-48ff-9064-25a24e171459)",
+          "required": true
+        }
+      }
+    },
+    {
+      "name": "get_endpoint_pings",
+      "description": "Get recent ping history for a specific endpoint showing response times and verdicts over time.",
+      "endpoint": "GET /api/endpoints/{id}/pings",
+      "parameters": {
+        "id": {
+          "type": "string",
+          "description": "The endpoint UUID",
+          "required": true
+        }
+      }
+    },
+    {
+      "name": "get_public_status",
+      "description": "Get the public-facing status page data showing all endpoints with their status for sharing with users.",
+      "endpoint": "GET /api/status",
+      "parameters": {}
+    }
+  ]
+}
