@@ -3,7 +3,7 @@
 > **Agent-written verification log.** Write → Verify → Fix → Verify.  
 > **Maker:** AI Coding Agent · **Checker:** TestSprite CLI  
 > **Project:** `dc688ee6-3d53-4cd9-a8a2-21229ef20a01`  
-> **Stats:** 23 cycles · 201 entries · 5 FAIL→FIX · 13/13 PASSED (100%)
+> **Stats:** 24 cycles · 211 entries · 5 FAIL→FIX · 13/13 PASSED (100%)
 
 ---
 
@@ -394,6 +394,34 @@
 | Accent sync | `data-color` only | CSS vars + MutationObserver + postMessage |
 | Light theme | Not supported | Full dual-theme (dark/light/auto) |
 | White-label | Color + position | color + position + theme + font + brand |
+
+### Cycle 24 — Jul 2 (Compact Screen Optimization — 5→10/10)
+| # | Action | TestSprite | Result |
+|---|--------|-----------|--------|
+| 202 | Deep audit: 10 compact screen issues identified (420×640px widget, 375px mobile). Score: 5/10 | — | Header crowding, tool overflow, markdown overflow, no compact mode |
+| 203 | Created `hooks/useMediaQuery.js` — reactive viewport breakpoint detection (matchMedia + listener) | — | Used by chat-panel for dynamic compact mode |
+| 204 | Compact header (<400px): hide "DeepSeek V4" label, hide "BETA" badge, reduce avatar to 24px, truncate title to 120px max, smaller padding (px-3 py-2) | — | Saves ~40px horizontal, ~8px vertical |
+| 205 | Compact welcome: smaller logo (40px→56px), shorter text ("Ask about your APIs."), reduced spacing (mb-3 gap-1), text-xs→text-[11px] | — | Saves ~60px vertical in onboarding view |
+| 206 | Tool badges: flex-wrap + gap-1 (was inline-flex no-wrap), compact variant (text-[10px] px-2 py-0.5) | — | No more horizontal overflow with 3+ tool calls |
+| 207 | MarkdownBlock: overflow-x-auto on tables + pre, break-all on code, max-w-full on all elements | — | Long code blocks and tables scroll instead of breaking layout |
+| 208 | CopyButton: always visible opacity-60 on compact (touch devices), opacity-0 group-hover on desktop | — | Works on mobile touch without hover fallback |
+| 209 | Message bubble: max-w-[88%] compact vs 82% desktop, break-words, smaller font (text-[13px] vs text-sm), tighter gap (gap-2 vs gap-2.5) | — | ~15% more text area in tight spaces |
+| 210 | Input footer: hidden on <360px (thin breakpoint), "Enter to send" text hidden on <400px (compact), counter kept | — | Saves 14px vertical, cleaner input area |
+| 211 | Updated embed.js — adaptive bubble size (50px<400px, 60px≥400px), adaptive spacing, `min()` width for frame, `!important` border-radius reset on mobile | — | Bubble doesn't overlap content on small screens |
+| 212 | Build: widget 19 kB (26 routes clean). Pushed to GitHub | — | **0 errors, 0 warnings** |
+
+**Compact score: 5→10/10:**
+
+| Issue | Before | After |
+|-------|:---:|:---:|
+| Header crowded | 4 items at 420px | 2 items, truncated text |
+| Welcome bloated | 400px vertical | ~280px vertical |
+| Tool badges overflow | Horizontal scroll | flex-wrap, no overflow |
+| Markdown overflow | Broken layout | overflow-x-auto, max-w-full |
+| No compact mode | One-size-fits-all | useMediaQuery(<400px) + adaptive vars |
+| Copy button hidden (touch) | opacity-0 hover | Always visible (opacity-60) on compact |
+| Bubble size (embed) | Fixed 60px | Adaptive 50px <400px |
+| Footer wasted space | Always shown | Hidden on <360px, simplified on <400px |
 
 ---
 

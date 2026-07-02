@@ -63,28 +63,31 @@
     }
 
     // ─── Styles ────────────────────────────────────────────────────────────
+    var bubbleSize = window.innerWidth < 400 ? 50 : 60;
+    var bubbleBottom = window.innerWidth < 400 ? 16 : 24;
+    var bubbleIcon = window.innerWidth < 400 ? 22 : 28;
     var css = document.createElement('style');
     css.textContent =
-      '#__aa-bubble{position:fixed;bottom:24px;' + side + ':24px;z-index:2147483647;' +
-      'width:60px;height:60px;border-radius:50%;' +
+      '#__aa-bubble{position:fixed;bottom:' + bubbleBottom + 'px;' + side + ':' + bubbleBottom + 'px;z-index:2147483647;' +
+      'width:' + bubbleSize + 'px;height:' + bubbleSize + 'px;border-radius:50%;' +
       'background:linear-gradient(135deg,' + accent + ',' + accent + 'dd);' +
       'cursor:pointer;border:none;outline:none;' +
-      'box-shadow:0 8px 24px ' + accent + '44,0 2px 8px rgba(0,0,0,.25);' +
+      'box-shadow:0 6px 18px ' + accent + '44,0 2px 6px rgba(0,0,0,.25);' +
       'display:flex;align-items:center;justify-content:center;' +
       'transition:all .3s cubic-bezier(.4,0,.2,1)}' +
-      '#__aa-bubble:hover{transform:scale(1.1) translateY(-2px);box-shadow:0 12px 32px ' + accent + '55,0 4px 12px rgba(0,0,0,.35)}' +
+      '#__aa-bubble:hover{transform:scale(1.1) translateY(-2px);box-shadow:0 10px 28px ' + accent + '55,0 4px 10px rgba(0,0,0,.35)}' +
       '#__aa-bubble:active{transform:scale(.95)}' +
-      '#__aa-bubble svg{width:28px;height:28px;fill:#fff;transition:transform .3s}' +
-      '#__aa-frame{position:fixed;bottom:100px;' + side + ':24px;z-index:2147483647;' +
-      'width:420px;height:640px;max-height:calc(100vh - 120px);max-width:calc(100vw - 48px);' +
-      'border:none;border-radius:20px;' +
-      'box-shadow:0 24px 64px rgba(0,0,0,.2),0 8px 24px rgba(0,0,0,.15),0 0 0 1px ' + accent + '26;' +
-      'opacity:0;transform:translateY(12px) scale(.97);' +
+      '#__aa-bubble svg{width:' + bubbleIcon + 'px;height:' + bubbleIcon + 'px;fill:#fff;transition:transform .3s}' +
+      '#__aa-frame{position:fixed;bottom:' + (bubbleBottom + bubbleSize + 16) + 'px;' + side + ':24px;z-index:2147483647;' +
+      'width:min(420px, calc(100vw - 48px));height:640px;max-height:calc(100vh - ' + (bubbleBottom * 2 + bubbleSize + 32) + 'px);' +
+      'border:none;border-radius:18px;' +
+      'box-shadow:0 20px 50px rgba(0,0,0,.2),0 6px 20px rgba(0,0,0,.15),0 0 0 1px ' + accent + '26;' +
+      'opacity:0;transform:translateY(10px) scale(.97);' +
       'transition:opacity .3s cubic-bezier(.4,0,.2,1),transform .3s cubic-bezier(.4,0,.2,1);' +
       'pointer-events:none;overflow:hidden}' +
       '#__aa-frame.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}' +
       '@media(max-width:480px){#__aa-frame{width:100vw;height:100vh;max-height:100vh;' +
-      'bottom:0;' + side + ':0;border-radius:0}}';
+      'bottom:0;' + side + ':0;border-radius:0 !important}}';
     document.head.appendChild(css);
 
     // ─── Build widget URL with params ──────────────────────────────────────
