@@ -2,7 +2,8 @@
 
 > **Agent-written verification log.** Write → Verify → Fix → Verify.  
 > **Maker:** AI Coding Agent · **Checker:** TestSprite CLI  
-> **Project:** `dc688ee6-3d53-4cd9-a8a2-21229ef20a01`
+> **Project:** `dc688ee6-3d53-4cd9-a8a2-21229ef20a01`  
+> **Stats:** 19 cycles · 150 entries · 5 FAIL→FIX · 12/12 PASSED (100%)
 
 ---
 
@@ -289,6 +290,7 @@
 2. **View Transitions required 5 sub-fixes.** CSS pseudo-elements, z-index layering, and attribute selectors all failed silently in different browsers. Without persistent rerun, we would have shipped a broken theme toggle.
 3. **"Copy all badges" only copied one.** The button label said "Copy ALL" but the code grabbed `data.endpoints[0]`. This is the kind of bug that survives manual testing — only automated E2E catches it.
 4. **Re-architecture without breaking changes is possible.** We annihilated the 191-line catch-all route into 17 TypeScript handlers with zero downtime. The TestSprite gate caught every regression attempt.
+5. **Selector precision matters.** Adding one UI element (accent picker button) broke 3 tests because selectors like `button` became ambiguous. CSS attribute selectors (`button[data-value='down']`) are immune to layout changes. Broad selectors are time bombs.
 
 ---
 
