@@ -1,32 +1,32 @@
 {
   "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
   "type": "frontend",
-  "name": "Dashboard Search + Filter",
-  "description": "Test filter tabs exist and can be clicked on dashboard",
+  "name": "Dashboard Search + Filter v2",
+  "description": "Verify search input and filter tabs exist on dashboard",
   "planSteps": [
     {
       "type": "action",
       "action": "navigate",
       "url": "https://statuspulse.edgeone.dev/dashboard",
-      "description": "Open dashboard"
+      "description": "Navigate directly to the dashboard page at /dashboard"
     },
     {
       "type": "assertion",
       "assertion": "visible",
-      "selector": "text=All",
-      "description": "All filter tab is visible"
+      "selector": "input[placeholder='Search endpoints…']",
+      "description": "Search input with placeholder 'Search endpoints…' is visible"
     },
     {
       "type": "assertion",
       "assertion": "visible",
-      "selector": "text=Down",
-      "description": "Down filter tab is visible"
+      "selector": "button[value='all']",
+      "description": "All filter tab button is visible"
     },
     {
-      "type": "action",
-      "action": "click",
-      "selector": "text=Down",
-      "description": "Click Down filter tab"
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "button[value='down']",
+      "description": "Down filter tab button is visible"
     }
   ]
 }

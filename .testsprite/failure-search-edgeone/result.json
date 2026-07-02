@@ -1,0 +1,18 @@
+{
+  "testId": "46c05bbe-d752-435d-820e-4a2bed1e6667",
+  "status": "failed",
+  "startedAt": "2026-07-02T03:49:46.051Z",
+  "finishedAt": "2026-07-02T03:57:03.444Z",
+  "videoUrl": "https://testsprite-videos.s3.us-east-1.amazonaws.com/24b86478-b091-7079-4f47-5caae083a34f/1782964617925838//tmp/0271f9bd-1be8-460e-8095-964c27454047/result.webm",
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_4be7e64d777e8a1b",
+  "runIdIfAvailable": "29036da7-a4c5-4f0a-9a45-8c556b05cef3",
+  "codeVersion": "v1",
+  "targetUrl": "https://statuspulse.edgeone.dev",
+  "targetUrlSource": "run",
+  "failedStepIndex": 5,
+  "failureKind": "unknown",
+  "verdict": "failed",
+  "executionStatus": "completed",
+  "summary": "Failed: TEST FAILURE\n\nA services search input and the 'Down'/'All' filter tabs could not be found on the dashboard, so the requested interactive tests could not be executed.\n\nObservations:\n- The only visible input is an alerts signup email field (placeholder 'you@company.com') inside shadow DOM; no dedicated services search input is present.\n- No interactive 'Down' or 'All' filter tabs or a clear-search control were found in the page header or service-list controls.\n- The 'API Gateway' service …"
+}

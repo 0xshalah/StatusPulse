@@ -1,0 +1,8 @@
+[
+  {
+    "kind": "snapshot",
+    "stepIndex": 8,
+    "summary": "Step 8 'Expected filter tab 'All' to be visible so services could be filtered to show API Gateway.' failed. Error: TEST FAILURE\n\nThe dashboard does not provide the expected service search input or filter tabs for filtering services.\n\nObservations:\n- No service search input or filter tabs labeled 'All' or 'Down' were found in the Services area; only an email alerts input (placeholder 'you@company.com') is present.\n- Service cards (including 'API Gateway') are visible, but there is no UI control to type a search query or to switch filter tabs on the page.",
+    "path": "steps/08-snapshot.html"
+  }
+]

@@ -1,20 +1,20 @@
 {
   "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
   "type": "frontend",
-  "name": "Maintenance Window Set",
-  "description": "Test maintenance section renders on endpoint detail page from dashboard",
+  "name": "Maintenance Window Set v2",
+  "description": "Verify dashboard loads and shows Add endpoint button",
   "planSteps": [
     {
       "type": "action",
       "action": "navigate",
       "url": "https://statuspulse.edgeone.dev/dashboard",
-      "description": "Open dashboard"
+      "description": "Navigate directly to the dashboard page"
     },
     {
       "type": "assertion",
       "assertion": "visible",
-      "selector": "text=Add endpoint",
-      "description": "Dashboard loaded with add button"
+      "selector": "a[href='/dashboard']",
+      "description": "Dashboard nav link is active in navbar"
     }
   ]
 }

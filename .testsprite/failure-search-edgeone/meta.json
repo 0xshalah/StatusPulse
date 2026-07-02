@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "cli-v1",
+  "snapshotId": "snap_4be7e64d777e8a1b",
+  "testId": "46c05bbe-d752-435d-820e-4a2bed1e6667",
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "codeVersion": "v1",
+  "runIdIfAvailable": "29036da7-a4c5-4f0a-9a45-8c556b05cef3",
+  "targetUrl": "https://statuspulse.edgeone.dev",
+  "failedStepIndex": 5,
+  "failureKind": "unknown",
+  "capturedAt": "2026-07-02T03:57:03.444Z",
+  "fetchedAt": "2026-07-02T03:57:38.801Z"
+}

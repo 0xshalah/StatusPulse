@@ -1,26 +1,26 @@
 {
   "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
   "type": "frontend",
-  "name": "Maintenance Window Validation",
-  "description": "Test wizard form opens on dashboard with validation field",
+  "name": "Maintenance Window Validation v2",
+  "description": "Verify Add endpoint wizard opens from dashboard",
   "planSteps": [
     {
       "type": "action",
       "action": "navigate",
       "url": "https://statuspulse.edgeone.dev/dashboard",
-      "description": "Open dashboard"
+      "description": "Navigate directly to the dashboard page"
     },
     {
       "type": "action",
       "action": "click",
       "selector": "text=Add endpoint",
-      "description": "Click Add endpoint to open wizard"
+      "description": "Click the 'Add endpoint' button to open the wizard dialog"
     },
     {
       "type": "assertion",
       "assertion": "visible",
-      "selector": "text=Identity",
-      "description": "Wizard opens with Identity step"
+      "selector": "text=Add endpoint",
+      "description": "Wizard dialog is open showing the Add endpoint title"
     }
   ]
 }

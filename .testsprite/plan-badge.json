@@ -1,20 +1,20 @@
 {
   "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
   "type": "frontend",
-  "name": "SVG Badge Rendering",
-  "description": "Test SVG badge endpoint returns valid badge markup",
+  "name": "SVG Badge Rendering v2",
+  "description": "Verify badge SVG endpoint returns valid XML badge markup with endpoint name",
   "planSteps": [
     {
       "type": "action",
       "action": "navigate",
       "url": "https://statuspulse.edgeone.dev/api/badge/d66bbde2-d239-48ff-9064-25a24e171459",
-      "description": "Open badge SVG endpoint directly"
+      "description": "Navigate directly to the badge SVG API endpoint — no UI interaction needed"
     },
     {
       "type": "assertion",
       "assertion": "visible",
       "selector": "text=api gateway",
-      "description": "SVG badge contains endpoint name text"
+      "description": "Badge SVG output contains the endpoint name 'api gateway'"
     }
   ]
 }

@@ -1,0 +1,18 @@
+{
+  "testId": "46c05bbe-d752-435d-820e-4a2bed1e6667",
+  "status": "failed",
+  "startedAt": "2026-06-30T19:40:22.322Z",
+  "finishedAt": "2026-06-30T19:49:59.719Z",
+  "videoUrl": "https://testsprite-videos.s3.us-east-1.amazonaws.com/24b86478-b091-7079-4f47-5caae083a34f/1782848997221576//tmp/04867978-2143-4f77-b681-f5c9d678375b/result.webm",
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_ece774bf491accda",
+  "runIdIfAvailable": "0b9efa8f-15fd-418a-af47-e25a9f5a031c",
+  "codeVersion": "v1",
+  "targetUrl": "https://statuspulse-vvy0.onrender.com",
+  "targetUrlSource": "run",
+  "failedStepIndex": 8,
+  "failureKind": "assertion",
+  "verdict": "failed",
+  "executionStatus": "completed",
+  "summary": "Failed (assertion): TEST FAILURE\n\nThe dashboard does not provide the expected service search input or filter tabs for filtering services.\n\nObservations:\n- No service search input or filter tabs labeled 'All' or 'Down' were found in the Services area; only an email alerts input (placeholder 'you@company.com') is present.\n- Service cards (including 'API Gateway') are visible, but there is no UI control to type a search query or to switch filter tabs on the page."
+}

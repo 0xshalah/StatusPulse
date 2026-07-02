@@ -1,0 +1,18 @@
+{
+  "testId": "92ae7af9-d05f-49a8-ba47-48880c53817e",
+  "status": "failed",
+  "startedAt": "2026-07-02T04:17:13.988Z",
+  "finishedAt": "2026-07-02T04:28:20.656Z",
+  "videoUrl": "https://testsprite-videos.s3.us-east-1.amazonaws.com/24b86478-b091-7079-4f47-5caae083a34f/1782966361850486//tmp/1cd5f1e7-f2e1-4a5b-92f3-bc930515460b/result.webm",
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_c44c936ea153aecd",
+  "runIdIfAvailable": "66367e09-2161-485c-b82d-2aa49d3b41f1",
+  "codeVersion": "v1",
+  "targetUrl": "https://statuspulse.edgeone.dev",
+  "targetUrlSource": "run",
+  "failedStepIndex": 9,
+  "failureKind": "routing_404",
+  "verdict": "failed",
+  "executionStatus": "completed",
+  "summary": "Failed (routing_404): TEST FAILURE\n\nThe badge SVG endpoint did not return valid SVG markup and the endpoint name was not found.\n\nObservations:\n- The page displayed '404 This page could not be found.'\n- The URL 'https://statuspulse.edgeone.dev/endpoints/d66bbde2-d239-48ff-9064-25a24e171459/badge.svg' returned an HTTP 404 page; no SVG/XML content containing 'api gateway' was present."
+}

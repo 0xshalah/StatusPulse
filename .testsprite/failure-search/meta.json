@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "cli-v1",
+  "snapshotId": "snap_ece774bf491accda",
+  "testId": "46c05bbe-d752-435d-820e-4a2bed1e6667",
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "codeVersion": "v1",
+  "runIdIfAvailable": "0b9efa8f-15fd-418a-af47-e25a9f5a031c",
+  "targetUrl": "https://statuspulse-vvy0.onrender.com",
+  "failedStepIndex": 8,
+  "failureKind": "assertion",
+  "capturedAt": "2026-06-30T19:49:59.719Z",
+  "fetchedAt": "2026-07-02T03:48:37.155Z"
+}

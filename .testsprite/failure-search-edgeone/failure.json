@@ -1,0 +1,5 @@
+{
+  "rootCauseHypothesis": "TEST FAILURE\n\nA services search input and the 'Down'/'All' filter tabs could not be found on the dashboard, so the requested interactive tests could not be executed.\n\nObservations:\n- The only visible input is an alerts signup email field (placeholder 'you@company.com') inside shadow DOM; no dedicated services search input is present.\n- No interactive 'Down' or 'All' filter tabs or a clear-search control were found in the page header or service-list controls.\n- The 'API Gateway' service card is visible in the Services list, so the target service exists but filtering could not be tested because the UI controls are absent.",
+  "recommendedFixTarget": null,
+  "evidence": []
+}
