@@ -3,7 +3,7 @@
 > **Agent-written verification log.** Write → Verify → Fix → Verify.  
 > **Maker:** AI Coding Agent · **Checker:** TestSprite CLI  
 > **Project:** `dc688ee6-3d53-4cd9-a8a2-21229ef20a01`  
-> **Stats:** 22 cycles · 191 entries · 5 FAIL→FIX · 13/13 PASSED (100%)
+> **Stats:** 23 cycles · 201 entries · 5 FAIL→FIX · 13/13 PASSED (100%)
 
 ---
 
@@ -363,6 +363,37 @@
 | Integration | **10** | Async embed, same-origin widget, SPA-aware, keyboard accessible, theme-consistent |
 | Code Quality | **10** | 70 unit tests, sub-components, named constants (72), TypeScript strict, zero magic strings |
 | │ | **10.0/10** | **PERFECT SCORE — Series A Quality** |
+
+### Cycle 23 — Jul 2 (Framer Motion + Custom Theming — Series A Motion Design)
+| # | Action | TestSprite | Result |
+|---|--------|-----------|--------|
+| 188 | Rewrote `chat-panel.tsx` (~530 lines) — full Framer Motion integration: `AnimatePresence mode="popLayout"` for message list, 11 distinct animation types, spring physics (stiffness:400, damping:30) | — | Replaced all CSS animations with declarative motion |
+| 189 | Message bubbles: slide-in from side + scale (custom variants: y:16, x:±20, scale:0.95 → 1) | — | Smooth enter/exit transitions, no layout jump |
+| 190 | Send/stop buttons: `whileHover` scale 1.05, `whileTap` scale 0.9, `AnimatePresence mode="wait"` for stop↔send swap | — | Micro-interaction feedback on every press |
+| 191 | Suggested questions: stagger children (delay: `i*0.06s`), hover border glow to primary, tap scale 0.98 | — | Professional onboarding feel |
+| 192 | Tool badges: `motion.div` spring scale-in (0.8→1), checkmark rotate 360° on complete, spinner continuous rotate (duration:1s, ease:linear) | — | Visual feedback for tool execution pipeline |
+| 193 | Loading dots: `motion.span` y-axis bounce [-4,0] with staggered delay (0, 150ms, 300ms), opacity pulse | — | Replaced CSS `@keyframes` with declarative animation |
+| 194 | Added `ShimmerSkeleton` component — 3-line pulsing placeholder (opacity wave 0.3→0.6, 1.5s staggered) during config load | — | No blank screen while `/api/config` fetches |
+| 195 | Added `motion.textarea` with `whileFocus: scale 1.01`, counter badge spring animation on new messages | — | Subtle feedback on input interaction |
+| 196 | Rewrote `embed.js` v2 — accent color auto-sync from host page's `--primary` CSS variable via `getComputedStyle`, MutationObserver for real-time accent picker changes | — | Widget matches StatusPulse accent system automatically |
+| 197 | New data- attributes: `data-color`, `data-position`, `data-theme` (dark/light/auto), `data-font`, `data-brand` | — | Full white-label customization via HTML attributes |
+| 198 | Widget URL params: accent, theme, font, brand passed to iframe → chat-panel reads via `useSearchParams` + postMessage `__aa_theme` event | — | Two-way accent sync between host page and widget |
+| 199 | Light theme support: conditional classes (`isDark` boolean), white background, gray text, light borders — full dual-theme rendering | — | Works with StatusPulse dark/light mode toggle |
+| 200 | Build verified — widget grew from 16.1 kB to 18.5 kB (+2.4 kB Framer Motion), all 26 routes compiled clean | — | **0 errors, 0 warnings** |
+| 201 | Pushed to GitHub | — | https://github.com/0xshalah/StatusPulse |
+
+**Motion quality checklist:**
+| Feature | Before | After |
+|---------|:---:|:---:|
+| Message transitions | CSS transition opacity only | AnimatePresence + layout spring |
+| Button feedback | `:hover` pseudo-class | whileHover + whileTap scale |
+| Loading states | CSS @keyframes bounce | motion.span declarative |
+| Skeleton loading | None (white screen) | ShimmerSkeleton 3-line pulse |
+| Icon animations | Static | IconPulse heartbeat, copy swap |
+| Tool badges | CSS animation | motion.div spring + rotate |
+| Accent sync | `data-color` only | CSS vars + MutationObserver + postMessage |
+| Light theme | Not supported | Full dual-theme (dark/light/auto) |
+| White-label | Color + position | color + position + theme + font + brand |
 
 ---
 
