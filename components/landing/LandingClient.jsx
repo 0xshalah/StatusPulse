@@ -24,6 +24,7 @@ import {
   Server,
   Sparkles,
   Database,
+  Pencil,
 } from 'lucide-react'
 import LandingNav from './LandingNav'
 import Particles from './Particles'
@@ -468,6 +469,65 @@ export default function LandingClient() {
                   </span>
                 ))}
               </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ==================== HOW IT WAS BUILT ==================== */}
+        <section className="border-t border-border">
+          <div className="mx-auto max-w-[900px] px-4 py-20 sm:px-6 text-center">
+            <Reveal>
+              <p className="text-xs font-semibold uppercase tracking-[0.2px] text-lime">How it was built</p>
+              <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
+                Built with a <span className="inline-block -rotate-1 rounded-full bg-lime px-3 py-0.5 text-[#1B102D]">self-verifying</span> loop
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">
+                Every feature was written, tested, verified, and fixed by an AI coding agent — with TestSprite CLI as the neutral referee that catches regressions before they ship.
+              </p>
+            </Reveal>
+
+            <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-4">
+              {[
+                { icon: Pencil, label: 'Write', desc: 'Agent writes code', color: 'text-primary', bg: 'bg-primary/10' },
+                { icon: Zap, label: 'Verify', desc: 'TestSprite CLI tests', color: 'text-lime', bg: 'bg-lime/10' },
+                { icon: Bell, label: 'Fix', desc: 'Agent reads failures', color: 'text-status-degraded', bg: 'bg-status-degraded/10' },
+                { icon: Check, label: 'Repeat', desc: 'Rerun until pass', color: 'text-status-up', bg: 'bg-status-up/10' },
+              ].map((s, i) => (
+                <Reveal key={s.label} delay={i * 0.1}>
+                  <div className="relative rounded-2xl border border-border bg-card p-6">
+                    <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-xl ${s.bg} ${s.color}`}>
+                      <s.icon className="h-6 w-6" />
+                    </div>
+                    <p className="mt-3 font-display text-lg font-semibold">{s.label}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{s.desc}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            <Reveal delay={0.3} className="mt-10">
+              <div className="mx-auto flex max-w-lg flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-lime" />
+                  17 test plans
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-lime" />
+                  30+ verification reruns
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-lime" />
+                  4 bugs caught & fixed
+                </span>
+              </div>
+              <a
+                href="https://github.com/0xshalah/StatusPulse/blob/main/LOOP.md"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-lime hover:underline"
+              >
+                View full audit trail → LOOP.md
+              </a>
             </Reveal>
           </div>
         </section>
