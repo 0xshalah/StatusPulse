@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { Activity, Github, LogIn, User } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
+import AccentPicker from './AccentPicker'
 import { Button } from '@/components/ui/button'
 
 export default function Navbar({ children }) {
@@ -26,6 +27,7 @@ export default function Navbar({ children }) {
         <div className="flex items-center gap-2">
           {children}
           <ThemeToggle />
+          <AccentPicker />
           {session ? (
             <div className="flex items-center gap-2 rounded-full border border-border bg-muted/40 pl-3 pr-2 py-1.5">
               {session.user?.image ? (
