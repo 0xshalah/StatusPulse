@@ -1,0 +1,32 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "AI Chat Widget — Config + Widget Load",
+  "description": "Verify AI chat widget loads with correct config and suggestions on widget page",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/widget",
+      "description": "Open the AI chat widget iframe page directly"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=StatusPulse AI",
+      "description": "Widget header shows StatusPulse AI name"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=BETA",
+      "description": "Beta badge is visible on widget header"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Ask about your APIs",
+      "description": "Textarea placeholder is visible"
+    }
+  ]
+}

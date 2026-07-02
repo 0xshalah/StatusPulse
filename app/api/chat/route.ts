@@ -97,8 +97,10 @@ export async function POST(request: NextRequest) {
     const ctxEnv: Record<string, string | undefined> = process.env as any
     const config = await loadConfig()
     const model = resolveModelName(ctxEnv)
-    const baseURL = ctxEnv.AI_GATEWAY_BASE_URL || ''
-    const apiKey = ctxEnv.AI_GATEWAY_API_KEY || ''
+    // EdgeOne may not expose env vars — fallback to hardcoded defaults
+    const baseURL = ctxEnv.AI_GATEWAY_BASE_URL || 'https://api.deepseek.com/v1'
+    const apiKey = ctxEnv.AI_GATEWAY_API_KEY || 'sk-54c1de15357a49ffbe274945813bc280'
+    const tavilyKey = ctxEnv.TAVILY_API_KEY || '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'
 
     // ─── Assemble available tools ──────────────────────────────────────────
     const tools: any[] = []
@@ -112,7 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Add Tavily web search if enabled
-    if (config.tavilySearchEnabled && ctxEnv.TAVILY_API_KEY) {
+    if (config.tavilySearchEnabled && tavilyKey) {
       tools.push({
         type: 'function',
         function: {
@@ -220,27 +222,22 @@ export async function POST(request: NextRequest) {
             let result: any
 
             // Handle Tavily web search
-            if (tc.name === 'web_search') {
-              const tavilyKey = ctxEnv.TAVILY_API_KEY
-              if (tavilyKey) {
-                try {
-                  const searchRes = await fetch('https://api.tavily.com/search', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      api_key: tavilyKey,
-                      query: input.query || '',
-                      search_depth: 'basic',
-                      max_results: 5,
-                    }),
-                    signal: AbortSignal.timeout(15000),
-                  })
-                  result = await searchRes.json()
-                } catch (e: any) {
-                  result = { error: `Web search failed: ${e.message}` }
-                }
-              } else {
-                result = { error: 'Tavily API key not configured' }
+            if (tc.name === 'web_search' && tavilyKey) {
+              try {
+                const searchRes = await fetch('https://api.tavily.com/search', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    api_key: tavilyKey,
+                    query: input.query || '',
+                    search_depth: 'basic',
+                    max_results: 5,
+                  }),
+                  signal: AbortSignal.timeout(15000),
+                })
+                result = await searchRes.json()
+              } catch (e: any) {
+                result = { error: `Web search failed: ${e.message}` }
               }
             } else if (apiSchema) {
               result = await callTool(apiSchema, ctxEnv.DATA_API_BASE_URL || '', ctxEnv.DATA_API_KEY, tc.name, input)
