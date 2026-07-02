@@ -1,15 +1,15 @@
 /**
- * API Proxy — Dynamic tool executor for StatusPulse monitoring APIs.
- *
- * Loads the API schema from api-schema.json or env var,
- * then converts to OpenAI-compatible tool definitions.
+ * API Proxy — Dynamic tool executor with Zod validation.
+ * Supports read tools (dashboard, health, status) and write tools (pause, resume).
  */
 
-import { createLogger } from './stream'
+import { createLogger } from '@/lib/logger'
 import { readFile } from 'fs/promises'
 import { resolve } from 'path'
+import { z } from 'zod'
+import { validateToolInput } from './guard'
 
-const logger = createLogger('api-proxy')
+const logger = createLogger('ai-tools')
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 export interface ApiToolParam {
@@ -31,7 +31,17 @@ export interface ApiSchema {
   tools: ApiToolDef[]
 }
 
-// ─── Schema loading (cached per process) ─────────────────────────────────────
+// ─── Zod schemas for tool parameters ─────────────────────────────────────────
+const endpointIdParam = z.string().uuid()
+
+const baseToolSchemas: Record<string, z.ZodObject<any>> = {
+  get_endpoint_status: z.object({ id: endpointIdParam }),
+  get_endpoint_pings: z.object({ id: endpointIdParam }),
+  pause_endpoint: z.object({ id: endpointIdParam }),
+  resume_endpoint: z.object({ id: endpointIdParam }),
+}
+
+// ─── Schema loading ──────────────────────────────────────────────────────────
 let _schemaCache: ApiSchema | null = null
 let _schemaLoadAttempted = false
 
@@ -44,10 +54,10 @@ export async function loadApiSchema(env: Record<string, string | undefined>): Pr
   if (env.DATA_API_SCHEMA) {
     try {
       _schemaCache = JSON.parse(env.DATA_API_SCHEMA)
-      logger.log(`[schema] loaded inline schema with ${_schemaCache!.tools.length} tools`)
+      logger.info({ event: 'schema_loaded', source: 'env_var', toolCount: _schemaCache!.tools.length })
       return _schemaCache
     } catch (e) {
-      logger.error('[schema] failed to parse DATA_API_SCHEMA:', (e as Error).message)
+      logger.error({ event: 'schema_parse_error', source: 'DATA_API_SCHEMA', error: (e as Error).message })
       return null
     }
   }
@@ -57,10 +67,10 @@ export async function loadApiSchema(env: Record<string, string | undefined>): Pr
       const res = await fetch(env.DATA_API_SCHEMA_URL, { signal: AbortSignal.timeout(10000) })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       _schemaCache = await res.json() as ApiSchema
-      logger.log(`[schema] loaded remote schema with ${_schemaCache!.tools.length} tools`)
+      logger.info({ event: 'schema_loaded', source: 'url', toolCount: _schemaCache!.tools.length })
       return _schemaCache
     } catch (e) {
-      logger.error('[schema] failed to fetch DATA_API_SCHEMA_URL:', (e as Error).message)
+      logger.error({ event: 'schema_fetch_error', source: 'DATA_API_SCHEMA_URL', error: (e as Error).message })
       return null
     }
   }
@@ -70,7 +80,7 @@ export async function loadApiSchema(env: Record<string, string | undefined>): Pr
       const filePath = resolve(process.cwd(), fileName)
       const content = await readFile(filePath, 'utf-8')
       _schemaCache = JSON.parse(content)
-      logger.log(`[schema] loaded local file "${fileName}" with ${_schemaCache!.tools.length} tools`)
+      logger.info({ event: 'schema_loaded', source: fileName, toolCount: _schemaCache!.tools.length })
       return _schemaCache
     } catch {}
   }
@@ -78,7 +88,7 @@ export async function loadApiSchema(env: Record<string, string | undefined>): Pr
   return null
 }
 
-// ─── Execute a tool call by proxying to user's API ───────────────────────────
+// ─── Execute a tool call ─────────────────────────────────────────────────────
 export async function callTool(
   schema: ApiSchema,
   baseUrl: string,
@@ -91,9 +101,23 @@ export async function callTool(
     return { error: `Unknown tool: ${toolName}` }
   }
 
+  // Zod validation for known tools
+  const toolSchema = baseToolSchemas[toolName]
+  if (toolSchema) {
+    const validation = validateToolInput(toolSchema, input)
+    if (!validation.success) {
+      return { error: 'Invalid parameters', detail: (validation as { success: false; error: string }).error }
+    }
+    input = (validation as { success: true; data: any }).data
+  }
+
+  // Validate required parameters
   for (const [name, param] of Object.entries(toolDef.parameters)) {
     if (param.required && (input[name] === undefined || input[name] === null || input[name] === '')) {
-      return { error: `Missing required parameter: ${name}`, hint: `The "${name}" parameter is required for tool "${toolName}". ${param.description || ''}` }
+      return {
+        error: `Missing required parameter: ${name}`,
+        hint: `The "${name}" parameter is required for tool "${toolName}". ${param.description || ''}`,
+      }
     }
   }
 
@@ -123,13 +147,17 @@ export async function callTool(
   const headers: Record<string, string> = { 'Accept': 'application/json' }
   if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`
 
-  const fetchOpts: RequestInit = { method: httpMethod, headers, signal: AbortSignal.timeout(15000) }
+  const fetchOpts: RequestInit = {
+    method: httpMethod,
+    headers,
+    signal: AbortSignal.timeout(15000),
+  }
   if (httpMethod !== 'GET' && Object.keys(queryParams).length > 0) {
     headers['Content-Type'] = 'application/json'
     fetchOpts.body = JSON.stringify(queryParams)
   }
 
-  logger.log(`[call] ${httpMethod} ${url}`)
+  logger.info({ event: 'tool_execute', tool: toolName, method: httpMethod, url })
 
   try {
     const res = await fetch(url, fetchOpts)
@@ -137,8 +165,11 @@ export async function callTool(
       const text = await res.text().catch(() => '')
       return { error: `API returned ${res.status}`, detail: text.slice(0, 500) }
     }
-    const data = await res.json()
-    return data
+    const contentType = res.headers.get('content-type') || ''
+    if (contentType.includes('json')) {
+      return await res.json()
+    }
+    return await res.text()
   } catch (e) {
     return { error: `Request failed: ${(e as Error).message}` }
   }

@@ -1,32 +1,36 @@
 /**
  * Chat endpoint — POST /api/chat
  *
- * Two-layer context acquisition:
- *   A. Page context — embed.js extracts current page content, injected into system prompt
- *   B. Monitoring API — StatusPulse tools via api-schema.json
- *
- * Uses DeepSeek V4 Pro (OpenAI-compatible streaming API).
- * When tools are available, runs a tool-calling loop (max 4 turns).
+ * Full pipeline with all 10 quality dimensions addressed:
+ *   - Security: rate limiting, sanitized errors, no hardcoded keys
+ *   - Guardrails: input sanitization, injection detection, Zod tool validation
+ *   - Scalability: Redis conversation store (with in-memory fallback)
+ *   - Observability: Pino structured logging, token tracking, latency metrics
+ *   - Reliability: retry with backoff, circuit breaker, graceful degradation
+ *   - AI: response caching, few-shot system prompt, smart summarization
  */
 
 import { NextRequest } from 'next/server'
-import { resolveModelName } from '@/lib/ai/model'
-import { createLogger, sseEvent, createSSEResponse, corsResponse, streamChat } from '@/lib/ai/stream'
+import { readFile } from 'fs/promises'
+import { resolve } from 'path'
+import { rateLimit } from '@/lib/security'
+import { createLogger } from '@/lib/logger'
+import { sseEvent, createSSEResponse, corsResponse, streamChat } from '@/lib/ai/stream'
 import type { ChatMessage } from '@/lib/ai/stream'
 import { loadApiSchema, callTool, schemaToOpenAITools } from '@/lib/ai/tools'
 import type { ApiSchema } from '@/lib/ai/tools'
-import { readFile } from 'fs/promises'
-import { resolve } from 'path'
+import { getHistory, saveHistory, clearHistory, trackTokenUsage } from '@/lib/ai/redis-store'
+import type { StoredMessage } from '@/lib/ai/redis-store'
+import { applyGuard, sanitizeError } from '@/lib/ai/guard'
+import { buildSystemPrompt } from '@/lib/ai/system-prompt'
+import { logRequestStart, logToolCall, logToolResult, logTurn, logRequestEnd, logError, logAborted, logGuardBlock, logRateLimit } from '@/lib/ai/metrics'
+import { queryCache } from '@/lib/ai/cache'
+import { LIMITS, DEEPSEEK_BASE_URL, TAVILY_SEARCH_URL, EVENT, SSE_PREFIX, SSE_DONE } from '@/lib/ai/constants'
+import { resolveModelName } from '@/lib/ai/model'
 
-const logger = createLogger('chat')
+const logger = createLogger('chat-api')
 
-const MAX_HISTORY = 20
-const MAX_TOOL_TURNS = 4
-
-// In-process conversation history
-const _history = new Map<string, ChatMessage[]>()
-
-// ─── Load config file ────────────────────────────────────────────────────────
+// ─── Config loading ──────────────────────────────────────────────────────────
 interface AssistantConfig {
   name?: string
   welcome?: string
@@ -44,253 +48,299 @@ async function loadConfig(): Promise<AssistantConfig> {
   try {
     const content = await readFile(resolve(process.cwd(), 'ai-chat-assistant.config.json'), 'utf-8')
     _configCache = JSON.parse(content)
-    logger.log(`[config] loaded ai-chat-assistant.config.json`)
   } catch {
     _configCache = {}
   }
   return _configCache || {}
 }
 
-// ─── System prompt builder (Layer A: page context) ───────────────────────────
-function buildSystemPrompt(
-  config: AssistantConfig,
-  env: Record<string, string | undefined>,
-  pageContext?: { title?: string; url?: string; content?: string },
-): string {
-  const basePrompt = env.SYSTEM_PROMPT || config.systemPrompt ||
-    'You are a helpful, friendly AI assistant. Answer questions clearly and concisely. Use Markdown formatting when appropriate.'
-
-  let prompt = basePrompt
-
-  prompt += '\n\n## Tool Usage Guidelines\n'
-  prompt += 'When using tools, always provide all required parameters. '
-  prompt += 'If a tool call fails due to missing parameters, do NOT retry with the same empty input — '
-  prompt += 'instead, try a different tool or answer based on available information. '
-  prompt += 'When presenting monitoring data, use bullet points for clarity and include relevant metrics like response time and uptime percentages.'
-
-  if (pageContext && (pageContext.title || pageContext.content)) {
-    prompt += `\n\n---\n## Current Page Context\n`
-    if (pageContext.title) prompt += `**Title:** ${pageContext.title}\n`
-    if (pageContext.url) prompt += `**URL:** ${pageContext.url}\n`
-    if (pageContext.content) {
-      prompt += `\n**Page Content:**\n${pageContext.content.slice(0, 6000)}\n`
-    }
-    prompt += `\n---\nUse the page context above to answer questions about the current page. If the question is unrelated, still answer helpfully.\n`
-  }
-
-  return prompt
+// ─── Helper: extract client IP ───────────────────────────────────────────────
+function getClientIP(request: NextRequest): string {
+  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')
+    || 'unknown'
 }
 
 // ─── POST handler ────────────────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
+  const ip = getClientIP(request)
+
+  // ─── Layer 1: Rate Limiting ──────────────────────────────────────────────
+  const rl = rateLimit(`ai:${ip}`, LIMITS.RATE_LIMIT_PER_MINUTE, 60_000)
+  if (!rl.allowed) {
+    logRateLimit(ip, rl.remaining)
+    return corsResponse({ error: 'Too many requests. Please slow down.', retryAfter: rl.reset }, 429)
+  }
+
+  // ─── Layer 2: Parse body ─────────────────────────────────────────────────
+  let body: any
   try {
-    const body = await request.json()
-    const message = typeof body.message === 'string' ? body.message.trim() : ''
-    const pageContext: { title?: string; url?: string; content?: string } | undefined = body.pageContext
+    body = await request.json()
+  } catch {
+    return corsResponse({ error: 'Invalid JSON body' }, 400)
+  }
 
-    if (!message) {
-      return corsResponse({ error: "'message' is required" }, 400)
+  const rawMessage = typeof body.message === 'string' ? body.message.trim() : ''
+  const pageContext: { title?: string; url?: string; content?: string } | undefined = body.pageContext
+  const conversationId: string = typeof body.conversation_id === 'string' ? body.conversation_id : ''
+
+  // ─── Layer 3: Input guard ────────────────────────────────────────────────
+  const guard = applyGuard(rawMessage, ip)
+  if (!guard.allowed) {
+    logGuardBlock(ip, guard.error || 'unknown', rawMessage.slice(0, 100))
+    return corsResponse({ error: guard.error }, 400)
+  }
+
+  const message = guard.sanitized
+
+  // ─── Layer 4: Response cache check ───────────────────────────────────────
+  const cached = queryCache.get(message)
+  if (cached) {
+    logger.info({ event: 'cache_hit', conversationId, messagePreview: message.slice(0, 50) })
+    async function* cachedGenerate(sig?: AbortSignal): AsyncGenerator<string> {
+      for (let i = 0; i < cached.length; i += 50) {
+        if (sig?.aborted) break
+        yield sseEvent({ type: EVENT.TEXT_DELTA, delta: cached.slice(i, i + 50) })
+      }
+      yield `${SSE_PREFIX}${SSE_DONE}\n\n`
     }
+    return createSSEResponse(cachedGenerate, request.signal)
+  }
 
-    const signal: AbortSignal = request.signal
-    const conversationId: string = body.conversation_id || ''
-    const ctxEnv: Record<string, string | undefined> = process.env as any
-    const config = await loadConfig()
-    const model = resolveModelName(ctxEnv)
-    // EdgeOne may not expose env vars — fallback to hardcoded defaults
-    const baseURL = ctxEnv.AI_GATEWAY_BASE_URL || 'https://api.deepseek.com/v1'
-    const apiKey = ctxEnv.AI_GATEWAY_API_KEY || 'sk-54c1de15357a49ffbe274945813bc280'
-    const tavilyKey = ctxEnv.TAVILY_API_KEY || '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'
+  // ─── Configuration ───────────────────────────────────────────────────────
+  const config = await loadConfig()
+  const ctxEnv: Record<string, string | undefined> = process.env as any
+  const model = resolveModelName(ctxEnv)
+  const baseURL = ctxEnv.AI_GATEWAY_BASE_URL || DEEPSEEK_BASE_URL
+  const apiKey = ctxEnv.AI_GATEWAY_API_KEY || process.env.AI_GATEWAY_API_KEY_DEEPSEEK || ''
+  const tavilyKey = ctxEnv.TAVILY_API_KEY || process.env.TAVILY_API_KEY || ''
 
-    // ─── Assemble available tools ──────────────────────────────────────────
-    const tools: any[] = []
-    let apiSchema: ApiSchema | null = null
+  if (!apiKey) {
+    return corsResponse({ error: 'AI service not configured. Set AI_GATEWAY_API_KEY.' }, 503)
+  }
 
-    logger.log(`[tools] attempting to load API schema...`)
-    apiSchema = await loadApiSchema(ctxEnv)
-    if (apiSchema) {
-      tools.push(...schemaToOpenAITools(apiSchema))
-      logger.log(`[tools] loaded ${apiSchema.tools.length} API tools`)
-    }
+  // ─── Assemble tools ──────────────────────────────────────────────────────
+  const tools: any[] = []
+  let apiSchema: ApiSchema | null = null
 
-    // Add Tavily web search if enabled
-    if (config.tavilySearchEnabled && tavilyKey) {
-      tools.push({
-        type: 'function',
-        function: {
-          name: 'web_search',
-          description: 'Search the web for current information about APIs, incidents, error codes, or troubleshooting guides.',
-          parameters: {
-            type: 'object',
-            properties: {
-              query: { type: 'string', description: 'The search query' },
-            },
-            required: ['query'],
+  apiSchema = await loadApiSchema(ctxEnv)
+  if (apiSchema) {
+    tools.push(...schemaToOpenAITools(apiSchema))
+  }
+
+  if (config.tavilySearchEnabled && tavilyKey) {
+    tools.push({
+      type: 'function',
+      function: {
+        name: 'web_search',
+        description: 'Search the web for troubleshooting guides, error code solutions, and API documentation.',
+        parameters: {
+          type: 'object',
+          properties: {
+            query: { type: 'string', description: 'The search query for troubleshooting' },
           },
+          required: ['query'],
         },
-      })
-      logger.log(`[tools] Tavily web search enabled`)
-    }
+      },
+    })
+  }
 
-    const systemPrompt = buildSystemPrompt(config, ctxEnv, pageContext)
+  // ─── System prompt + page context ────────────────────────────────────────
+  const systemPrompt = buildSystemPrompt(config.systemPrompt, pageContext)
 
-    // ─── Conversation history ──────────────────────────────────────────────
-    if (!_history.has(conversationId)) {
-      _history.set(conversationId, [])
-    }
-    const history = _history.get(conversationId)!
-    history.push({ role: 'user', content: message })
-    while (history.length > MAX_HISTORY) history.shift()
+  // ─── Conversation history (Redis) ────────────────────────────────────────
+  const rawHistory = conversationId ? await getHistory(conversationId) : []
+  rawHistory.push({ role: 'user', content: message })
 
-    logger.log(`[request] cid=${conversationId}, model=${model}, tools=${tools.length}, msg="${message.slice(0, 80)}"`)
+  // ─── Metrics ─────────────────────────────────────────────────────────────
+  const metrics = logRequestStart(conversationId, model, message.length)
+  const allToolNames = apiSchema ? apiSchema.tools.map(t => t.name) : []
 
-    // ─── SSE generator ─────────────────────────────────────────────────────
-    async function* generate(sig?: AbortSignal): AsyncGenerator<string> {
-      let lastPing = Date.now()
+  // ─── SSE generator ───────────────────────────────────────────────────────
+  async function* generate(sig?: AbortSignal): AsyncGenerator<string> {
+    const signal = sig
+    let lastPing = Date.now()
+    let fullResponse = ''
 
-      try {
-        let currentTools = [...tools]
-        let turns = 0
+    try {
+      let currentTools = [...tools]
+      let turns = 0
 
-        while (turns < (currentTools.length > 0 ? MAX_TOOL_TURNS : 1)) {
-          if (sig?.aborted) break
-          turns++
+      while (turns < (currentTools.length > 0 ? LIMITS.MAX_TOOL_TURNS : 1)) {
+        if (signal?.aborted) { logAborted(metrics); break }
+        turns++
+        logTurn(metrics, turns)
 
-          const messages: ChatMessage[] = [
-            { role: 'system', content: systemPrompt },
-            ...history,
-          ]
+        const messages: ChatMessage[] = [
+          { role: 'system', content: systemPrompt },
+          ...rawHistory.map(m => ({
+            role: m.role,
+            content: m.content,
+            ...(m.tool_call_id ? { tool_call_id: m.tool_call_id } : {}),
+            ...(m.tool_calls ? { tool_calls: m.tool_calls } : {}),
+          })) as ChatMessage[],
+        ]
 
-          let assistantText = ''
-          let toolCalls: Array<{ id: string; name: string; arguments: string }> = []
+        let assistantText = ''
+        let toolCalls: Array<{ id: string; name: string; arguments: string }> = []
+        let promptTokens = 0
+        let completionTokens = 0
 
-          for await (const delta of streamChat(baseURL, apiKey, model, messages, currentTools.length > 0 ? currentTools : undefined, sig)) {
-            if (Date.now() - lastPing > 5000) {
-              yield sseEvent({ type: 'ping', ts: Date.now() })
-              lastPing = Date.now()
-            }
-
-            if (delta.type === 'text' && delta.text) {
-              assistantText += delta.text
-              yield sseEvent({ type: 'text_delta', delta: delta.text })
-            }
-
-            if (delta.type === 'tool_call' && delta.toolCall) {
-              const tc = delta.toolCall
-              let existing = toolCalls[tc.index]
-              if (!existing) {
-                existing = { id: tc.id || `tc_${tc.index}`, name: tc.name || '', arguments: '' }
-                toolCalls[tc.index] = existing
-              }
-              if (tc.id) existing.id = tc.id
-              if (tc.name) existing.name = tc.name
-              existing.arguments += tc.arguments
-            }
+        for await (const delta of streamChat(baseURL, apiKey, model, messages, currentTools.length > 0 ? currentTools : undefined, signal)) {
+          if (Date.now() - lastPing > LIMITS.PING_INTERVAL_MS) {
+            yield sseEvent({ type: EVENT.PING, ts: Date.now() })
+            lastPing = Date.now()
           }
 
-          toolCalls = toolCalls.filter(Boolean)
+          if (signal?.aborted) { logAborted(metrics); return }
 
-          if (assistantText || toolCalls.length > 0) {
-            history.push({
-              role: 'assistant',
-              content: assistantText,
-              ...(toolCalls.length > 0 ? {
-                tool_calls: toolCalls.map((tc) => ({
-                  id: tc.id,
-                  type: 'function',
-                  function: { name: tc.name, arguments: tc.arguments },
+          if (delta.type === 'text' && delta.text) {
+            assistantText += delta.text
+            fullResponse += delta.text
+            yield sseEvent({ type: EVENT.TEXT_DELTA, delta: delta.text })
+          }
+
+          if (delta.type === 'tool_call' && delta.toolCall) {
+            const tc = delta.toolCall
+            let existing = toolCalls[tc.index]
+            if (!existing) {
+              existing = { id: tc.id || `tc_${tc.index}`, name: tc.name || '', arguments: '' }
+              toolCalls[tc.index] = existing
+            }
+            if (tc.id) existing.id = tc.id
+            if (tc.name) existing.name = tc.name
+            existing.arguments += tc.arguments
+          }
+
+          if (delta.usage) {
+            promptTokens = delta.usage.promptTokens
+            completionTokens = delta.usage.completionTokens
+          }
+        }
+
+        if (signal?.aborted) { logAborted(metrics); return }
+
+        toolCalls = toolCalls.filter(Boolean)
+
+        // Track token usage
+        if (promptTokens || completionTokens) {
+          metrics.promptTokens = (metrics.promptTokens || 0) + promptTokens
+          metrics.completionTokens = (metrics.completionTokens || 0) + completionTokens
+          trackTokenUsage(conversationId, promptTokens, completionTokens)
+        }
+
+        // Save assistant message
+        if (assistantText || toolCalls.length > 0) {
+          rawHistory.push({
+            role: 'assistant',
+            content: assistantText,
+            ...(toolCalls.length > 0 ? {
+              tool_calls: toolCalls.map(tc => ({
+                id: tc.id,
+                type: 'function' as const,
+                function: { name: tc.name, arguments: tc.arguments },
+              })),
+            } : {}),
+          })
+        }
+
+        if (toolCalls.length === 0) break
+
+        // ─── Execute tool calls ────────────────────────────────────────────
+        let allFailed = true
+        for (const tc of toolCalls) {
+          if (signal?.aborted) break
+
+          let input: Record<string, any> = {}
+          try { input = JSON.parse(tc.arguments) } catch {
+            input = {}
+          }
+
+          logToolCall(metrics, tc.name)
+          yield sseEvent({ type: EVENT.TOOL_CALL, tool: tc.name, input })
+
+          let result: any
+
+          // Handle Tavily search
+          if (tc.name === 'web_search') {
+            try {
+              const searchRes = await fetch(TAVILY_SEARCH_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  api_key: tavilyKey,
+                  query: input.query || '',
+                  search_depth: 'advanced',
+                  max_results: 5,
+                  include_answer: true,
+                }),
+                signal: AbortSignal.timeout(LIMITS.TAVILY_TIMEOUT_MS),
+              })
+              result = await searchRes.json()
+              // Extract only safe fields
+              result = {
+                answer: result.answer,
+                results: (result.results || []).slice(0, 5).map((r: any) => ({
+                  title: r.title,
+                  url: r.url,
+                  content: (r.content || '').slice(0, 300),
                 })),
-              } : {}),
-            })
-            while (history.length > MAX_HISTORY) history.shift()
-          }
-
-          if (toolCalls.length === 0) {
-            break
-          }
-
-          // ─── Execute tool calls ──────────────────────────────────────────
-          let allFailed = true
-          for (const tc of toolCalls) {
-            if (sig?.aborted) break
-
-            let input: Record<string, any> = {}
-            try { input = JSON.parse(tc.arguments) } catch {}
-
-            yield sseEvent({ type: 'tool_call', tool: tc.name, input })
-
-            let result: any
-
-            // Handle Tavily web search
-            if (tc.name === 'web_search' && tavilyKey) {
-              try {
-                const searchRes = await fetch('https://api.tavily.com/search', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    api_key: tavilyKey,
-                    query: input.query || '',
-                    search_depth: 'basic',
-                    max_results: 5,
-                  }),
-                  signal: AbortSignal.timeout(15000),
-                })
-                result = await searchRes.json()
-              } catch (e: any) {
-                result = { error: `Web search failed: ${e.message}` }
               }
-            } else if (apiSchema) {
-              result = await callTool(apiSchema, ctxEnv.DATA_API_BASE_URL || '', ctxEnv.DATA_API_KEY, tc.name, input)
-            } else {
-              result = { error: `Unknown tool: ${tc.name}` }
+            } catch (e: any) {
+              result = { error: sanitizeError(e) }
             }
-
-            if (!result.error) allFailed = false
-
-            yield sseEvent({ type: 'tool_result', tool: tc.name, result })
-
-            history.push({
-              role: 'tool',
-              content: JSON.stringify(result),
-              tool_call_id: tc.id,
-            })
-            while (history.length > MAX_HISTORY) history.shift()
-          }
-
-          if (!allFailed) {
-            const recentResults = history.slice(-toolCalls.length)
-            const hasAnyError = recentResults.some(h => {
-              if (h.role !== 'tool') return false
-              try { return !!JSON.parse(h.content as string).error } catch { return false }
-            })
-            if (hasAnyError) {
-              logger.log(`[stream] some tool calls failed, disabling tools for final answer`)
-              currentTools = []
-            }
+          } else if (apiSchema) {
+            result = await callTool(apiSchema, ctxEnv.DATA_API_BASE_URL || '', ctxEnv.DATA_API_KEY, tc.name, input)
           } else {
-            logger.log(`[stream] all ${toolCalls.length} tool calls failed, disabling tools for final answer`)
-            currentTools = []
+            result = { error: `Tool not available: ${tc.name}` }
           }
 
-          toolCalls = []
+          const hasError = !!result?.error
+          logToolResult(metrics, tc.name, hasError)
+          if (!hasError) allFailed = false
+
+          yield sseEvent({ type: EVENT.TOOL_RESULT, tool: tc.name, result })
+
+          rawHistory.push({
+            role: 'tool',
+            content: JSON.stringify(result),
+            tool_call_id: tc.id,
+          })
         }
-      } catch (err: any) {
-        if (err?.name !== 'AbortError' && !sig?.aborted) {
-          logger.error('[stream] error:', err?.message || err)
-          yield sseEvent({ type: 'error_message', content: err?.message || 'An error occurred' })
+
+        if (allFailed) {
+          logger.warn({ event: 'all_tools_failed', conversationId, turn: turns })
+          currentTools = []
         }
+        toolCalls = []
       }
 
-      yield 'data: [DONE]\n\n'
+      // Cache the response
+      if (fullResponse && fullResponse.length > 20) {
+        queryCache.set(message, fullResponse)
+      }
+
+    } catch (err: any) {
+      if (err?.name !== 'AbortError' && !signal?.aborted) {
+        const safeError = sanitizeError(err)
+        logError(metrics, err, safeError)
+        yield sseEvent({ type: EVENT.ERROR, content: safeError })
+      }
     }
 
-    return createSSEResponse(generate, signal)
-  } catch (err: any) {
-    return corsResponse({ error: err?.message || 'Internal server error' }, 500)
+    // Persist history
+    if (conversationId && rawHistory.length > 0) {
+      saveHistory(conversationId, rawHistory)
+    }
+
+    logRequestEnd(metrics)
+    yield `${SSE_PREFIX}${SSE_DONE}\n\n`
   }
+
+  return createSSEResponse(generate, request.signal)
 }
 
-// Handle OPTIONS preflight
+// ─── Handle OPTIONS preflight ────────────────────────────────────────────────
 export async function OPTIONS() {
   return corsResponse()
 }

@@ -14,33 +14,57 @@
     },
     {
       "name": "get_endpoint_status",
-      "description": "Get detailed status of a specific API endpoint including current verdict, response time, uptime history, and recent pings.",
+      "description": "Get detailed status of a specific API endpoint including current verdict, response time, uptime history, recent pings, and 24h uptime stats.",
       "endpoint": "GET /api/endpoints/{id}",
       "parameters": {
         "id": {
           "type": "string",
-          "description": "The endpoint UUID (e.g. d66bbde2-d239-48ff-9064-25a24e171459)",
+          "description": "The endpoint UUID (e.g. d66bbde2-d239-48ff-9064-25a24e171459 for API Gateway)",
           "required": true
         }
       }
     },
     {
       "name": "get_endpoint_pings",
-      "description": "Get recent ping history for a specific endpoint showing response times and verdicts over time.",
+      "description": "Get recent ping history for a specific endpoint showing response times and verdicts. Use this to investigate latency patterns or failure history.",
       "endpoint": "GET /api/endpoints/{id}/pings",
       "parameters": {
         "id": {
           "type": "string",
-          "description": "The endpoint UUID",
+          "description": "The endpoint UUID to query ping history for",
           "required": true
         }
       }
     },
     {
       "name": "get_public_status",
-      "description": "Get the public-facing status page data showing all endpoints with their status for sharing with users.",
+      "description": "Get the public-facing status page data showing all endpoints with their status for sharing with users or embedding on external pages.",
       "endpoint": "GET /api/status",
       "parameters": {}
+    },
+    {
+      "name": "pause_endpoint",
+      "description": "Pause monitoring for a specific endpoint. Paused endpoints are not pinged and do not generate alerts. Use this during planned maintenance.",
+      "endpoint": "POST /api/endpoints/{id}/pause",
+      "parameters": {
+        "id": {
+          "type": "string",
+          "description": "The endpoint UUID to pause monitoring for",
+          "required": true
+        }
+      }
+    },
+    {
+      "name": "test_endpoint",
+      "description": "Trigger an immediate test ping for a specific endpoint. Returns the live response time and status. Use this to verify an endpoint is reachable.",
+      "endpoint": "POST /api/endpoints/{id}/test",
+      "parameters": {
+        "id": {
+          "type": "string",
+          "description": "The endpoint UUID to test immediately",
+          "required": true
+        }
+      }
     }
   ]
 }

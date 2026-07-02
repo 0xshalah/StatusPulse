@@ -1,27 +1,26 @@
 /**
- * Shared utilities: logger, SSE helpers, OpenAI-compatible streaming client.
- * Adapted for DeepSeek provider.
+ * Shared utilities: SSE helpers, OpenAI-compatible streaming client with retry,
+ * circuit breaker integration, error sanitization.
  */
+import { createLogger } from '@/lib/logger'
+import { isCircuitOpen, recordSuccess, recordFailure } from './circuit-breaker'
+import { sanitizeError } from './guard'
+import { RETRY, LIMITS, DEEPSEEK_BASE_URL, EVENT, SSE_PREFIX, SSE_DONE } from './constants'
 
-// ─── Logger ──────────────────────────────────────────────────────────────────
-export function createLogger(tag: string) {
-  const prefix = `[${tag}]`
-  return {
-    log: (...args: any[]) => console.log(prefix, ...args),
-    error: (...args: any[]) => console.error(prefix, ...args),
-  }
-}
+const logger = createLogger('ai-stream')
 
 // ─── CORS headers ────────────────────────────────────────────────────────────
+const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_URL || 'https://statuspulse.edgeone.dev'
+
 const CORS_HEADERS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, makers-conversation-id, Authorization',
 }
 
 // ─── SSE helpers ─────────────────────────────────────────────────────────────
 export function sseEvent(data: Record<string, any>): string {
-  return `data: ${JSON.stringify(data)}\n\n`
+  return `${SSE_PREFIX}${JSON.stringify(data)}\n\n`
 }
 
 export function createSSEResponse(
@@ -38,7 +37,8 @@ export function createSSEResponse(
         }
       } catch (err: any) {
         if (err?.name !== 'AbortError') {
-          controller.enqueue(encoder.encode(sseEvent({ type: 'error_message', content: err?.message || 'Unknown error' })))
+          const safe = sanitizeError(err)
+          controller.enqueue(encoder.encode(sseEvent({ type: EVENT.ERROR, content: safe })))
         }
       } finally {
         try { controller.close() } catch {}
@@ -67,7 +67,7 @@ export function corsResponse(body?: any, status = 200): Response {
   })
 }
 
-// ─── OpenAI-compatible streaming chat ────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
   content: string | any[]
@@ -80,8 +80,64 @@ export interface StreamDelta {
   text?: string
   toolCall?: { index: number; id: string; name: string; arguments: string }
   finishReason?: string | null
+  usage?: { promptTokens: number; completionTokens: number }
 }
 
+// ─── Retry with exponential backoff ──────────────────────────────────────────
+async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  circuitName: string,
+): Promise<Response> {
+  if (isCircuitOpen(circuitName)) {
+    throw new Error('Service temporarily unavailable — circuit breaker open')
+  }
+
+  let lastError: Error | null = null
+
+  for (let attempt = 0; attempt < RETRY.MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, options)
+
+      if (res.ok) {
+        recordSuccess(circuitName)
+        return res
+      }
+
+      // Don't retry 4xx errors (client errors)
+      if (res.status >= 400 && res.status < 500) {
+        const text = await res.text().catch(() => '')
+        throw new Error(`${res.status} ${text.slice(0, 200)}`)
+      }
+
+      // 5xx — retryable
+      if (attempt < RETRY.MAX_ATTEMPTS - 1) {
+        const delay = Math.min(RETRY.BASE_DELAY_MS * Math.pow(2, attempt), RETRY.MAX_DELAY_MS)
+        logger.info({ event: 'retry', attempt: attempt + 1, delay, circuit: circuitName })
+        await sleep(delay)
+      } else {
+        const text = await res.text().catch(() => '')
+        throw new Error(`${res.status} ${text.slice(0, 200)}`)
+      }
+    } catch (err: any) {
+      lastError = err
+      if (attempt < RETRY.MAX_ATTEMPTS - 1) {
+        const delay = Math.min(RETRY.BASE_DELAY_MS * Math.pow(2, attempt), RETRY.MAX_DELAY_MS)
+        logger.info({ event: 'retry', attempt: attempt + 1, delay, circuit: circuitName, error: sanitizeError(err) })
+        await sleep(delay)
+      }
+    }
+  }
+
+  recordFailure(circuitName)
+  throw lastError || new Error('All retry attempts failed')
+}
+
+// ─── OpenAI-compatible streaming chat ─────────────────────────────────────────
 export async function* streamChat(
   baseURL: string,
   apiKey: string,
@@ -90,19 +146,19 @@ export async function* streamChat(
   tools?: any[],
   signal?: AbortSignal,
 ): AsyncGenerator<StreamDelta> {
-  const url = `${baseURL.replace(/\/+$/, '')}/chat/completions`
+  const url = `${(baseURL || DEEPSEEK_BASE_URL).replace(/\/+$/, '')}/chat/completions`
 
   const body: any = {
     model,
     messages,
     stream: true,
-    max_tokens: 8192,
+    max_tokens: LIMITS.MAX_TOKENS,
   }
   if (tools && tools.length > 0) {
     body.tools = tools
   }
 
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -110,18 +166,15 @@ export async function* streamChat(
     },
     body: JSON.stringify(body),
     signal,
-  })
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`${res.status} ${text.slice(0, 200)}`)
-  }
+  }, 'deepseek')
 
   const reader = res.body?.getReader()
   if (!reader) throw new Error('No response body')
 
   const decoder = new TextDecoder()
   let buffer = ''
+  let promptTokens = 0
+  let completionTokens = 0
 
   while (true) {
     const { done, value } = await reader.read()
@@ -133,16 +186,22 @@ export async function* streamChat(
 
     for (const line of lines) {
       const trimmed = line.trim()
-      if (!trimmed.startsWith('data: ')) continue
-      const payload = trimmed.slice(6)
-      if (payload === '[DONE]') {
-        yield { type: 'done' }
+      if (!trimmed.startsWith(SSE_PREFIX)) continue
+      const payload = trimmed.slice(SSE_PREFIX.length)
+      if (payload === SSE_DONE) {
+        yield { type: 'done', usage: { promptTokens, completionTokens } }
         return
       }
       try {
         const chunk = JSON.parse(payload)
         const choice = chunk.choices?.[0]
         if (!choice) continue
+
+        // Track token usage
+        if (chunk.usage) {
+          promptTokens = chunk.usage.prompt_tokens || 0
+          completionTokens = chunk.usage.completion_tokens || 0
+        }
 
         const delta = choice.delta
         if (delta?.content) {
@@ -162,7 +221,7 @@ export async function* streamChat(
           }
         }
         if (choice.finish_reason) {
-          yield { type: 'done', finishReason: choice.finish_reason }
+          yield { type: 'done', finishReason: choice.finish_reason, usage: { promptTokens, completionTokens } }
         }
       } catch {}
     }
