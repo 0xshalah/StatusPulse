@@ -1,7 +1,7 @@
 # StatusPulse — LOOP.md
 
 > **Agent-written verification log.** Write → Verify → Fix → Verify.  
-> **Maker:** Claude Code · **Checker:** TestSprite CLI  
+> **Maker:** AI Coding Agent · **Checker:** TestSprite CLI  
 > **Project:** `dc688ee6-3d53-4cd9-a8a2-21229ef20a01`
 
 ---
