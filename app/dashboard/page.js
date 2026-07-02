@@ -100,12 +100,14 @@ function App() {
         <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 sm:py-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
             <div className="flex-1">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium uppercase tracking-[0.2px] text-muted-foreground">
-                <Radio className="h-3 w-3 animate-pulse text-lime" /> Server scheduler live · SSE stream
-              </div>
-              <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium text-muted-foreground">
-                <span className={`h-1.5 w-1.5 rounded-full ${data.health.down === 0 ? 'bg-lime animate-pulse' : 'bg-status-down animate-pulse'}`} />
-                {data.health.down === 0 ? 'All systems operational' : `${data.health.down} endpoint(s) down`}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                  <Radio className="h-3 w-3 animate-pulse text-lime" /> Server scheduler live · SSE stream
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                  <span className={`h-1.5 w-1.5 rounded-full ${data.health.down === 0 ? 'bg-lime animate-pulse' : 'bg-status-down animate-pulse'}`} />
+                  {data.health.down === 0 ? 'All systems operational' : `${data.health.down} endpoint(s) down`}
+                </span>
               </div>
               <a
                 href="https://github.com/0xshalah/StatusPulse/blob/main/LOOP.md"
