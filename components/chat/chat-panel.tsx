@@ -322,7 +322,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
               <svg width={logoSvgLarge} height={logoSvgLarge} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#fff" fillOpacity="0.9"/></svg>
             </motion.div>
             <motion.h3 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className={`${compact ? 'text-base' : 'text-lg'} font-semibold mb-1 ${textColor}`}>
-              {config.name}
+              Hey there 👋
             </motion.h3>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
               className={`${compact ? 'text-[11px]' : 'text-xs'} ${textMuted} ${welcomeSpacing} ${compact ? 'max-w-[260px]' : 'max-w-[300px]'} leading-relaxed px-2`}
@@ -331,6 +331,11 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
             </motion.p>
             {config.suggestedQuestions.length > 0 && (
               <motion.div className={`w-full ${qGap}`}>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+                  className={`text-[10px] ${textMuted} mb-1`}
+                >
+                  Try asking:
+                </motion.p>
                 {config.suggestedQuestions.map((q, i) => (
                   <motion.button key={i} custom={i} variants={questionVariants} initial="initial" animate="animate" whileHover="hover" whileTap="tap"
                     onClick={() => sendMessage(q)}
@@ -443,8 +448,8 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
         </div>
         {!thin && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex items-center justify-between mt-1 px-1">
-            {!compact && <span className={`text-[9px] ${isDark ? 'text-white/15' : 'text-gray-300'}`}>{CONFIG.ui.inputFooter}</span>}
-            <motion.span className={`text-[9px] ${isDark ? 'text-white/15' : 'text-gray-300'} ml-auto`} key={messages.length} initial={{ scale: 1.15 }} animate={{ scale: 1 }} transition={spring}>{messages.length} {compact ? 'msgs' : 'messages'}</motion.span>
+            {!compact && <span className={`text-[10px] ${isDark ? 'text-white/20' : 'text-gray-400'}`}>{CONFIG.ui.inputFooter}</span>}
+            <motion.span className={`text-[10px] ${compact ? 'text-white/30' : isDark ? 'text-white/25' : 'text-gray-400'} ml-auto`} key={messages.length} initial={{ scale: 1.15 }} animate={{ scale: 1 }} transition={spring}>{messages.length} {compact ? 'msgs' : 'messages'}</motion.span>
           </motion.div>
         )}
       </motion.div>
