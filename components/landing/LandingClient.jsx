@@ -415,13 +415,14 @@ export default function LandingClient() {
 
             <div className="mt-12 grid gap-6 sm:grid-cols-3">
               {[
-                { icon: MessageSquare, title: 'AI Chat Assistant', desc: 'Ask "Which APIs are down?" or "What\'s my slowest endpoint?" — the AI queries your dashboard in real-time via tool calling. Streaming responses with status indicators.', color: 'from-primary/20 to-rose-400/20', iconColor: 'text-primary' },
+                { icon: MessageSquare, title: 'AI Chat Assistant', desc: 'Ask "Which APIs are down?" or "What\'s my slowest endpoint?" — the AI queries your dashboard in real-time via tool calling. Streaming responses with status indicators.', color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
                 { icon: Activity, title: 'Incident Diagnostic', desc: 'Auto-classifies incidents (timeout, 5xx, DNS, latency spike) with a 4-stage pipeline. Provides severity ratings and specific fix recommendations in seconds.', color: 'from-lime/20 to-lime/5', iconColor: 'text-lime' },
                 { icon: BookOpen, title: 'Knowledge Base', desc: 'TF-IDF search engine with seeded runbook documents. Ask "How do I fix Stripe webhook errors?" and get citation-backed answers from your internal docs.', color: 'from-amber-500/20 to-amber-500/5', iconColor: 'text-amber-500' },
               ].map((item, i) => (
                 <Reveal key={i} delay={i * 0.1}>
                   <motion.div
-                    whileHover={{ y: -4 }}
+                    whileHover={{ y: -6, boxShadow: '0 20px 40px -12px hsl(var(--primary) / 0.15)' }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     className={`group relative h-full overflow-hidden rounded-2xl bg-gradient-to-br ${item.color} p-px`}
                   >
                     <div className="relative flex h-full flex-col rounded-2xl bg-card p-6">
