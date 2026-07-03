@@ -76,7 +76,7 @@
     css.textContent =
       '#__aa-bubble{position:fixed;bottom:' + bubbleBottom + 'px;' + side + ':' + bubbleBottom + 'px;z-index:2147483647;' +
       'width:' + bubbleSize + 'px;height:' + bubbleSize + 'px;border-radius:50%;' +
-      'background:linear-gradient(135deg,' + accent + ',' + accent + 'dd);' +
+      'background:' + accent + ';' +
       'cursor:pointer;border:none;outline:none;' +
       'box-shadow:0 6px 18px ' + accent + '44,0 2px 6px rgba(0,0,0,.25);' +
       'display:flex;align-items:center;justify-content:center;' +

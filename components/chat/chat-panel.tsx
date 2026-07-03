@@ -39,8 +39,6 @@ const badgeVariants = {
   animate: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 500, damping: 30 } },
 }
 
-const iconPulse = { animate: { scale: [1, 1.06, 1], transition: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } } }
-
 const spring = { type: 'spring' as const, stiffness: 400, damping: 30 }
 const gentle = { type: 'spring' as const, stiffness: 200, damping: 24 }
 
@@ -263,9 +261,11 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
   const logoSvg = compact ? 11 : 14
   const logoSvgLarge = compact ? 20 : 24
   const logoWrap = compact ? 'h-10 w-10 rounded-xl' : 'h-14 w-14 rounded-2xl'
-  const msgPad = compact ? 'px-3 py-2' : 'px-3.5 py-2.5'
+  const msgPad = compact ? 'px-3 py-2' : 'px-4 py-2.5'
   const msgMaxW = compact ? 'max-w-[88%]' : 'max-w-[82%]'
+  const msgGap = compact ? 'space-y-2' : 'space-y-3'
   const inPad = compact ? 'px-2.5 py-2' : 'px-4 py-3'
+  const scrollPadY = compact ? 'py-3' : 'py-4'
   const bubbleSize = compact ? 50 : 60
   const bubbleRight = compact ? 16 : 24
 
@@ -276,7 +276,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
         className={`flex items-center justify-between ${hPad} ${hPy} border-b ${borderColor}`}
       >
         <div className={`flex items-center ${hGap}`}>
-          <motion.div variants={iconPulse} animate="animate" className={`flex ${avatarSize} items-center justify-center rounded-md bg-gradient-to-br from-primary to-rose-400 flex-shrink-0`}>
+           <motion.div className={`flex ${avatarSize} items-center justify-center rounded-md bg-primary flex-shrink-0`}>
             <svg width={logoSvg} height={logoSvg} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#fff" fillOpacity="0.9"/></svg>
           </motion.div>
           <span className={`font-semibold ${compact ? 'text-xs' : 'text-sm'} ${isDark ? 'text-white/90' : 'text-gray-900'} truncate max-w-[120px]`}>{config.name}</span>
@@ -306,7 +306,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
       </AnimatePresence>
 
       {/* Messages */}
-      <div ref={scrollRef} className={`flex-1 overflow-y-auto ${hPadM} ${compact ? 'py-3' : 'py-5'}`}>
+      <div ref={scrollRef} className={`flex-1 overflow-y-auto ${hPadM} ${scrollPadY}`}>
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-full space-y-3">
             {[0, 1, 2].map(i => <ShimmerSkeleton key={i} compact={compact} />)}
@@ -314,7 +314,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
         ) : messages.length === 0 ? (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={gentle} className="flex flex-col items-center justify-center h-full text-center">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
-              className={`flex ${logoWrap} items-center justify-center bg-gradient-to-br from-primary to-rose-400 shadow-lg shadow-primary/20 ${compact ? 'mb-3' : 'mb-4'}`}
+              className={`flex ${logoWrap} items-center justify-center bg-primary shadow-lg shadow-primary/20 ${compact ? 'mb-3' : 'mb-4'}`}
             >
               <svg width={logoSvgLarge} height={logoSvgLarge} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#fff" fillOpacity="0.9"/></svg>
             </motion.div>
@@ -343,21 +343,21 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
           </motion.div>
         ) : (
           <AnimatePresence mode="popLayout" initial={false}>
-            <motion.div className="space-y-3" role="log" aria-label="Chat messages">
+            <motion.div className={msgGap} role="log" aria-label="Chat messages">
               {messages.map((msg) => (
                 <motion.div key={msg.id} custom={msg.role} variants={msgVariants} initial="initial" animate="animate" exit="exit" layout transition={spring}
                   className={`flex ${compact ? 'gap-2' : 'gap-2.5'} ${msg.role === 'user' ? 'flex-row-reverse' : ''} group`} role="article"
                 >
                   {msg.role !== 'user' && (
                     <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.08, ...spring }}
-                      className={`${avatarSize} rounded-lg bg-gradient-to-br from-primary to-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5`} aria-hidden="true"
+                      className={`${avatarSize} rounded-lg bg-primary flex items-center justify-center flex-shrink-0 mt-0.5`} aria-hidden="true"
                     >
                       <svg width={compact ? 10 : 13} height={compact ? 10 : 13} viewBox="0 0 24 24" fill="none"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#fff" fillOpacity="0.9"/></svg>
                     </motion.div>
                   )}
                   <motion.div layout
                     className={`rounded-2xl ${msgPad} ${msgMaxW} ${
-                      msg.role === 'user' ? 'bg-gradient-to-r from-primary to-rose-400 text-white rounded-tr-sm' :
+                      msg.role === 'user' ? 'bg-primary text-white rounded-tr-sm' :
                       msg.role === 'error' ? 'bg-red-500/10 border border-red-500/20 rounded-tl-sm' :
                       `${cardBg} rounded-tl-sm`
                     }`}
@@ -430,7 +430,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
             ) : (
               <motion.button key="send" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} whileTap={{ scale: 0.9 }} whileHover={{ scale: 1.05 }}
                 onClick={() => sendMessage()} disabled={!input.trim()}
-                className={`rounded-lg bg-gradient-to-r from-primary to-rose-400 text-white disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-primary/20 flex-shrink-0 ${compact ? 'p-1.5' : 'p-2'}`}
+                className={`rounded-lg bg-primary text-white disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-primary/20 flex-shrink-0 ${compact ? 'p-1.5' : 'p-2'}`}
                 aria-label="Send message"
               >
                 <svg width={compact ? 14 : 16} height={compact ? 14 : 16} viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M0.99 7.67c-.48-.16-.49-.42.01-.59L18.71 1.17c.49-.16.77.08.63.57L14.28 19.5c-.14.49-.42.5-.63.04L10.32 12.02l5.57-7.43-7.42 5.57L0.99 7.67z" fill="currentColor"/></svg>
