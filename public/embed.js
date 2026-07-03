@@ -16,6 +16,8 @@
 (function () {
   if (typeof window === 'undefined') return;
   if (window.__aiAssistantLoaded) return;
+  // Never nest — the widget page IS the chat, don't embed inside it
+  if (window.location.pathname === '/widget') return;
   window.__aiAssistantLoaded = true;
 
   var script = document.currentScript || (function () { var s = document.getElementsByTagName('script'); for (var i = s.length - 1; i >= 0; i--) { if (s[i].src && s[i].src.indexOf('embed.js') !== -1) return s[i]; } return null; })();

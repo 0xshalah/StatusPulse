@@ -82,7 +82,19 @@ export async function loadApiSchema(env: Record<string, string | undefined>): Pr
       _schemaCache = JSON.parse(content)
       logger.info({ event: 'schema_loaded', source: fileName, toolCount: _schemaCache!.tools.length })
       return _schemaCache
-    } catch {}
+    } catch {
+      // Fallback: fetch via HTTP (EdgeOne edge runtime doesn't support fs.readFile)
+      try {
+        const publicPath = fileName.replace('public/', '/')
+        const origin = process.env.NEXT_PUBLIC_URL || 'https://statuspulse.edgeone.dev'
+        const res = await fetch(`${origin}${publicPath}`, { signal: AbortSignal.timeout(5000) })
+        if (res.ok) {
+          _schemaCache = await res.json() as ApiSchema
+          logger.info({ event: 'schema_loaded', source: `http:${publicPath}`, toolCount: _schemaCache!.tools.length })
+          return _schemaCache
+        }
+      } catch {}
+    }
   }
 
   return null

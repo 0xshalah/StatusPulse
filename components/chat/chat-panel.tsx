@@ -419,7 +419,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
         {!thin && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex items-center justify-between mt-1 px-1">
             {!compact && <span className={`text-[9px] ${isDark ? 'text-white/15' : 'text-gray-300'}`}>Enter to send · Shift+Enter for newline</span>}
-            <motion.span className={`text-[9px] ${isDark ? 'text-white/15' : 'text-gray-300'} ml-auto`} key={messages.length} initial={{ scale: 1.15 }} animate={{ scale: 1 }} transition={spring}>{messages.length} msgs</motion.span>
+            <motion.span className={`text-[9px] ${isDark ? 'text-white/15' : 'text-gray-300'} ml-auto`} key={messages.length} initial={{ scale: 1.15 }} animate={{ scale: 1 }} transition={spring}>{messages.length} {compact ? 'msgs' : 'messages'}</motion.span>
           </motion.div>
         )}
       </motion.div>
