@@ -25,6 +25,7 @@ import {
   Sparkles,
   Database,
   Pencil,
+  BookOpen,
 } from 'lucide-react'
 import LandingNav from './LandingNav'
 import Particles from './Particles'
@@ -51,6 +52,9 @@ const FEATURES = [
   { icon: Clock, title: 'Incident timeline', body: 'Automatic detection of when endpoints went down and recovered.' },
   { icon: Bell, title: 'Multi-channel alerts', body: 'Slack, Email & Discord notifications before customers notice.' },
   { icon: Moon, title: 'Dark & light mode', body: 'A terminal-grade theme that respects system preference.' },
+  { icon: Sparkles, title: 'AI Chat Assistant', body: 'Ask questions about your APIs in natural language — powered by DeepSeek with real-time tool calling.' },
+  { icon: Database, title: 'Incident Diagnostic', body: 'Auto-classifies incidents (timeout, 5xx, DNS) and provides specific fix recommendations.' },
+  { icon: BookOpen, title: 'Runbook Knowledge Base', body: 'Search internal troubleshooting guides and postmortems with citation-backed answers.' },
 ]
 
 const DEMO_BULLETS = [
@@ -79,7 +83,7 @@ const METRICS = [
   { to: 60, suffix: 's', decimals: 0, label: 'Setup time' },
   { to: 99.9, suffix: '%', decimals: 1, label: 'Ping success rate (24h)' },
   { to: 1440, suffix: '+', decimals: 0, label: 'Checks per endpoint/day' },
-  { to: 5, suffix: '', decimals: 0, label: 'Seed endpoints included' },
+  { to: 5, suffix: '', decimals: 0, label: 'AI tools included' },
 ]
 const LOGOS = ['Next.js', 'MongoDB', 'Tailwind CSS', 'Framer Motion', 'Render']
 
@@ -97,7 +101,8 @@ const FAQ = [
   { q: 'Can I self-host StatusPulse?', a: 'Yes. StatusPulse is open source and ships on a Next.js + MongoDB stack you can deploy anywhere in minutes.' },
   { q: 'Which alert channels are supported?', a: 'Get notified the moment an endpoint degrades or goes down via Slack, Discord, or Email — with more channels on the way.' },
   { q: 'Does it integrate with my stack?', a: 'StatusPulse monitors any HTTP(S) endpoint and exposes a REST API plus embeddable SVG badges for your README, docs, or dashboards.' },
-  { q: 'Is there an uptime SLA?', a: 'Monitoring runs 24/7 across 6 regions. During beta we target 99.99% availability for the monitoring layer itself.' },
+  { q: 'How does the AI assistant work?', a: 'StatusPulse includes a built-in AI chat widget powered by DeepSeek V4. It can query your live dashboard, run incident diagnostics, and search our knowledge base — all through natural language. Your data is encrypted and never stored permanently.' },
+  { q: 'Is there an uptime SLA?', a: 'Monitoring runs 24/7 with automated health checks. During beta we target 99.99% availability for the monitoring layer itself.' },
 ]
 
 const ALERT_ICONS = [MessageSquare, Mail, Hash]
@@ -233,7 +238,7 @@ export default function LandingClient() {
               transition={{ duration: 0.5, ease: EASE }}
               className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium uppercase tracking-[0.2px] text-muted-foreground"
             >
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-lime" /> Open-source uptime monitoring
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-lime" /> AI-powered uptime monitoring
             </motion.div>
 
             <motion.h1
@@ -254,7 +259,7 @@ export default function LandingClient() {
               transition={{ duration: 0.6, delay: 0.12, ease: EASE }}
               className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg"
             >
-              Real-time monitoring, instant alerts, and beautiful status pages — all in one open-source tool.
+              Real-time monitoring, AI-powered insights, and beautiful status pages — all in one open-source tool.
             </motion.p>
 
             <motion.div
@@ -397,6 +402,48 @@ export default function LandingClient() {
           </div>
         </section>
 
+        {/* =========================== AI SHOWCASE ========================= */}
+        <section id="ai" className="border-t border-border">
+          <div className="mx-auto max-w-[1100px] px-4 py-20 sm:px-6">
+            <Reveal className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.2px] text-primary">Triple AI Architecture</p>
+              <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">Ask your APIs anything</h2>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground max-w-2xl mx-auto">
+                StatusPulse is the only monitoring tool with a built-in AI assistant that queries your live dashboard, diagnoses incidents automatically, and searches runbook knowledge bases — all from a chat widget.
+              </p>
+            </Reveal>
+
+            <div className="mt-12 grid gap-6 sm:grid-cols-3">
+              {[
+                { icon: MessageSquare, title: 'AI Chat Assistant', desc: 'Ask "Which APIs are down?" or "What\'s my slowest endpoint?" — the AI queries your dashboard in real-time via tool calling. Streaming responses with status indicators.', color: 'from-primary/20 to-rose-400/20', iconColor: 'text-primary' },
+                { icon: Activity, title: 'Incident Diagnostic', desc: 'Auto-classifies incidents (timeout, 5xx, DNS, latency spike) with a 4-stage pipeline. Provides severity ratings and specific fix recommendations in seconds.', color: 'from-lime/20 to-lime/5', iconColor: 'text-lime' },
+                { icon: BookOpen, title: 'Knowledge Base', desc: 'TF-IDF search engine with seeded runbook documents. Ask "How do I fix Stripe webhook errors?" and get citation-backed answers from your internal docs.', color: 'from-amber-500/20 to-amber-500/5', iconColor: 'text-amber-500' },
+              ].map((item, i) => (
+                <Reveal key={i} delay={i * 0.1}>
+                  <motion.div
+                    whileHover={{ y: -4 }}
+                    className={`group relative h-full overflow-hidden rounded-2xl bg-gradient-to-br ${item.color} p-px`}
+                  >
+                    <div className="relative flex h-full flex-col rounded-2xl bg-card p-6">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-background ${item.iconColor}`}>
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      <h3 className="mt-4 font-display text-lg font-semibold">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </motion.div>
+                </Reveal>
+              ))}
+            </div>
+
+            <Reveal delay={0.4} className="mt-10 text-center">
+              <p className="text-xs text-muted-foreground">
+                9 AI tools · DeepSeek V4 · Tavily web search · SSE streaming · Tool calling · Guardrails · Content safety
+              </p>
+            </Reveal>
+          </div>
+        </section>
+
         {/* =========================== COMPARISON ========================= */}
         <section id="compare" className="border-t border-border bg-muted/20">
           <div className="mx-auto max-w-[1100px] px-4 py-20 sm:px-6">
@@ -523,15 +570,15 @@ export default function LandingClient() {
               <div className="mx-auto flex max-w-lg flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-lime animate-pulse" />
-                  17 test plans
+                  13 test plans
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-lime animate-pulse" style={{ animationDelay: '0.3s' }} />
-                  30+ verification reruns
+                  35+ verification reruns
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-lime animate-pulse" style={{ animationDelay: '0.6s' }} />
-                  4 bugs caught & fixed
+                  5 bugs caught & fixed
                 </span>
               </div>
               <a
@@ -550,7 +597,7 @@ export default function LandingClient() {
         <section id="setup" className="border-t border-border bg-muted/20">
           <div className="mx-auto max-w-[760px] px-4 py-20 sm:px-6">
             <Reveal className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2px] text-lime">Developer-first</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2px] text-lime">Developer-first · AI-powered</p>
               <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">Set it up in seconds</h2>
             </Reveal>
             <Reveal delay={0.1} className="mt-10">
@@ -618,8 +665,8 @@ export default function LandingClient() {
               <h2 className="font-display text-3xl font-bold sm:text-4xl">
                 Start monitoring in <span className="inline-block -rotate-1 rounded-full bg-lime px-3 py-0.5 text-[#1B102D]">60 seconds</span>.
               </h2>
-              <p className="mx-auto mt-4 max-w-md text-sm text-muted-foreground">
-                No setup, no credit card. Add your first endpoint and watch it go live.
+              <p className="mt-1 text-sm text-muted-foreground">
+                Zero setup, no credit card, AI-powered insights included.
               </p>
               <MagneticButton className="mt-8">
                 <Button asChild size="lg" className="gap-2 px-8 text-sm font-semibold uppercase tracking-[0.2px] transition-shadow duration-300 hover:shadow-[0_0_36px_-6px_rgba(225,86,124,0.7)]">
