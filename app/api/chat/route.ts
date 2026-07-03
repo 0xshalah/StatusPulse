@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
   const message = guard.sanitized
 
   // ─── Layer 4: Response cache check ───────────────────────────────────────
-  const cached = queryCache.get(message)
+  const cached = queryCache.get(message, conversationId)
   if (cached) {
     logger.info({ event: 'cache_hit', conversationId, messagePreview: message.slice(0, 50) })
     async function* cachedGenerate(sig?: AbortSignal): AsyncGenerator<string> {
@@ -335,7 +335,7 @@ export async function POST(request: NextRequest) {
 
       // Cache the response
       if (fullResponse && fullResponse.length > 20) {
-        queryCache.set(message, fullResponse)
+        queryCache.set(message, fullResponse, conversationId)
       }
 
     } catch (err: any) {

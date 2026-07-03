@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { marked } from 'marked'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { encryptForStorage, decryptFromStorage } from '@/lib/privacy'
 
 marked.setOptions({ gfm: true, breaks: true })
 
@@ -162,12 +163,12 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
 
   useEffect(() => {
     if (typeof window === 'undefined' || !conversationId) return
-    try { const s = localStorage.getItem(STORAGE_KEY); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length > 0) setMessages(p.slice(0, 50)) } } catch {}
+    try { const s = localStorage.getItem(STORAGE_KEY); if (s) { decryptFromStorage(s).then(decrypted => { const p = JSON.parse(decrypted); if (Array.isArray(p) && p.length > 0) setMessages(p.slice(0, 50)) }).catch(() => {}) } } catch {}
   }, [conversationId])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !conversationId || messages.length === 0) return
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-50))) } catch {}
+    try { encryptForStorage(JSON.stringify(messages.slice(-50))).then(e => localStorage.setItem(STORAGE_KEY, e)).catch(() => {}) } catch {}
   }, [messages, conversationId, STORAGE_KEY])
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -220,7 +221,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
   }, [input, isStreaming, conversationId])
 
   const stopStream = useCallback(() => { abortRef.current?.abort(); fetch('/api/stop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conversation_id: conversationId }) }).catch(() => {}) }, [conversationId])
-  const clearChat = useCallback(() => { setMessages([]); setError(null); if (typeof window !== 'undefined') { localStorage.removeItem('sp-ai-cid'); localStorage.removeItem(STORAGE_KEY) } }, [STORAGE_KEY])
+  const clearChat = useCallback(() => { setMessages([]); setError(null); if (typeof window !== 'undefined') { localStorage.removeItem('sp-ai-cid'); localStorage.removeItem(STORAGE_KEY) }; fetch('/api/chat/delete', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conversation_id: conversationId }) }).catch(() => {}) }, [STORAGE_KEY, conversationId])
 
   const isWidget = mode === 'widget'
   const bg = isDark ? '#1B102D' : '#ffffff'
@@ -259,7 +260,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
           )}
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          {!compact && <span className={`text-[10px] ${isDark ? 'text-white/20' : 'text-gray-300'}`}>DeepSeek V4</span>}
+          {!compact && <span className={`text-[10px] ${isDark ? 'text-white/20' : 'text-gray-300'}`} title="AI: DeepSeek V4 Pro. Data sent to DeepSeek for processing.">DeepSeek V4 · 🔒 encrypted</span>}
           {messages.length > 0 && (
             <motion.button whileTap={{ scale: 0.9 }} onClick={clearChat}
               className={`rounded-md ${isDark ? 'text-white/30 hover:text-white/60 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'} transition ${compact ? 'p-1' : 'p-1.5'}`}

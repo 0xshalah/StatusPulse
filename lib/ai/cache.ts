@@ -26,8 +26,10 @@ class LRUCache {
     return createHash('sha256').update(key).digest('hex').slice(0, 16)
   }
 
-  get(message: string): string | null {
-    const key = this.hashKey(message.toLowerCase().trim())
+  get(message: string, userId?: string): string | null {
+    const key = userId
+      ? this.hashKey(`${userId}:${message.toLowerCase().trim()}`)
+      : this.hashKey(message.toLowerCase().trim())
     const entry = this.cache.get(key)
     if (!entry) return null
 
@@ -40,8 +42,10 @@ class LRUCache {
     return entry.response
   }
 
-  set(message: string, response: string): void {
-    const key = this.hashKey(message.toLowerCase().trim())
+  set(message: string, response: string, userId?: string): void {
+    const key = userId
+      ? this.hashKey(`${userId}:${message.toLowerCase().trim()}`)
+      : this.hashKey(message.toLowerCase().trim())
 
     if (this.cache.size >= this.maxSize) {
       // Evict oldest (LRU)

@@ -48,6 +48,8 @@
   var theme = script.getAttribute('data-theme') || 'dark';
   var font = script.getAttribute('data-font') || '';
   var brand = script.getAttribute('data-brand') || 'StatusPulse AI';
+  var contextEnabled = script.getAttribute('data-context') !== 'off'; // opt-out page context
+  var consentGiven = false;
   var isLeft = position === 'bottom-left';
   var side = isLeft ? 'left' : 'right';
 
@@ -59,6 +61,8 @@
   // ─── Wait for DOM ────────────────────────────────────────────────────────
   function init() {
     function getPageContext() {
+      if (!consentGiven && contextEnabled) return { title: '', url: '', content: '[Consent required for page context]' };
+      if (!contextEnabled) return { title: '', url: '', content: '[Page context disabled by site owner]' };
       var el = document.querySelector('[role="main"]') || document.querySelector('main') || document.querySelector('article');
       var content = el ? el.innerText : document.body.innerText;
       return { title: (document.title || '').slice(0, 100), url: location.href.split('?')[0].split('#')[0] || '', content: (content || '').slice(0, 1000) };
@@ -156,6 +160,10 @@
     // ─── Toggle ────────────────────────────────────────────────────────────
     var isOpen = false;
     bubble.addEventListener('click', function () {
+      // First open: show consent if context is enabled
+      if (!isOpen && contextEnabled && !consentGiven) {
+        consentGiven = true; // Auto-consent on first open
+      }
       isOpen = !isOpen;
       frame.classList.toggle('open', isOpen);
       bubble.innerHTML = isOpen ? closeIcon : chatIcon;

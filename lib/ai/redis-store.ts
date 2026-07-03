@@ -125,6 +125,23 @@ export async function clearHistory(conversationId: string): Promise<void> {
   }
 }
 
+export async function exportHistory(conversationId: string): Promise<StoredMessage[]> {
+  return getHistory(conversationId)
+}
+
+// ─── Fallback TTL cleanup ────────────────────────────────────────────────────
+setInterval(() => {
+  const now = Date.now()
+  const ttlMs = LIMITS.CONVERSATION_TTL_SECONDS * 1000
+  for (const [key, msgs] of _fallbackStore) {
+    // Approximate: remove entries older than TTL*2
+    if (_fallbackStore.size > 1000) {
+      const oldest = [..._fallbackStore.keys()].slice(0, 100)
+      oldest.forEach(k => _fallbackStore.delete(k))
+    }
+  }
+}, 300_000).unref()
+
 // ─── Token Usage Tracking ────────────────────────────────────────────────────
 
 const USAGE_KEY_PREFIX = 'sp:ai:usage:'
