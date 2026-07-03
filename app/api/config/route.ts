@@ -35,8 +35,8 @@ export async function GET() {
     if (suggestedQuestions.length === 0) {
       suggestedQuestions = [
         'Which APIs are currently down?',
-        'Show me overall system health',
-        'What\'s the response time of my slowest endpoint?',
+        'What\'s the slowest endpoint?',
+        'Any recent incidents or error spikes?',
       ]
     }
 

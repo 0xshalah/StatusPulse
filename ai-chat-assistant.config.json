@@ -3,8 +3,8 @@
   "welcome": "I'm your API monitoring assistant. Ask me about endpoint status, uptime, response times, or any incidents — I can query your dashboard in real-time.",
   "suggestedQuestions": [
     "Which APIs are currently down or degraded?",
-    "Show me the overall health of my system",
-    "What's the response time of my slowest endpoint?"
+    "What's the slowest endpoint right now?",
+    "Any recent incidents or error spikes?"
   ],
   "tavilySearchEnabled": true
 }
