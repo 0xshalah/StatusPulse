@@ -1,7 +1,9 @@
 /**
  * AI module — all magic strings as named constants.
- * No raw strings scattered across the codebase.
+ * Values that change per deployment → use lib/config.ts instead.
+ * This file: algorithmic / structural constants only.
  */
+import { CONFIG } from '@/lib/config'
 
 // ─── SSE Events ──────────────────────────────────────────────────────────────
 export const SSE_PREFIX = 'data: '
@@ -14,35 +16,35 @@ export const EVENT = {
   ERROR: 'error_message',
 } as const
 
-// ─── Limits ──────────────────────────────────────────────────────────────────
+// ─── Limits (structural — not deployment-specific) ───────────────────────────
 export const LIMITS = {
   MAX_HISTORY: 20,
   MAX_TOOL_TURNS: 4,
-  MAX_TOKENS: 8192,
-  STREAM_TIMEOUT_MS: 90_000,
+  MAX_TOKENS: CONFIG.ai.maxTokens,
+  STREAM_TIMEOUT_MS: CONFIG.ai.streamTimeoutMs,
   TOOL_TIMEOUT_MS: 15_000,
   TAVILY_TIMEOUT_MS: 15_000,
   PING_INTERVAL_MS: 5_000,
-  PAGE_CONTEXT_MAX_CHARS: 6_000,
-  CONVERSATION_TTL_SECONDS: 1_800, // 30 min idle → expire
-  RATE_LIMIT_PER_MINUTE: 20,
-  RATE_LIMIT_PER_HOUR: 200,
-  MAX_INPUT_LENGTH: 4_000,
+  PAGE_CONTEXT_MAX_CHARS: CONFIG.privacy.pageContextMaxChars,
+  CONVERSATION_TTL_SECONDS: CONFIG.retention.conversationTtlSeconds,
+  RATE_LIMIT_PER_MINUTE: CONFIG.rateLimit.aiRequestsPerMinute,
+  RATE_LIMIT_PER_HOUR: CONFIG.rateLimit.aiRequestsPerHour,
+  MAX_INPUT_LENGTH: CONFIG.ai.maxInputLength,
   MAX_ABUSE_REPORTS: 5,
 } as const
 
 // ─── Circuit Breaker ─────────────────────────────────────────────────────────
 export const CIRCUIT = {
-  FAILURE_THRESHOLD: 5,
-  COOLDOWN_MS: 30_000,
-  HALF_OPEN_MAX: 2,
+  FAILURE_THRESHOLD: CONFIG.circuitBreaker.failureThreshold,
+  COOLDOWN_MS: CONFIG.circuitBreaker.cooldownMs,
+  HALF_OPEN_MAX: CONFIG.circuitBreaker.halfOpenMax,
 } as const
 
 // ─── Retry ───────────────────────────────────────────────────────────────────
 export const RETRY = {
-  MAX_ATTEMPTS: 3,
-  BASE_DELAY_MS: 1_000,
-  MAX_DELAY_MS: 10_000,
+  MAX_ATTEMPTS: CONFIG.retry.maxAttempts,
+  BASE_DELAY_MS: CONFIG.retry.baseDelayMs,
+  MAX_DELAY_MS: CONFIG.retry.maxDelayMs,
 } as const
 
 // ─── Cache ───────────────────────────────────────────────────────────────────
@@ -72,8 +74,3 @@ export const INJECTION_PATTERNS = [
   /([i!1|l\|]gn[o0]r[e3]).*(inst[rR]uct|[pP]r[o0]mpt)/i, // leetspeak bypass
   /s\s+y\s+s\s+t\s+e\s+m\s+p\s+r\s+o\s+m\s+p\s+t/i, // spaced-out bypass
 ] as const
-
-// ─── Provider URLs ───────────────────────────────────────────────────────────
-export const DEEPSEEK_BASE_URL = 'https://api.deepseek.com/v1'
-export const DEEPSEEK_MODEL = 'deepseek-v4-pro'
-export const TAVILY_SEARCH_URL = 'https://api.tavily.com/search'

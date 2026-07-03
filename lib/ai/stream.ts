@@ -5,12 +5,11 @@
 import { createLogger } from '@/lib/logger'
 import { isCircuitOpen, recordSuccess, recordFailure } from './circuit-breaker'
 import { sanitizeError } from './guard'
-import { RETRY, LIMITS, DEEPSEEK_BASE_URL, EVENT, SSE_PREFIX, SSE_DONE } from './constants'
+import { RETRY, LIMITS, EVENT, SSE_PREFIX, SSE_DONE } from './constants'
+import { CONFIG } from '@/lib/config'
 
 const logger = createLogger('ai-stream')
-
-// Fallback model if primary fails
-const FALLBACK_MODEL = 'deepseek-chat'
+const DEEPSEEK_BASE_URL = CONFIG.ai.baseUrl
 
 // ─── CORS headers ────────────────────────────────────────────────────────────
 const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_URL || 'https://statuspulse.edgeone.dev'

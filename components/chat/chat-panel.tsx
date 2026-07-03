@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { marked } from 'marked'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { encryptForStorage, decryptFromStorage } from '@/lib/privacy'
+import { CONFIG } from '@/lib/config'
 
 marked.setOptions({ gfm: true, breaks: true })
 

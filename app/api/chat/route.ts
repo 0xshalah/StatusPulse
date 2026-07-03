@@ -28,7 +28,11 @@ import { logRequestStart, logToolCall, logToolResult, logTurn, logRequestEnd, lo
 import { queryCache } from '@/lib/ai/cache'
 import { resolveApiKey, resolveTavilyKey } from '@/lib/ai/env'
 import { filterSearchResults } from '@/lib/ai/content-filter'
-import { LIMITS, DEEPSEEK_BASE_URL, TAVILY_SEARCH_URL, EVENT, SSE_PREFIX, SSE_DONE } from '@/lib/ai/constants'
+import { LIMITS, EVENT, SSE_PREFIX, SSE_DONE } from '@/lib/ai/constants'
+import { CONFIG } from '@/lib/config'
+
+const DEEPSEEK_BASE_URL = CONFIG.ai.baseUrl
+const TAVILY_SEARCH_URL = CONFIG.ai.tavilyUrl
 import { resolveModelName } from '@/lib/ai/model'
 
 const logger = createLogger('chat-api')

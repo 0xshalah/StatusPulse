@@ -12,7 +12,7 @@ function requireAdmin(request) {
 }
 
 function cors(res, cacheSecs = 0) {
-  res.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || 'https://statuspulse-vvy0.onrender.com')
+  res.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || process.env.NEXT_PUBLIC_URL || '')
   res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   if (cacheSecs > 0) {
