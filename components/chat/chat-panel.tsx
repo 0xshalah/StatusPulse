@@ -280,7 +280,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
       >
         <div className={`flex items-center ${hGap}`}>
            <motion.div className={`flex ${avatarSize} items-center justify-center rounded-md bg-primary flex-shrink-0`}>
-            <svg width={logoSvg} height={logoSvg} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#fff" fillOpacity="0.9"/></svg>
+            <svg width={logoSvg} height={logoSvg} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2L3 14h5l-1 8 10-12h-5l1-8z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
           </motion.div>
           <span className={`font-semibold ${compact ? 'text-xs' : 'text-sm'} ${isDark ? 'text-white/90' : 'text-gray-900'} truncate max-w-[120px]`}>{config.name}</span>
         </div>
@@ -319,10 +319,10 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
               className={`flex ${logoWrap} items-center justify-center bg-primary shadow-lg shadow-primary/20 ${welcomeSpacing}`}
             >
-              <svg width={logoSvgLarge} height={logoSvgLarge} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#fff" fillOpacity="0.9"/></svg>
+              <svg width={logoSvgLarge} height={logoSvgLarge} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2L3 14h5l-1 8 10-12h-5l1-8z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
             </motion.div>
             <motion.h3 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className={`${compact ? 'text-base' : 'text-lg'} font-semibold mb-1 ${textColor}`}>
-              Hey there 👋
+              How can I help with your APIs?
             </motion.h3>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
               className={`${compact ? 'text-[11px]' : 'text-xs'} ${textMuted} ${welcomeSpacing} ${compact ? 'max-w-[260px]' : 'max-w-[300px]'} leading-relaxed px-2`}
@@ -330,11 +330,11 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
               {compact ? CONFIG.ui.compactWelcome : config.welcome || CONFIG.ui.defaultWelcome}
             </motion.p>
             {config.suggestedQuestions.length > 0 && (
-              <motion.div className={`w-full ${qGap}`}>
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+              <motion.div className={`w-full ${qGap}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
+                <motion.p
                   className={`text-[10px] ${textMuted} mb-1`}
                 >
-                  Try asking:
+                  Pick a question or type your own — I'll query your dashboard in real-time.
                 </motion.p>
                 {config.suggestedQuestions.map((q, i) => (
                   <motion.button key={i} custom={i} variants={questionVariants} initial="initial" animate="animate" whileHover="hover" whileTap="tap"
@@ -360,7 +360,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
                     <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.08, ...spring }}
                       className={`${avatarSize} rounded-lg bg-primary flex items-center justify-center flex-shrink-0 mt-0.5`} aria-hidden="true"
                     >
-                      <svg width={compact ? 10 : 13} height={compact ? 10 : 13} viewBox="0 0 24 24" fill="none"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#fff" fillOpacity="0.9"/></svg>
+                      <svg width={compact ? 10 : 13} height={compact ? 10 : 13} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h5l-1 8 10-12h-5l1-8z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
                     </motion.div>
                   )}
                   <motion.div layout
@@ -449,7 +449,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
         {!thin && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex items-center justify-between mt-1 px-1">
             {!compact && <span className={`text-[10px] ${isDark ? 'text-white/20' : 'text-gray-400'}`}>{CONFIG.ui.inputFooter}</span>}
-            <motion.span className={`text-[10px] ${compact ? 'text-white/30' : isDark ? 'text-white/25' : 'text-gray-400'} ml-auto`} key={messages.length} initial={{ scale: 1.15 }} animate={{ scale: 1 }} transition={spring}>{messages.length} {compact ? 'msgs' : 'messages'}</motion.span>
+            <motion.span className={`text-[10px] ${compact ? 'text-white/30' : isDark ? 'text-white/25' : 'text-gray-400'} ml-auto`} key={messages.length} initial={{ scale: 1.15 }} animate={{ scale: 1 }} transition={spring}>{messages.length > 0 ? `${messages.length} ${compact ? 'msgs' : 'messages'}` : ''}</motion.span>
           </motion.div>
         )}
       </motion.div>
