@@ -357,7 +357,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.div className={msgGap} role="log" aria-label="Chat messages">
               {messages.map((msg) => (
-                <motion.div key={msg.id} custom={msg.role} variants={msgVariants} initial="initial" animate="animate" exit="exit" layout transition={spring}
+                <motion.div key={msg.id} custom={msg.role} variants={msgVariants} initial="initial" animate="animate" exit="exit" transition={spring}
                   className={`flex ${compact ? 'gap-2' : 'gap-2.5'} ${msg.role === 'user' ? 'flex-row-reverse' : ''} group`} role="article"
                 >
                   {msg.role !== 'user' && (
@@ -372,7 +372,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
                       <svg width={compact ? 12 : 15} height={compact ? 12 : 15} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h5l-1 8 10-12h-5l1-8z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
                     </motion.div>
                   )}
-                  <motion.div layout
+                  <motion.div
                     className={`rounded-2xl ${msgPad} ${msgMaxW} ${
                       msg.role === 'user' ? 'bg-primary text-white rounded-tr-sm' :
                       msg.role === 'error' ? 'bg-red-500/10 border border-red-500/20 rounded-tl-sm' :
