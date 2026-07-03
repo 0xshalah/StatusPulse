@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server'
 import { getDailyUsage } from '@/lib/ai/redis-store'
-import { getRuntimeInfo } from '@/lib/ai/env'
+import { getRuntimeInfo, getRotationStatus } from '@/lib/ai/env'
 import { getPoolStats } from '@/lib/ai/fetch-pool'
 import { getCircuitState } from '@/lib/ai/circuit-breaker'
 
@@ -27,8 +27,9 @@ export async function GET() {
         estimatedCost: estimateCost(usage.promptTokens, usage.completionTokens),
       },
       circuit: {
-        deepseek: deepseek,
+        deepseek: getCircuitState('deepseek'),
       },
+      rotation: getRotationStatus(),
       pool,
     }, {
       headers: { 'Cache-Control': 'no-cache' },
