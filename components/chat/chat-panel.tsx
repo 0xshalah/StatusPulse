@@ -280,12 +280,8 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
             <svg width={logoSvg} height={logoSvg} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#fff" fillOpacity="0.9"/></svg>
           </motion.div>
           <span className={`font-semibold ${compact ? 'text-xs' : 'text-sm'} ${isDark ? 'text-white/90' : 'text-gray-900'} truncate max-w-[120px]`}>{config.name}</span>
-          {!compact && (
-            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, ...spring }} className="rounded-full bg-lime/15 px-2 py-0.5 text-[9px] font-medium text-lime flex-shrink-0">BETA</motion.span>
-          )}
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          {!compact && <span className={`text-[10px] ${isDark ? 'text-white/20' : 'text-gray-300'}`} title="AI: DeepSeek V4 Pro. Data sent to DeepSeek for processing.">DeepSeek V4 · 🔒 encrypted</span>}
           {messages.length > 0 && (
             <motion.button whileTap={{ scale: 0.9 }} onClick={clearChat}
               className={`rounded-md ${isDark ? 'text-white/30 hover:text-white/60 hover:bg-white/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'} transition ${compact ? 'p-1' : 'p-1.5'}`}
