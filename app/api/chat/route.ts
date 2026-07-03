@@ -84,6 +84,20 @@ export async function POST(request: NextRequest) {
 
   const rawMessage = typeof body.message === 'string' ? body.message.trim() : ''
   const pageContext: { title?: string; url?: string; content?: string } | undefined = body.pageContext
+
+  // Sanitize page context to prevent prompt injection via host page HTML
+  if (pageContext) {
+    if (pageContext.content) {
+      // Strip anything that looks like a prompt injection attempt
+      pageContext.content = pageContext.content
+        .replace(/\b(system prompt|ignore instructions|you are now|act as|pretend to be)\b/gi, '[FILTERED]')
+        .slice(0, 6000)
+    }
+    if (pageContext.title) {
+      pageContext.title = pageContext.title.slice(0, 200)
+        .replace(/\b(system prompt|ignore|override)\b/gi, '[FILTERED]')
+    }
+  }
   const conversationId: string = typeof body.conversation_id === 'string' ? body.conversation_id : ''
 
   // ─── Layer 3: Input guard ────────────────────────────────────────────────

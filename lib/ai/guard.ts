@@ -92,6 +92,34 @@ export function detectInjection(input: string): InjectionResult {
     }
   }
 
+  // Additional injection vectors
+  const extraPatterns = [
+    /summarize\s+(your|the)\s+(instructions?|prompts?|config(uration)?|system)/i,
+    /what\s+(are|is)\s+(you|your)\s+(configured|programmed|designed|built)\s+(to\s+do|for)/i,
+    /tell\s+me\s+(about\s+)?your\s+(internal\s+)?(rules?|guidelines?|constraints?|limits?)/i,
+    /how\s+(are|were)\s+you\s+(made|created|built|trained)/i,
+    /list\s+(all\s+)?(your\s+)?(tools?|functions?|capabilities?)/i,
+    /from\s+now\s+on\s+(you\s+are|act\s+as)/i,
+  ]
+  for (const pattern of extraPatterns) {
+    if (pattern.test(lower)) {
+      return { detected: true, pattern: pattern.source.slice(0, 80), severity: 'high' }
+    }
+  }
+
+  // Code generation requests
+  const codePatterns = [
+    /write\s+(me\s+)?(a\s+)?(python|javascript|bash|shell|sql|php|ruby|go|rust|java)\s+(script|code|program|function)/i,
+    /generate\s+(me\s+)?(a\s+)?(python|javascript|bash|shell)\s+(script|code)/i,
+    /create\s+(a\s+)?(script|code)\s+(in|using|with)\s+(python|javascript|bash)/i,
+    /implement\s+(a\s+)?(function|class|api|endpoint|server)\s+(in|using|with)/i,
+  ]
+  for (const pattern of codePatterns) {
+    if (pattern.test(lower)) {
+      return { detected: true, pattern: 'code generation request', severity: 'high' }
+    }
+  }
+
   // Low severity: excessive repetition (potential jailbreak padding)
   const repetitionPattern = /(.{6,})\1{4,}/
   if (repetitionPattern.test(input)) {
@@ -129,6 +157,34 @@ export function applyGuard(input: string, ip?: string): GuardResult {
   }
 
   return { allowed: true, sanitized: clean }
+}
+
+// ─── Output Content Guard ────────────────────────────────────────────────────
+export interface OutputGuardResult {
+  blocked: boolean
+  reason?: string
+}
+
+export function checkOutputContent(text: string): OutputGuardResult {
+  const lower = text.toLowerCase()
+
+  // Block if AI is generating code blocks
+  const codeBlockCount = (text.match(/```/g) || []).length
+  if (codeBlockCount >= 2) {
+    return { blocked: true, reason: 'Code generation blocked' }
+  }
+
+  // Block if AI reveals system prompt
+  if (lower.includes('my system prompt is') || lower.includes('my instructions are')) {
+    return { blocked: true, reason: 'System prompt leak blocked' }
+  }
+
+  // Block roleplay output
+  if (lower.includes('i am now') && (lower.includes('dan') || lower.includes('different ai'))) {
+    return { blocked: true, reason: 'Roleplay blocked' }
+  }
+
+  return { blocked: false }
 }
 
 // ─── Error Sanitization ─────────────────────────────────────────────────────
