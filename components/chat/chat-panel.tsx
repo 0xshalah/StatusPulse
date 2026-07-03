@@ -258,10 +258,10 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
   const hPadM = compact ? 'px-2.5' : 'px-4'
   const hPy = compact ? 'py-2' : 'py-3'
   const hGap = compact ? 'gap-1.5' : 'gap-2.5'
-  const avatarSize = compact ? 'h-6 w-6' : 'h-7 w-7'
-  const logoSvg = compact ? 11 : 14
-  const logoSvgLarge = compact ? 20 : 24
-  const logoWrap = compact ? 'h-10 w-10 rounded-xl' : 'h-14 w-14 rounded-2xl'
+  const avatarSize = compact ? 'h-7 w-7' : 'h-8 w-8'
+  const logoSvg = compact ? 13 : 16
+  const logoSvgLarge = compact ? 22 : 26
+  const logoWrap = compact ? 'h-11 w-11 rounded-xl' : 'h-16 w-16 rounded-2xl'
   const msgPad = compact ? 'px-3 py-2' : 'px-4 py-2.5'
   const msgMaxW = compact ? 'max-w-[88%]' : 'max-w-[82%]'
   const msgGap = compact ? 'space-y-2' : 'space-y-3'
@@ -360,7 +360,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
                     <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.08, ...spring }}
                       className={`${avatarSize} rounded-lg bg-primary flex items-center justify-center flex-shrink-0 mt-0.5`} aria-hidden="true"
                     >
-                      <svg width={compact ? 10 : 13} height={compact ? 10 : 13} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h5l-1 8 10-12h-5l1-8z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+                      <svg width={compact ? 12 : 15} height={compact ? 12 : 15} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h5l-1 8 10-12h-5l1-8z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
                     </motion.div>
                   )}
                   <motion.div layout
