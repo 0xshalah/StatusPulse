@@ -279,7 +279,11 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
         className={`flex items-center justify-between ${hPad} ${hPy} border-b ${borderColor}`}
       >
         <div className={`flex items-center ${hGap}`}>
-           <motion.div className={`flex ${avatarSize} items-center justify-center rounded-md bg-primary flex-shrink-0`}>
+           <motion.div
+            animate={isStreaming ? { scale: [1, 1.08, 1] } : {}}
+            transition={{ duration: 0.6, repeat: Infinity, ease: 'easeInOut' }}
+            className={`flex ${avatarSize} items-center justify-center rounded-md bg-primary flex-shrink-0`}
+          >
             <svg width={logoSvg} height={logoSvg} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2L3 14h5l-1 8 10-12h-5l1-8z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
           </motion.div>
           <span className={`font-semibold ${compact ? 'text-xs' : 'text-sm'} ${isDark ? 'text-white/90' : 'text-gray-900'} truncate max-w-[120px]`}>{config.name}</span>
@@ -357,8 +361,13 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
                   className={`flex ${compact ? 'gap-2' : 'gap-2.5'} ${msg.role === 'user' ? 'flex-row-reverse' : ''} group`} role="article"
                 >
                   {msg.role !== 'user' && (
-                    <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.08, ...spring }}
-                      className={`${avatarSize} rounded-lg bg-primary flex items-center justify-center flex-shrink-0 mt-0.5`} aria-hidden="true"
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={isStreaming && msg.id === messages[messages.length - 1]?.id
+                        ? { opacity: 1, scale: [1, 1.12, 1] }
+                        : { opacity: 1, scale: 1 }}
+                      transition={isStreaming ? { duration: 0.6, repeat: Infinity, ease: 'easeInOut' } : { delay: 0.08, ...spring }}
+                      aria-hidden="true"
                     >
                       <svg width={compact ? 12 : 15} height={compact ? 12 : 15} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h5l-1 8 10-12h-5l1-8z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
                     </motion.div>

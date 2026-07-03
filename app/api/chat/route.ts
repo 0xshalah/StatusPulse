@@ -337,13 +337,16 @@ export async function POST(request: NextRequest) {
         toolCalls = []
       }
 
-      // Output guard: check response for code blocks, prompt leaks, roleplay
+      // Output guard + graceful degradation
       let safeResponse = fullResponse
       if (fullResponse && fullResponse.length > 20) {
         const outputCheck = checkOutputContent(fullResponse)
         if (outputCheck.blocked) {
-          logger.warn({ event: 'output_blocked', conversationId, reason: outputCheck.reason })
-          safeResponse = '⚠️ I cannot provide that response — it may violate content safety guidelines. Please rephrase your request regarding API monitoring.'
+          safeResponse = '⚠️ I cannot provide that response — it may violate content safety guidelines.'
+        }
+        // Detect truncated/tool-failed responses
+        if (!outputCheck.blocked && fullResponse.length < 100 && !fullResponse.includes('🔴') && !fullResponse.includes('🟢') && !fullResponse.includes('ms')) {
+          safeResponse = fullResponse + '\n\n⚠️ I was unable to fetch complete data from your dashboard. This could be due to a temporary backend issue. Please try again or check your dashboard directly at statuspulse.edgeone.dev.'
         }
         queryCache.set(message, safeResponse, conversationId)
       }
