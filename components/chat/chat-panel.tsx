@@ -120,7 +120,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
   const compact = useMediaQuery('(max-width: 399px)')
   const thin = useMediaQuery('(max-width: 359px)')
 
-  const [config, setConfig] = useState<SiteConfig>({ name: 'StatusPulse AI', welcome: '', suggestedQuestions: [] })
+  const [config, setConfig] = useState<SiteConfig>({ name: CONFIG.ui.brandName, welcome: '', suggestedQuestions: [] })
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
@@ -273,7 +273,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
   const bubbleRight = compact ? 16 : 24
 
   return (
-    <div className={`flex flex-col ${isWidget ? 'h-full' : 'h-screen'} font-sans overflow-hidden`} style={{ background: bg }} role="application" aria-label="StatusPulse AI Chat">
+    <div className={`flex flex-col ${isWidget ? 'h-full' : 'h-screen'} font-sans overflow-hidden`} style={{ background: bg }} role="application" aria-label={`${CONFIG.ui.brandName} Chat`}>
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -3 }} animate={{ opacity: 1, y: 0 }} transition={spring}
         className={`flex items-center justify-between ${hPad} ${hPy} border-b ${borderColor}`}
@@ -327,7 +327,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
               className={`${compact ? 'text-[11px]' : 'text-xs'} ${textMuted} ${welcomeSpacing} ${compact ? 'max-w-[260px]' : 'max-w-[300px]'} leading-relaxed px-2`}
             >
-              {compact ? 'Ask about your APIs.' : config.welcome || "I'm your API monitoring assistant."}
+              {compact ? CONFIG.ui.compactWelcome : config.welcome || CONFIG.ui.defaultWelcome}
             </motion.p>
             {config.suggestedQuestions.length > 0 && (
               <motion.div className={`w-full ${qGap}`}>
@@ -417,7 +417,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
             onCompositionStart={() => { composingRef.current = true }}
             onCompositionEnd={() => { composingRef.current = false }}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !composingRef.current) { e.preventDefault(); sendMessage() } }}
-            placeholder={compact ? 'Ask...' : 'Ask about your APIs...'}
+            placeholder={compact ? CONFIG.ui.widgetPlaceholderCompact : CONFIG.ui.widgetPlaceholder}
             rows={1} disabled={isStreaming}
             className={`flex-1 resize-none rounded-xl border-white/10 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition placeholder:opacity-25 disabled:opacity-50 ${textColor} ${compact ? 'min-h-[38px]' : 'min-h-[40px]'} ${isDark ? 'bg-white/5' : 'bg-white border-gray-200'}`}
             style={{ minHeight: compact ? '38px' : '40px' }}
@@ -443,7 +443,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
         </div>
         {!thin && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex items-center justify-between mt-1 px-1">
-            {!compact && <span className={`text-[9px] ${isDark ? 'text-white/15' : 'text-gray-300'}`}>Enter to send · Shift+Enter for newline</span>}
+            {!compact && <span className={`text-[9px] ${isDark ? 'text-white/15' : 'text-gray-300'}`}>{CONFIG.ui.inputFooter}</span>}
             <motion.span className={`text-[9px] ${isDark ? 'text-white/15' : 'text-gray-300'} ml-auto`} key={messages.length} initial={{ scale: 1.15 }} animate={{ scale: 1 }} transition={spring}>{messages.length} {compact ? 'msgs' : 'messages'}</motion.span>
           </motion.div>
         )}
