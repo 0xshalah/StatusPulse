@@ -21,8 +21,8 @@ import { loadApiSchema, callTool, schemaToOpenAITools } from '@/lib/ai/tools'
 import type { ApiSchema } from '@/lib/ai/tools'
 import { getHistory, saveHistory, clearHistory, trackTokenUsage } from '@/lib/ai/redis-store'
 import type { StoredMessage } from '@/lib/ai/redis-store'
-import { applyGuard, sanitizeError } from '@/lib/ai/guard'
-import { minimizePageContext } from '@/lib/privacy'
+import { applyGuard, sanitizeError, checkOutputContent } from '@/lib/ai/guard'
+import { minimizePageContext, anonymizeIP } from '@/lib/privacy'
 import { buildSystemPrompt } from '@/lib/ai/system-prompt'
 import { logRequestStart, logToolCall, logToolResult, logTurn, logRequestEnd, logError, logAborted, logGuardBlock, logRateLimit } from '@/lib/ai/metrics'
 import { queryCache } from '@/lib/ai/cache'
@@ -68,8 +68,8 @@ function getClientIP(request: NextRequest): string {
 export async function POST(request: NextRequest) {
   const ip = getClientIP(request)
 
-  // ─── Layer 1: Rate Limiting ──────────────────────────────────────────────
-  const rl = rateLimit(`ai:${ip}`, LIMITS.RATE_LIMIT_PER_MINUTE, 60_000)
+  // ─── Layer 1: Rate Limiting (hashed IP) ──────────────────────────────────
+  const rl = rateLimit(`ai:${anonymizeIP(ip)}`, LIMITS.RATE_LIMIT_PER_MINUTE, 60_000)
   if (!rl.allowed) {
     logRateLimit(ip, rl.remaining)
     return corsResponse({ error: 'Too many requests. Please slow down.', retryAfter: rl.reset }, 429)
@@ -333,9 +333,15 @@ export async function POST(request: NextRequest) {
         toolCalls = []
       }
 
-      // Cache the response
+      // Output guard: check response for code blocks, prompt leaks, roleplay
+      let safeResponse = fullResponse
       if (fullResponse && fullResponse.length > 20) {
-        queryCache.set(message, fullResponse, conversationId)
+        const outputCheck = checkOutputContent(fullResponse)
+        if (outputCheck.blocked) {
+          logger.warn({ event: 'output_blocked', conversationId, reason: outputCheck.reason })
+          safeResponse = '⚠️ I cannot provide that response — it may violate content safety guidelines. Please rephrase your request regarding API monitoring.'
+        }
+        queryCache.set(message, safeResponse, conversationId)
       }
 
     } catch (err: any) {

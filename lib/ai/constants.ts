@@ -62,6 +62,15 @@ export const INJECTION_PATTERNS = [
   /what\s+(is|are)\s+your\s+(system\s+)?(prompt|instructions?)/i,
   /\[system\]|\[\/system\]|<\s*system\s*>|<\s*\/\s*system\s*>/i,
   /DAN\s+mode|developer\s+mode|jailbreak/i,
+  // Multilingual injection (Chinese, Russian, Arabic, etc.)
+  /忽略\s*(所有|你)?\s*(之前|上面|系统)?\s*(指令|提示|规则)/i, // ignore your instructions
+  /从现在起.*你是/i, // from now on you are
+  /告诉我.*(你的|系统).*(提示|指令|配置)/i, // tell me your system prompt
+  /забудь\s+(все|всё)/i, // forget everything (Russian)
+  /игнорируй\s+(твои|свои)?\s+(инструкции|правила)/i, // ignore your instructions (Russian)
+  // Adversarial obfuscation patterns
+  /([i!1|l\|]gn[o0]r[e3]).*(inst[rR]uct|[pP]r[o0]mpt)/i, // leetspeak bypass
+  /s\s+y\s+s\s+t\s+e\s+m\s+p\s+r\s+o\s+m\s+p\s+t/i, // spaced-out bypass
 ] as const
 
 // ─── Provider URLs ───────────────────────────────────────────────────────────

@@ -101,8 +101,8 @@ export function buildSystemPrompt(
       // Truncate and clean page content
       const cleaned = pageContext.content
         .replace(/\s{3,}/g, ' ')
-        .slice(0, 6000)
-      prompt += `\n**Page Content (first 6000 chars):**\n${cleaned}\n`
+        .slice(0, 1000)
+      prompt += `\n**Page Content (first 1000 chars):**\n${cleaned}\n`
     }
     prompt += `\nUse this context to understand which page the user is viewing, but ALWAYS query real data via tools for factual answers.\n`
   }

@@ -59,8 +59,8 @@ aiRedis.on('connect', () => {
   redisAvailable = true
 })
 
-// In-memory fallback when Redis is down
-const _fallbackStore = new Map<string, StoredMessage[]>()
+// In-memory fallback when Redis is down — each entry: { messages, timestamp }
+const _fallbackStore = new Map<string, { messages: StoredMessage[]; timestamp: number }>()
 
 export type { StoredMessage }
 
@@ -68,7 +68,14 @@ export async function getHistory(conversationId: string): Promise<StoredMessage[
   if (!conversationId) return []
 
   if (!redisAvailable) {
-    return _fallbackStore.get(conversationId) || []
+    const entry = _fallbackStore.get(conversationId)
+    if (!entry) return []
+    // Check TTL
+    if (Date.now() - entry.timestamp > LIMITS.CONVERSATION_TTL_SECONDS * 1000) {
+      _fallbackStore.delete(conversationId)
+      return []
+    }
+    return entry.messages.slice(-LIMITS.MAX_HISTORY)
   }
 
   try {
@@ -83,7 +90,8 @@ export async function getHistory(conversationId: string): Promise<StoredMessage[
 
     return store.messages.slice(-LIMITS.MAX_HISTORY)
   } catch {
-    return _fallbackStore.get(conversationId) || []
+    const entry = _fallbackStore.get(conversationId)
+    return entry ? entry.messages.slice(-LIMITS.MAX_HISTORY) : []
   }
 }
 
@@ -93,7 +101,7 @@ export async function saveHistory(conversationId: string, messages: StoredMessag
   const trimmed = messages.slice(-LIMITS.MAX_HISTORY)
 
   if (!redisAvailable) {
-    _fallbackStore.set(conversationId, trimmed)
+    _fallbackStore.set(conversationId, { messages: trimmed, timestamp: Date.now() })
     return
   }
 
@@ -106,7 +114,7 @@ export async function saveHistory(conversationId: string, messages: StoredMessag
     }
     await aiRedis.set(conversationKey(conversationId), JSON.stringify(store), 'EX', LIMITS.CONVERSATION_TTL_SECONDS)
   } catch {
-    _fallbackStore.set(conversationId, trimmed)
+    _fallbackStore.set(conversationId, { messages: trimmed, timestamp: Date.now() })
   }
 }
 
@@ -129,15 +137,13 @@ export async function exportHistory(conversationId: string): Promise<StoredMessa
   return getHistory(conversationId)
 }
 
-// ─── Fallback TTL cleanup ────────────────────────────────────────────────────
+// ─── Fallback TTL cleanup (runs every 5 min) ──────────────────────────────────
 setInterval(() => {
   const now = Date.now()
   const ttlMs = LIMITS.CONVERSATION_TTL_SECONDS * 1000
-  for (const [key, msgs] of _fallbackStore) {
-    // Approximate: remove entries older than TTL*2
-    if (_fallbackStore.size > 1000) {
-      const oldest = [..._fallbackStore.keys()].slice(0, 100)
-      oldest.forEach(k => _fallbackStore.delete(k))
+  for (const [key, entry] of _fallbackStore) {
+    if (now - entry.timestamp > ttlMs) {
+      _fallbackStore.delete(key)
     }
   }
 }, 300_000).unref()

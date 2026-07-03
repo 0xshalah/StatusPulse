@@ -184,6 +184,24 @@ export function checkOutputContent(text: string): OutputGuardResult {
     return { blocked: true, reason: 'Roleplay blocked' }
   }
 
+  // Block PII leakage (emails, credit cards, SSNs)
+  const emailCount = (text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || []).length
+  if (emailCount > 2) {
+    return { blocked: true, reason: 'PII leakage blocked (emails)' }
+  }
+  if (/\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/.test(text)) {
+    return { blocked: true, reason: 'PII leakage blocked (card number)' }
+  }
+
+  // Block harmful/illegal content intent
+  const harmfulPatterns = [
+    /how\s+to\s+(hack|exploit|attack|ddos|phish|steal|bypass|crack)/i,
+    /instructions?\s+(for|to)\s+(building|creating|making)\s+(a\s+)?(bomb|weapon|drug|explosive)/i,
+  ]
+  for (const p of harmfulPatterns) {
+    if (p.test(lower)) return { blocked: true, reason: 'Harmful content blocked' }
+  }
+
   return { blocked: false }
 }
 
