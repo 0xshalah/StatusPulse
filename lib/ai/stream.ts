@@ -9,6 +9,9 @@ import { RETRY, LIMITS, DEEPSEEK_BASE_URL, EVENT, SSE_PREFIX, SSE_DONE } from '.
 
 const logger = createLogger('ai-stream')
 
+// Fallback model if primary fails
+const FALLBACK_MODEL = 'deepseek-chat'
+
 // ─── CORS headers ────────────────────────────────────────────────────────────
 const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_URL || 'https://statuspulse.edgeone.dev'
 
@@ -145,11 +148,16 @@ export async function* streamChat(
   messages: ChatMessage[],
   tools?: any[],
   signal?: AbortSignal,
+  fallbackModel?: string,
 ): AsyncGenerator<StreamDelta> {
   const url = `${(baseURL || DEEPSEEK_BASE_URL).replace(/\/+$/, '')}/chat/completions`
 
+  // Track if we've already tried fallback
+  let currentModel = model
+  let fallbackAttempted = false
+
   const body: any = {
-    model,
+    model: currentModel,
     messages,
     stream: true,
     max_tokens: LIMITS.MAX_TOKENS,
