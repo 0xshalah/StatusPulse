@@ -266,6 +266,8 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
   const msgGap = compact ? 'space-y-2' : 'space-y-3'
   const inPad = compact ? 'px-2.5 py-2' : 'px-4 py-3'
   const scrollPadY = compact ? 'py-3' : 'py-4'
+  const welcomeSpacing = compact ? 'mb-2' : 'mb-3'
+  const qGap = compact ? 'space-y-1' : 'space-y-1.5'
   const bubbleSize = compact ? 50 : 60
   const bubbleRight = compact ? 16 : 24
 
@@ -314,7 +316,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
         ) : messages.length === 0 ? (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={gentle} className="flex flex-col items-center justify-center h-full text-center">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
-              className={`flex ${logoWrap} items-center justify-center bg-primary shadow-lg shadow-primary/20 ${compact ? 'mb-3' : 'mb-4'}`}
+              className={`flex ${logoWrap} items-center justify-center bg-primary shadow-lg shadow-primary/20 ${welcomeSpacing}`}
             >
               <svg width={logoSvgLarge} height={logoSvgLarge} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#fff" fillOpacity="0.9"/></svg>
             </motion.div>
@@ -322,12 +324,12 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
               {config.name}
             </motion.h3>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-              className={`${compact ? 'text-[11px]' : 'text-xs'} ${textMuted} ${compact ? 'mb-3 max-w-[260px]' : 'mb-5 max-w-[300px]'} leading-relaxed px-2`}
+              className={`${compact ? 'text-[11px]' : 'text-xs'} ${textMuted} ${welcomeSpacing} ${compact ? 'max-w-[260px]' : 'max-w-[300px]'} leading-relaxed px-2`}
             >
               {compact ? 'Ask about your APIs.' : config.welcome || "I'm your API monitoring assistant."}
             </motion.p>
             {config.suggestedQuestions.length > 0 && (
-              <motion.div className={`w-full ${compact ? 'space-y-1' : 'space-y-2'}`}>
+              <motion.div className={`w-full ${qGap}`}>
                 {config.suggestedQuestions.map((q, i) => (
                   <motion.button key={i} custom={i} variants={questionVariants} initial="initial" animate="animate" whileHover="hover" whileTap="tap"
                     onClick={() => sendMessage(q)}
