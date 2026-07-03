@@ -61,7 +61,7 @@
     function getPageContext() {
       var el = document.querySelector('[role="main"]') || document.querySelector('main') || document.querySelector('article');
       var content = el ? el.innerText : document.body.innerText;
-      return { title: document.title || '', url: location.href || '', content: (content || '').slice(0, 6000) };
+      return { title: (document.title || '').slice(0, 100), url: location.href.split('?')[0].split('#')[0] || '', content: (content || '').slice(0, 1000) };
     }
 
     // ─── Styles ────────────────────────────────────────────────────────────

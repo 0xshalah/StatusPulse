@@ -4,18 +4,41 @@ import GitHub from 'next-auth/providers/github'
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     GitHub({
-      clientId: process.env.AUTH_GITHUB_ID || 'Ov23lil7NUzkWkozbS3Q',
-      clientSecret: process.env.AUTH_GITHUB_SECRET || 'd1d9a589b0a5c864898d1d3a7f4d7b95f5d0c644',
+      clientId: process.env.AUTH_GITHUB_ID || '',
+      clientSecret: process.env.AUTH_GITHUB_SECRET || '',
     }),
   ],
-  secret: process.env.AUTH_SECRET || 'AJe1vFdPfa0/yXfAwmRgXIEpD7b6mPTbd+kzPGrX57s=',
+  secret: process.env.AUTH_SECRET,
   trustHost: true,
   callbacks: {
-    session({ session }) {
+    session({ session, token }) {
+      // Minimize session data — only first name, no full profile
+      if (session.user) {
+        session.user.name = token.name || (session.user.name?.split(' ')[0]) || 'User'
+        // Strip image URL for privacy
+        session.user.image = undefined
+      }
       return session
+    },
+    jwt({ token, profile }) {
+      if (profile) {
+        token.name = (profile as any)?.name?.split(' ')[0]
+      }
+      return token
     },
   },
   pages: {
     signIn: '/auth/signin',
+  },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
   },
 })

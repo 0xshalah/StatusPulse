@@ -22,6 +22,7 @@ import type { ApiSchema } from '@/lib/ai/tools'
 import { getHistory, saveHistory, clearHistory, trackTokenUsage } from '@/lib/ai/redis-store'
 import type { StoredMessage } from '@/lib/ai/redis-store'
 import { applyGuard, sanitizeError } from '@/lib/ai/guard'
+import { minimizePageContext } from '@/lib/privacy'
 import { buildSystemPrompt } from '@/lib/ai/system-prompt'
 import { logRequestStart, logToolCall, logToolResult, logTurn, logRequestEnd, logError, logAborted, logGuardBlock, logRateLimit } from '@/lib/ai/metrics'
 import { queryCache } from '@/lib/ai/cache'
@@ -85,25 +86,19 @@ export async function POST(request: NextRequest) {
   const rawMessage = typeof body.message === 'string' ? body.message.trim() : ''
   const pageContext: { title?: string; url?: string; content?: string } | undefined = body.pageContext
 
-  // Sanitize page context to prevent prompt injection via host page HTML
+  // Sanitize + minimize page context
   if (pageContext) {
-    if (pageContext.content) {
-      // Strip anything that looks like a prompt injection attempt
-      pageContext.content = pageContext.content
-        .replace(/\b(system prompt|ignore instructions|you are now|act as|pretend to be)\b/gi, '[FILTERED]')
-        .slice(0, 6000)
-    }
-    if (pageContext.title) {
-      pageContext.title = pageContext.title.slice(0, 200)
-        .replace(/\b(system prompt|ignore|override)\b/gi, '[FILTERED]')
-    }
+    pageContext.title = pageContext.title?.slice(0, 200)
+    pageContext.content = (pageContext.content || '')
+      .replace(/\b(system prompt|ignore instructions|you are now|act as|pretend to be)\b/gi, '[FILTERED]')
+      .slice(0, 1000) // minimize: 6000 → 1000 chars
   }
   const conversationId: string = typeof body.conversation_id === 'string' ? body.conversation_id : ''
 
   // ─── Layer 3: Input guard ────────────────────────────────────────────────
   const guard = applyGuard(rawMessage, ip)
   if (!guard.allowed) {
-    logGuardBlock(ip, guard.error || 'unknown', rawMessage.slice(0, 100))
+    logGuardBlock(ip, guard.error || 'unknown')
     return corsResponse({ error: guard.error }, 400)
   }
 
@@ -346,7 +341,7 @@ export async function POST(request: NextRequest) {
     } catch (err: any) {
       if (err?.name !== 'AbortError' && !signal?.aborted) {
         const safeError = sanitizeError(err)
-        logError(metrics, err, safeError)
+        logError(metrics, safeError)
         yield sseEvent({ type: EVENT.ERROR, content: safeError })
       }
     }
