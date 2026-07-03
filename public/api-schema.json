@@ -65,6 +65,30 @@
           "required": true
         }
       }
+    },
+    {
+      "name": "diagnose_incident",
+      "description": "Run automated incident diagnostic on a specific endpoint. Classifies incident type (timeout/5xx/DNS/latency), analyzes patterns from recent pings, and provides specific recommendations.",
+      "endpoint": "GET /api/diagnose/{id}",
+      "parameters": {
+        "id": {
+          "type": "string",
+          "description": "The endpoint UUID to diagnose",
+          "required": true
+        }
+      }
+    },
+    {
+      "name": "search_knowledge_base",
+      "description": "Search the internal runbook knowledge base for troubleshooting guides, postmortems, and migration guides related to API incidents.",
+      "endpoint": "GET /api/kb/search",
+      "parameters": {
+        "query": {
+          "type": "string",
+          "description": "Search query for finding relevant runbooks",
+          "required": true
+        }
+      }
     }
   ]
 }

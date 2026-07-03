@@ -6,6 +6,7 @@ import { marked } from 'marked'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { encryptForStorage, decryptFromStorage } from '@/lib/privacy'
 import { CONFIG } from '@/lib/config'
+import { DiagnosticCard, KnowledgeBaseCard } from '@/components/chat/diagnostic-cards'
 
 marked.setOptions({ gfm: true, breaks: true })
 
@@ -392,7 +393,9 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
                           )}
                         </AnimatePresence>
                         <div className={`${compact ? 'text-[13px]' : 'text-sm'} ${isDark ? 'text-white/80' : 'text-gray-700'} break-words`}>
-                          <MarkdownBlock content={msg.content} />
+                          {msg.content.includes('🏥') ? <DiagnosticCard content={msg.content} isDark={isDark} />
+                           : msg.content.includes('📚') ? <KnowledgeBaseCard content={msg.content} isDark={isDark} />
+                           : <MarkdownBlock content={msg.content} />}
                         </div>
                         <AnimatePresence>
                           {isStreaming && msg.id === messages[messages.length - 1]?.id && (
