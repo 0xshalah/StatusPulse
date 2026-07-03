@@ -86,4 +86,4 @@ export const CONFIG = {
     thin: 359,
     mobile: 480,
   },
-} as const
+}

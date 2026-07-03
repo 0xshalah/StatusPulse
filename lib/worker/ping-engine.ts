@@ -1,4 +1,5 @@
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+import { CONFIG } from '@/lib/config'
 
 export interface PingResult {
   statusCode: number
@@ -8,15 +9,15 @@ export interface PingResult {
 }
 
 export async function pingWithRetry(url: string, expectedStatus: number): Promise<PingResult> {
-  const backoffs = [0, 1000, 3000]
+  const backoffs = CONFIG.ping.retryBackoff
   let last: PingResult = { statusCode: 0, responseTime: 0, errored: true, attempts: 0 }
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < CONFIG.ping.maxAttempts; i++) {
     if (backoffs[i]) await sleep(backoffs[i])
     const start = Date.now()
     try {
       const c = new AbortController()
-      const t = setTimeout(() => c.abort(), 8000)
+      const t = setTimeout(() => c.abort(), CONFIG.ping.timeoutMs)
       const r = await fetch(url, {
         signal: c.signal,
         redirect: 'follow',
