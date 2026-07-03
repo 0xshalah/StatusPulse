@@ -151,13 +151,38 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
       .catch(() => { setError('Failed to load AI config.'); setIsLoading(false) })
   }, [])
 
-  const [conversationId] = useState(() => {
+  const [conversationId, setConversationId] = useState(() => {
     if (typeof window === 'undefined') return ''
-    const key = 'sp-ai-cid'
-    let cid = localStorage.getItem(key)
-    if (!cid) { cid = crypto.randomUUID(); localStorage.setItem(key, cid) }
-    return cid
+    return crypto.randomUUID()
   })
+
+  // Load + decrypt conversation ID from localStorage on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const key = 'sp-ai-cid'
+    import('@/lib/privacy').then(async ({ decryptFromStorage, encryptForStorage }) => {
+      try {
+        const stored = localStorage.getItem(key)
+        if (stored) {
+          const decrypted = await decryptFromStorage(stored)
+          if (decrypted && decrypted.length > 20) {
+            setConversationId(decrypted)
+            return
+          }
+        }
+        // No valid stored CID — encrypt and save current one
+        const current = crypto.randomUUID()
+        setConversationId(current)
+        const encrypted = await encryptForStorage(current)
+        localStorage.setItem(key, encrypted)
+      } catch {
+        // Fallback: keep current CID
+        const current = crypto.randomUUID()
+        setConversationId(current)
+        localStorage.setItem(key, current)
+      }
+    }).catch(() => {})
+  }, [])
 
   const STORAGE_KEY = `sp-ai-msgs-${conversationId}`
 
