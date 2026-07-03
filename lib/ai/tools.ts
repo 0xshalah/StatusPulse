@@ -151,7 +151,9 @@ export async function callTool(
     }
   }
 
-  let url = baseUrl.replace(/\/$/, '') + path
+  let url = (baseUrl && baseUrl !== '/')
+    ? baseUrl.replace(/\/$/, '') + path
+    : (process.env.NEXT_PUBLIC_URL || 'https://statuspulse.edgeone.dev').replace(/\/$/, '') + path
   if (httpMethod === 'GET' && Object.keys(queryParams).length > 0) {
     url += '?' + new URLSearchParams(queryParams).toString()
   }
