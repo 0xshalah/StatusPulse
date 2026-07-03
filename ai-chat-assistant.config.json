@@ -4,9 +4,7 @@
   "suggestedQuestions": [
     "Which APIs are currently down or degraded?",
     "Show me the overall health of my system",
-    "What's the response time of my slowest endpoint?",
-    "Are there any incidents in the last 24 hours?",
-    "Which endpoint has the best uptime?"
+    "What's the response time of my slowest endpoint?"
   ],
   "tavilySearchEnabled": true
 }
