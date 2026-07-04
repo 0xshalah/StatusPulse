@@ -1,4 +1,4 @@
-# StatusPulse — LOOP.md
+﻿# StatusPulse — LOOP.md
 
 > **Agent-written verification log.** Write → Verify → Fix → Verify.  
 > **Maker:** AI Coding Agent · **Checker:** TestSprite CLI  
@@ -11,9 +11,9 @@
 | AI tools | 0 | 9 tools (read + write + diagnostic + KB) |
 | TestSprite | 8/13 (61%) | 13/13 (100%) |
 | UI motion | CSS only | Framer Motion (spring, AnimatePresence) |
-| Security score | 4/10 | 10/10 |
-| Guardrails | 2/10 | 10/10 |
-| Anonymity | 2.5/10 | 9.5/10 |
+| Security | Minimal | Comprehensive |
+| Guardrails | None | Comprehensive |
+| Anonymity | Minimal | Strong |
 | Theme sync | None | Full accent + dark/light real-time |
 | Mobile optimization | Fixed 420px | Adaptive 375px with responsive cards |
 | Landing page | Outdated (17 tests, no AI) | AI-powered, accurate stats |
@@ -95,7 +95,7 @@
 
 ---
 
-### Iteration 5 — Framer Motion 10/10
+### Iteration 5 — Framer Motion
 
 | # | Action | TestSprite | Result |
 |---|--------|-----------|--------|
@@ -252,7 +252,7 @@
 117. Suite: 7 tests banked. CI/CD gate active.
 
 ### Day 2 — Iteration 16: Series A UI/UX Polish (Jul 1)
-118. Added sign-in page 10/10: split layout, trust signals, loading spinner, disabled state, redirect indicator, OAuth setup guide
+118. Added sign-in page: split layout, trust signals, loading spinner, disabled state, redirect indicator, OAuth setup guide
 119. Added user session to Navbar: avatar + name when logged in, "Sign in" button when not, SessionProvider wrapper
 120. Landing page mock dashboard now fetches real API data — shows live endpoint count and health status
 121. HealthScore animated number transition: count-up animation on healthy count change
@@ -314,7 +314,7 @@
 
 **Architecture:** SSE streaming from DeepSeek V4 Pro via Next.js API route. AI uses function calling to query StatusPulse monitoring APIs in real-time. Tavily web search provides troubleshooting context. Widget embedded via `<script>` tag with dark theme matching StatusPulse design system. **Requires EdgeOne redeployment** for full chat functionality (env var fallbacks included in code).
 
-### Cycle 21 — Jul 2 (Security → 10/10 Overhaul — Series A Hardening)
+### Cycle 21 — Jul 2 (Security Overhaul)
 | # | Action | TestSprite | Result |
 |---|--------|-----------|--------|
 | 163 | Deep audit: all 10 quality dimensions scored 2–8/10, avg 5.1. Gaps: security (4), guardrails (2), scalability (3), observability (3) | — | Identified 40+ individual fixes needed |
@@ -348,9 +348,9 @@
 | Code Quality | 6 | 9 | Sub-components, constants, named exports. (Unit tests needed for 10) |
 | **Average** | **5.1** | **8.9** | **Series A quality achieved** |
 
-**Remaining for perfect 10/10:** EdgeOne env var dashboard config, Tavily content filter, AI feedback thumbs up/down, structured JSON output mode, connection pooling, Redis conversation persistence across server restarts, AI usage analytics dashboard, Vitest unit tests for guard/tools/stream.
+**Remaining improvements:** EdgeOne env var dashboard config, Tavily content filter, AI feedback thumbs up/down, structured JSON output mode, connection pooling, Redis conversation persistence across server restarts, AI usage analytics dashboard, Vitest unit tests for guard/tools/stream.
 
-### Cycle 22 — Jul 2 (10/10 Final — Perfect Score)
+### Cycle 22 — Jul 2 (Security Hardening Complete)
 | # | Action | TestSprite | Result |
 |---|--------|-----------|--------|
 | 178 | Created `lib/ai/env.ts` — Multi-source API key resolver (EdgeOne dashboard → process.env → .env file → hardcoded fallback), runtime detection (EdgeOne vs local vs Docker) | — | Auto-resolves from 5 priority levels |
@@ -364,7 +364,7 @@
 | 186 | Build verified — 34 routes + widget (16.1 kB) compiled clean, 0 errors, 0 warnings | — | Full test suite: `npx vitest run` green |
 | 187 | Pushed to GitHub | — | https://github.com/0xshalah/StatusPulse |
 
-**Final score — all dimensions 10/10:**
+**Security dimensions after hardening:**
 | Dimension | Score | Proof |
 |-----------|:-----:|-------|
 | Security | **10** | Multi-source key resolver, rate limiting, error redaction, restricted CORS |
@@ -377,7 +377,7 @@
 | Observability | **10** | Pino structured logging (8 event types), analytics API, daily usage, cost estimation, pool stats |
 | Integration | **10** | Async embed, same-origin widget, SPA-aware, keyboard accessible, theme-consistent |
 | Code Quality | **10** | 70 unit tests, sub-components, named constants (72), TypeScript strict, zero magic strings |
-| │ | **10.0/10** | **PERFECT SCORE — Series A Quality** |
+| │ | **All dimensions significantly improved** |
 
 ### Cycle 23 — Jul 2 (Framer Motion + Custom Theming — Series A Motion Design)
 | # | Action | TestSprite | Result |
@@ -410,7 +410,7 @@
 | Light theme | Not supported | Full dual-theme (dark/light/auto) |
 | White-label | Color + position | color + position + theme + font + brand |
 
-### Cycle 24 — Jul 2 (Compact Screen Optimization — 5→10/10)
+### Cycle 24 — Jul 2 (Compact Screen Optimization — 5→significantly improved)
 | # | Action | TestSprite | Result |
 |---|--------|-----------|--------|
 | 202 | Deep audit: 10 compact screen issues identified (420×640px widget, 375px mobile). Score: 5/10 | — | Header crowding, tool overflow, markdown overflow, no compact mode |
@@ -425,7 +425,7 @@
 | 211 | Updated embed.js — adaptive bubble size (50px<400px, 60px≥400px), adaptive spacing, `min()` width for frame, `!important` border-radius reset on mobile | — | Bubble doesn't overlap content on small screens |
 | 212 | Build: widget 19 kB (26 routes clean). Pushed to GitHub | — | **0 errors, 0 warnings** |
 
-**Compact score: 5→10/10:**
+**Compact improvements:**
 
 | Issue | Before | After |
 |-------|:---:|:---:|
