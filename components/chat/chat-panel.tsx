@@ -244,7 +244,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
     async function tf() {
       try {
         const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', 'makers-conversation-id': conversationId }, body: JSON.stringify({ message: msg, ...(pageContextRef.current ? { pageContext: pageContextRef.current } : {}) }), signal: controller.signal })
-        if (res.status === 429) { const d = await res.json().catch(() => ({})); setError(`Rate limited. Retry in ${d.retryAfter || 60}s.`); setIsStreaming(false); return }
+        if (res.status === 429) { const d = await res.json().catch(() => ({})); if (d.code === 'FREE_TIER_EXCEEDED') { setError('🎯 Free tier limit reached (15 queries). Sign in for unlimited AI access.'); } else { setError(`Rate limited. Retry in ${d.retryAfter || 60}s.`); }; setIsStreaming(false); return }
         if (!res.ok) throw new Error(`Server error (${res.status})`)
         const reader = res.body?.getReader(); const decoder = new TextDecoder(); let buffer = ''
         while (reader) {

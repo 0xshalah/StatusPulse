@@ -79,6 +79,19 @@ export async function POST(request: NextRequest) {
     return corsResponse({ error: 'Too many requests. Please slow down.', retryAfter: rl.reset }, 429)
   }
 
+  // ─── Free tier: 15 anonymous queries per session (soft limit) ─────────────
+  const authHeader = request.headers.get('authorization')
+  const isAuthenticated = !!authHeader || false // auth cookie check
+  const freeLimitKey = `ai:free:${anonymizeIP(ip)}`
+  const freeTierRL = rateLimit(freeLimitKey, 15, 3600_000) // 15 queries/hour for anonymous
+  if (!isAuthenticated && !freeTierRL.allowed) {
+    return corsResponse({
+      error: 'Free tier limit reached. Sign in for unlimited AI queries.',
+      code: 'FREE_TIER_EXCEEDED',
+      retryAfter: freeTierRL.reset,
+    }, 429)
+  }
+
   // ─── Layer 2: Parse body ─────────────────────────────────────────────────
   let body: any
   try {
