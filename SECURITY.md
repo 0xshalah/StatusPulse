@@ -7,7 +7,7 @@
 - API endpoint configurations (URLs, names)
 - Ping history (timestamps, response times)
 - AI conversation history (messages, tool calls)
-- AI API keys (DeepSeek, Tavily)
+- AI API keys (LLM provider, web search)
 
 ### Threat Actors
 | Actor | Motivation | Capability |
@@ -28,8 +28,8 @@
 
 ### Trust Boundaries
 ```
-Browser ←HTTPS→ Next.js ←HTTPS→ DeepSeek API
-                   ←HTTPS→ Tavily API
+Browser ←HTTPS→ Next.js ←HTTPS→ AI Provider API
+                   ←HTTPS→ Web Search API
                    ←TCP/TLS→ MongoDB Atlas
                    ←TCP→ Redis (internal)
 ```

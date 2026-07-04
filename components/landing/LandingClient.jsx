@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -52,7 +52,7 @@ const FEATURES = [
   { icon: Clock, title: 'Incident timeline', body: 'Automatic detection of when endpoints went down and recovered.' },
   { icon: Bell, title: 'Multi-channel alerts', body: 'Slack, Email & Discord notifications before customers notice.' },
   { icon: Moon, title: 'Dark & light mode', body: 'A terminal-grade theme that respects system preference.' },
-  { icon: Sparkles, title: 'AI Chat Assistant', body: 'Ask questions about your APIs in natural language — powered by DeepSeek with real-time tool calling.' },
+  { icon: Sparkles, title: 'AI Chat Assistant', body: 'Ask questions about your APIs in natural language — powered by advanced AI with real-time tool calling.' },
   { icon: Database, title: 'Incident Diagnostic', body: 'Auto-classifies incidents (timeout, 5xx, DNS) and provides specific fix recommendations.' },
   { icon: BookOpen, title: 'Runbook Knowledge Base', body: 'Search internal troubleshooting guides and postmortems with citation-backed answers.' },
 ]
@@ -101,7 +101,7 @@ const FAQ = [
   { q: 'Can I self-host StatusPulse?', a: 'Yes. StatusPulse is open source and ships on a Next.js + MongoDB stack you can deploy anywhere in minutes.' },
   { q: 'Which alert channels are supported?', a: 'Get notified the moment an endpoint degrades or goes down via Slack, Discord, or Email — with more channels on the way.' },
   { q: 'Does it integrate with my stack?', a: 'StatusPulse monitors any HTTP(S) endpoint and exposes a REST API plus embeddable SVG badges for your README, docs, or dashboards.' },
-  { q: 'How does the AI assistant work?', a: 'StatusPulse includes a built-in AI chat widget powered by DeepSeek V4. It can query your live dashboard, run incident diagnostics, and search our knowledge base — all through natural language. Your data is encrypted and never stored permanently.' },
+  { q: 'How does the AI assistant work?', a: 'StatusPulse includes a built-in AI chat widget powered by advanced language models. It can query your live dashboard, run incident diagnostics, and search our knowledge base — all through natural language. Your data is encrypted and never stored permanently.' },
   { q: 'Is there an uptime SLA?', a: 'Monitoring runs 24/7 with automated health checks. During beta we target 99.99% availability for the monitoring layer itself.' },
 ]
 
@@ -442,7 +442,7 @@ export default function LandingClient() {
 
             <Reveal delay={0.4} className="mt-10 text-center">
               <p className="text-xs text-muted-foreground">
-                9 AI tools · DeepSeek V4 · Tavily web search · SSE streaming · Tool calling · Guardrails · Content safety
+                9 AI tools · AI Engine · Web Search · SSE streaming · Tool calling · Guardrails · Content safety
               </p>
             </Reveal>
           </div>

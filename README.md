@@ -1,4 +1,4 @@
-# StatusPulse — AI-Powered API Monitoring
+﻿# StatusPulse — AI-Powered API Monitoring
 
 > **Triple AI Architecture — ask your APIs anything.**
 
@@ -17,7 +17,7 @@ StatusPulse is the **only API monitoring tool with a built-in AI assistant**. It
 
 | Layer | Feature | Powered By |
 |-------|---------|------------|
-| 🗣️ **AI Chat Assistant** | Ask "Which APIs are down?" or "What's my slowest endpoint?" — the AI queries your dashboard in real-time | DeepSeek V4 + Tool Calling |
+| 🗣️ **AI Chat Assistant** | Ask "Which APIs are down?" or "What's my slowest endpoint?" — the AI queries your dashboard in real-time | Advanced LLM + Tool Calling |
 | 🏥 **Incident Diagnostic** | Auto-classifies incidents (timeout, 5xx, DNS, latency) with severity ratings and fix recommendations | LangGraph State Machine |
 | 📚 **Knowledge Base** | Search runbook documents for troubleshooting guides with citation-backed answers | TF-IDF Search Engine |
 
@@ -95,7 +95,7 @@ Open `http://localhost:3000/dashboard` — click the AI bubble in the bottom-rig
 | **Backend** | Next.js API Routes · TypeScript · Zod · SSE Streaming |
 | **Database** | MongoDB Atlas · Prisma 6 |
 | **Queue** | BullMQ · Redis |
-| **AI** | DeepSeek V4 · Tavily · LangGraph · TF-IDF |
+| **AI** | Advanced LLM · Web Search · LangGraph · TF-IDF |
 | **Auth** | NextAuth v5 · GitHub OAuth |
 | **Testing** | TestSprite CLI · Vitest · Playwright |
 | **CI/CD** | GitHub Actions |
@@ -113,7 +113,7 @@ Browser
        │
        ▼
 Next.js API Routes
-  ├── /api/chat → DeepSeek V4 (streaming SSE)
+  ├── /api/chat → AI Model (streaming SSE)
   ├── /api/diagnose → LangGraph State Machine
   ├── /api/kb/search → TF-IDF Search Engine
   ├── /api/ai/analytics → Usage & Rotation Dashboard
@@ -121,8 +121,8 @@ Next.js API Routes
        │
        ▼
 External APIs
-  ├── DeepSeek API (AI model)
-  ├── Tavily API (web search)
+  ├── LLM API (AI provider)
+  ├── Web Search API (search provider)
   └── MongoDB Atlas (primary storage)
 ```
 

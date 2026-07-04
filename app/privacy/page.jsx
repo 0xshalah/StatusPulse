@@ -25,7 +25,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-5 mt-2 space-y-1">
               <li><strong>Endpoint URLs & names</strong> — you provide these for monitoring</li>
               <li><strong>Ping data</strong> — response time, status codes, uptime percentages</li>
-              <li><strong>AI chat messages</strong> — sent to DeepSeek for processing (not stored permanently)</li>
+              <li><strong>AI chat messages</strong> — sent to our AI provider for processing (not stored permanently)</li>
               <li><strong>Page context</strong> — when using the embed widget (max 1000 characters, optional)</li>
             </ul>
             <p className="mt-2">We <strong>never</strong> collect request bodies, credentials, passwords, or personal data beyond what you explicitly configure as endpoint URLs.</p>
@@ -35,8 +35,8 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-semibold text-foreground mb-3">2. AI Data Processing</h2>
             <p>When you use the AI Chat Assistant:</p>
             <ul className="list-disc pl-5 mt-2 space-y-1">
-              <li>Your messages are sent to <strong>DeepSeek API</strong> for AI processing</li>
-              <li>Web search queries are sent to <strong>Tavily API</strong></li>
+              <li>Your messages are sent to our <strong>AI provider</strong> for processing</li>
+              <li>Web search queries are sent to our <strong>search provider</strong></li>
               <li>Conversations are stored encrypted (AES-GCM 256-bit) in your browser</li>
               <li>Server-side conversation data auto-deletes after 30 minutes of inactivity</li>
               <li>You can delete your data anytime via the "Clear chat" button</li>
