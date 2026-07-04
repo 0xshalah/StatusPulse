@@ -1,8 +1,15 @@
 import { NextRequest } from 'next/server'
+import { auth } from '@/auth'
 import * as M from '@/lib/monitor'
 import { updateEndpointSchema } from '@/lib/validations/endpoint'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { sanitize, isValidUrl } from '@/lib/security'
+
+async function requireAuth() {
+  const session = await auth()
+  if (!session?.user) return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+  return null
+}
 
 export async function GET(
   _request: NextRequest,
@@ -23,6 +30,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   try {
     const { id } = await params
     const body = await request.json()
@@ -55,6 +64,8 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   try {
     const { id } = await params
     const db = await M.connect()

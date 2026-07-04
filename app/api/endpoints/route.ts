@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
+import { auth } from '@/auth'
 import * as M from '@/lib/monitor'
 import { createEndpointSchema } from '@/lib/validations/endpoint'
 import { apiSuccess, apiError } from '@/lib/api-response'
@@ -17,7 +18,20 @@ export async function GET() {
   }
 }
 
+async function requireAuth() {
+  const session = await auth()
+  if (!session?.user) {
+    return new Response(JSON.stringify({ error: 'Authentication required', code: 'UNAUTHORIZED' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+  return null
+}
+
 export async function POST(request: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   try {
     const body = await request.json()
     const parsed = createEndpointSchema.safeParse(body)
