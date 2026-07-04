@@ -274,6 +274,9 @@ export default function LandingClient() {
                 </Button>
               </MagneticButton>
               <Button asChild size="lg" variant="outline" className="gap-2 px-7">
+                <Link href="/dashboard" onClick={(e) => { e.preventDefault(); window.location.hash = 'ai'; document.querySelector('#__aa-bubble')?.click(); }}>🤖 Try AI Chat</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="gap-2 px-7">
                 <Link href="/status">View live status</Link>
               </Button>
             </motion.div>

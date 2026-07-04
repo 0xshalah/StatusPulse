@@ -1,0 +1,26 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "AI Chat — Knowledge Base Search",
+  "description": "Verify the knowledge base search returns relevant runbook documents",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/api/kb/search?query=stripe+webhook",
+      "description": "Search knowledge base for Stripe webhook"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Stripe",
+      "description": "Results contain Stripe-related documents"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=results",
+      "description": "Response contains results array"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "AI Chat — Streaming Response",
+  "description": "Verify the AI chat widget loads and responds with streaming text when asked a question",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/widget",
+      "description": "Open the AI chat widget page"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=StatusPulse AI",
+      "description": "Widget header shows brand name"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "button",
+      "description": "Click the first suggested question"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Queried",
+      "description": "Tool call indicator appears (Queried get_dashboard)"
+    }
+  ]
+}

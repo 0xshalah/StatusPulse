@@ -1,0 +1,32 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "AI Chat — Diagnostic Endpoint",
+  "description": "Verify the AI incident diagnostic endpoint returns valid diagnostic data",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/api/diagnose/c3a38921-8229-436d-90b6-9e0bba96c5c5",
+      "description": "Open the diagnostic endpoint for Payments API"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Payments API",
+      "description": "Response contains the endpoint name"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=server_error_5xx",
+      "description": "Incident type is correctly classified"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=critical",
+      "description": "Severity rating is present"
+    }
+  ]
+}
