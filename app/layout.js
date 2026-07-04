@@ -4,9 +4,17 @@ import { Toaster } from '@/components/ui/sonner'
 import ClientLayout from '@/components/ClientLayout'
 
 export const metadata = {
-  title: 'StatusPulse — API Status Monitor',
-  description: 'Real-time API endpoint monitoring, uptime tracking, public status pages and embeddable SVG badges.',
+  metadataBase: new URL('https://statuspulse.edgeone.dev'),
+  title: 'StatusPulse — AI-Powered API Monitoring',
+  description: 'Real-time API monitoring with built-in AI assistant. Triple AI architecture — Chat, Incident Diagnostic, and Runbook Knowledge Base. Monitor uptime, get alerts, and ask your APIs anything.',
   icons: { icon: '/favicon.svg' },
+  openGraph: {
+    title: 'StatusPulse — AI-Powered API Monitoring',
+    description: 'Triple AI architecture for API monitoring. Chat, diagnose incidents, search runbooks.',
+    url: 'https://statuspulse.edgeone.dev',
+    siteName: 'StatusPulse',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({ children }) {

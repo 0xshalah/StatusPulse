@@ -138,12 +138,12 @@ function MockDashboard({ endpoints, health }) {
     name: ep.name,
     v: ep.verdict,
     rt: ep.latest ? `${ep.latest.responseTime}ms` : '—',
-    color: ep.verdict === 'up' ? '#34D399' : ep.verdict === 'degraded' ? '#FBBF24' : '#F87171',
+    color: ep.verdict === 'up' ? 'hsl(var(--status-up))' : ep.verdict === 'degraded' ? 'hsl(var(--status-degraded))' : 'hsl(var(--status-down))',
     data: (ep.pings || []).slice(-11).map((p) => p.responseTime > 2000 ? 22 : Math.max(6, Math.round(p.responseTime / 100))),
   })) : null
   const rows = liveRows || [
-    { name: 'API Gateway', v: 'up', rt: '182ms', color: '#34D399', data: [16, 14, 18, 12, 20, 10, 16, 13, 19, 9, 15] },
-    { name: 'Payments API', v: 'down', rt: '1.04s', color: '#F87171', data: [10, 18, 9, 20, 11, 19, 8, 21, 10, 18, 12] },
+    { name: 'API Gateway', v: 'up', rt: '182ms', color: 'hsl(var(--status-up))', data: [16, 14, 18, 12, 20, 10, 16, 13, 19, 9, 15] },
+    { name: 'Payments API', v: 'down', rt: '1.04s', color: 'hsl(var(--status-down))', data: [10, 18, 9, 20, 11, 19, 8, 21, 10, 18, 12] },
     { name: 'Search Service', v: 'degraded', rt: '905ms', color: '#FBBF24', data: [8, 20, 9, 22, 7, 21, 8, 20, 6, 19, 9] },
   ]
   const healthy = health ? `${health.healthy}` : '2'
@@ -248,9 +248,9 @@ export default function LandingClient() {
               className="mx-auto mt-6 max-w-3xl font-display text-3xl font-bold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl"
             >
               Your APIs{' '}
-              <span className="inline-block -rotate-2 rounded-full bg-lime px-3 py-0.5 text-[#1B102D]">never sleep</span>.
+              <span className="inline-block -rotate-2 rounded-full bg-lime px-3 py-0.5 text-background">never sleep</span>.
               <br className="hidden sm:block" /> Neither should{' '}
-              <span className="inline-block rotate-1 rounded-full bg-lime px-3 py-0.5 text-[#1B102D]">your monitoring</span>.
+              <span className="inline-block rotate-1 rounded-full bg-lime px-3 py-0.5 text-background">your monitoring</span>.
             </motion.h1>
 
             <motion.p
@@ -389,9 +389,9 @@ export default function LandingClient() {
               >
                 <div className="mt-auto pt-4">
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-lg border border-border bg-background/40 p-2"><MiniSpark color="#34D399" h={30} /></div>
-                    <div className="rounded-lg border border-border bg-background/40 p-2"><MiniSpark color="#FBBF24" data={[8, 20, 9, 22, 7, 21, 8, 20, 6, 19, 9]} h={30} /></div>
-                    <div className="rounded-lg border border-border bg-background/40 p-2"><MiniSpark color="#F87171" data={[10, 18, 9, 20, 11, 19, 8, 21, 10, 18, 12]} h={30} /></div>
+                    <div className="rounded-lg border border-border bg-background/40 p-2"><MiniSpark color="hsl(var(--status-up))" h={30} /></div>
+                    <div className="rounded-lg border border-border bg-background/40 p-2"><MiniSpark color="hsl(var(--status-degraded))" data={[8, 20, 9, 22, 7, 21, 8, 20, 6, 19, 9]} h={30} /></div>
+                    <div className="rounded-lg border border-border bg-background/40 p-2"><MiniSpark color="hsl(var(--status-down))" data={[10, 18, 9, 20, 11, 19, 8, 21, 10, 18, 12]} h={30} /></div>
                   </div>
                 </div>
               </BentoTile>
@@ -461,7 +461,7 @@ export default function LandingClient() {
                     }`}
                   >
                     {col.highlight && (
-                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-lime px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1B102D]">
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-lime px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-background">
                         Recommended
                       </span>
                     )}
@@ -527,7 +527,7 @@ export default function LandingClient() {
             <Reveal>
               <p className="text-xs font-semibold uppercase tracking-[0.2px] text-lime">How it was built</p>
               <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-                Built with a <span className="inline-block -rotate-1 rounded-full bg-lime px-3 py-0.5 text-[#1B102D]">self-verifying</span> loop
+                Built with a <span className="inline-block -rotate-1 rounded-full bg-lime px-3 py-0.5 text-background">self-verifying</span> loop
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">
                 Every feature was written, tested, verified, and fixed by an AI coding agent — with TestSprite CLI as the neutral referee that catches regressions before they ship.
@@ -602,7 +602,7 @@ export default function LandingClient() {
               <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">Set it up in seconds</h2>
             </Reveal>
             <Reveal delay={0.1} className="mt-10">
-              <div className="overflow-hidden rounded-xl border border-border bg-[#150f23]">
+              <div className="overflow-hidden rounded-xl border border-border bg-background/80">
                 <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
                   <Terminal className="h-4 w-4 text-lime" />
                   <span className="font-mono text-xs text-muted-foreground">bash</span>
@@ -664,7 +664,7 @@ export default function LandingClient() {
           <div className="relative mx-auto max-w-[900px] px-4 py-20 text-center sm:px-6">
             <Reveal>
               <h2 className="font-display text-3xl font-bold sm:text-4xl">
-                Start monitoring in <span className="inline-block -rotate-1 rounded-full bg-lime px-3 py-0.5 text-[#1B102D]">60 seconds</span>.
+                Start monitoring in <span className="inline-block -rotate-1 rounded-full bg-lime px-3 py-0.5 text-background">60 seconds</span>.
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Zero setup, no credit card, AI-powered insights included.
