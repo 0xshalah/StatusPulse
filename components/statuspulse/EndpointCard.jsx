@@ -54,7 +54,7 @@ export default function EndpointCard({ endpoint, onEdit, onDelete, onPause, onTe
             </Link>
             <a href={endpoint.url} target="_blank" rel="noreferrer" className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
               <span className="truncate font-mono">{endpoint.url}</span>
-              <ExternalLink className="h-3 w-3 shrink-0" />
+              <ExternalLink className="h-3 w-3 shrink-0 hidden sm:inline" />
             </a>
           </div>
         </div>
@@ -77,14 +77,14 @@ export default function EndpointCard({ endpoint, onEdit, onDelete, onPause, onTe
         </button>
         <div className="flex items-center gap-0.5">
           <IconBtn label="Test now" onClick={test} disabled={testing}><Zap className={`h-4 w-4 ${testing ? 'animate-pulse text-primary' : ''}`} /></IconBtn>
-          <IconBtn label={paused ? 'Resume' : 'Pause'} onClick={() => onPause(endpoint)}>{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}</IconBtn>
-          <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" title="View details">
+          <IconBtn label={paused ? 'Resume' : 'Pause'} onClick={() => onPause(endpoint)} className="hidden sm:inline-flex">{paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}</IconBtn>
+          <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hidden sm:inline-flex" title="View details">
             <Link href={`/endpoints/${endpoint.id}`}><ArrowUpRight className="h-4 w-4" /></Link>
           </Button>
-          <IconBtn label="Edit" onClick={() => onEdit(endpoint)}><Pencil className="h-4 w-4" /></IconBtn>
+          <IconBtn label="Edit" onClick={() => onEdit(endpoint)} className="hidden sm:inline-flex"><Pencil className="h-4 w-4" /></IconBtn>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-status-down" title="Delete"><Trash2 className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-status-down hidden sm:inline-flex" title="Delete"><Trash2 className="h-4 w-4" /></Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -103,9 +103,9 @@ export default function EndpointCard({ endpoint, onEdit, onDelete, onPause, onTe
   )
 }
 
-function IconBtn({ children, label, ...props }) {
+function IconBtn({ children, label, className, ...props }) {
   return (
-    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" title={label} aria-label={label} {...props}>
+    <Button variant="ghost" size="icon" className={`h-8 w-8 text-muted-foreground hover:text-foreground ${className || ''}`} title={label} aria-label={label} {...props}>
       {children}
     </Button>
   )

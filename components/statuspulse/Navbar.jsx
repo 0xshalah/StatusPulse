@@ -27,7 +27,7 @@ export default function Navbar({ children }) {
         <div className="flex items-center gap-2">
           {children}
           <ThemeToggle />
-          <AccentPicker />
+          <span className="hidden sm:contents"><AccentPicker /></span>
           {session ? (
             <div className="flex items-center gap-2 rounded-full border border-border bg-muted/40 pl-3 pr-2 py-1.5">
               {session.user?.image ? (
