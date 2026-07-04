@@ -142,16 +142,25 @@
       if (location.href !== lastUrl) { lastUrl = location.href; contextSent = false; setTimeout(sendContext, 500); }
     }, 1000);
 
-    // Watch accent color changes (from accent picker)
+    // Watch accent + theme changes (accent picker + dark/light toggle)
     if (window.MutationObserver) {
       var observer = new MutationObserver(function () {
         try {
+          // Accent change detection
           var p = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
           if (p && p !== accent) {
             accent = p;
             bubble.style.background = 'linear-gradient(135deg,hsl(' + p + '),hsl(' + p + 'dd))';
-            frame.contentWindow && frame.contentWindow.postMessage({ type: '__aa_theme', accent: 'hsl(' + p + ')' }, origin);
           }
+          // Theme change detection (dark/light class toggle)
+          var currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+          if (theme === 'auto') { currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+          if (currentTheme !== theme) {
+            theme = currentTheme;
+            if (currentTheme === 'light') { frame.style.background = '#ffffff'; } else { frame.style.background = '#1B102D'; }
+          }
+          // Send both to widget
+          frame.contentWindow && frame.contentWindow.postMessage({ type: '__aa_theme', accent: 'hsl(' + (p || accent) + ')', theme: theme }, origin);
         } catch (e) {}
       });
       observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });

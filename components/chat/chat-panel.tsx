@@ -139,7 +139,10 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
 
     function handleMessage(e: MessageEvent) {
       if (e.data?.type === '__aa_page_context' && e.data.payload) pageContextRef.current = e.data.payload
-      if (e.data?.type === '__aa_theme' && e.data.accent) setAccentColor(e.data.accent)
+      if (e.data?.type === '__aa_theme') {
+        if (e.data.accent) setAccentColor(e.data.accent)
+        if (e.data.theme) setIsDark(e.data.theme === 'dark')
+      }
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
