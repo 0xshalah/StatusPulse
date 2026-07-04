@@ -68,7 +68,10 @@ module.exports = {
           maintenance: 'hsl(var(--status-maintenance))',
           unknown: 'hsl(var(--status-unknown))',
         },
-        lime: 'hsl(var(--lime))',
+        lime: {
+          DEFAULT: 'hsl(var(--lime))',
+          foreground: 'hsl(var(--lime-foreground))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

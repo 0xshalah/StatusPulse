@@ -248,9 +248,9 @@ export default function LandingClient() {
               className="mx-auto mt-6 max-w-3xl font-display text-3xl font-bold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl"
             >
               Your APIs{' '}
-              <span className="inline-block -rotate-2 rounded-full bg-lime px-3 py-0.5 text-background">never sleep</span>.
+              <span className="inline-block -rotate-2 rounded-full bg-lime px-3 py-0.5 text-lime-foreground">never sleep</span>.
               <br className="hidden sm:block" /> Neither should{' '}
-              <span className="inline-block rotate-1 rounded-full bg-lime px-3 py-0.5 text-background">your monitoring</span>.
+              <span className="inline-block rotate-1 rounded-full bg-lime px-3 py-0.5 text-lime-foreground">your monitoring</span>.
             </motion.h1>
 
             <motion.p
@@ -464,7 +464,7 @@ export default function LandingClient() {
                     }`}
                   >
                     {col.highlight && (
-                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-lime px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-background">
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-lime px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-lime-foreground">
                         Recommended
                       </span>
                     )}
@@ -530,7 +530,7 @@ export default function LandingClient() {
             <Reveal>
               <p className="text-xs font-semibold uppercase tracking-[0.2px] text-lime">How it was built</p>
               <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-                Built with a <span className="inline-block -rotate-1 rounded-full bg-lime px-3 py-0.5 text-background">self-verifying</span> loop
+                Built with a <span className="inline-block -rotate-1 rounded-full bg-lime px-3 py-0.5 text-lime-foreground">self-verifying</span> loop
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">
                 Every feature was written, tested, verified, and fixed by an AI coding agent — with TestSprite CLI as the neutral referee that catches regressions before they ship.
@@ -667,7 +667,7 @@ export default function LandingClient() {
           <div className="relative mx-auto max-w-[900px] px-4 py-20 text-center sm:px-6">
             <Reveal>
               <h2 className="font-display text-3xl font-bold sm:text-4xl">
-                Start monitoring in <span className="inline-block -rotate-1 rounded-full bg-lime px-3 py-0.5 text-background">60 seconds</span>.
+                Start monitoring in <span className="inline-block -rotate-1 rounded-full bg-lime px-3 py-0.5 text-lime-foreground">60 seconds</span>.
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Zero setup, no credit card, AI-powered insights included.
