@@ -82,7 +82,7 @@
 
 ---
 
-### Iteration 4 — Landing Page Series A Polish
+### Iteration 4 — Landing Page Polish
 
 | # | Action | TestSprite | Result |
 |---|--------|-----------|--------|
@@ -251,7 +251,7 @@
 116. README updated: added 4-phase re-architecture summary, updated counts to 14 iterations/10 tests/7 banked/30+ reruns
 117. Suite: 7 tests banked. CI/CD gate active.
 
-### Day 2 — Iteration 16: Series A UI/UX Polish (Jul 1)
+### Day 2 — Iteration 16: UI/UX Polish (Jul 1)
 118. Added sign-in page: split layout, trust signals, loading spinner, disabled state, redirect indicator, OAuth setup guide
 119. Added user session to Navbar: avatar + name when logged in, "Sign in" button when not, SessionProvider wrapper
 120. Landing page mock dashboard now fetches real API data — shows live endpoint count and health status
@@ -261,7 +261,7 @@
 124. TestSprite reran --all: "Landing Page + Dashboard Flow" — PASSED
 125. TestSprite reran --all: "Status Page + Theme Toggle" — PASSED
 126. TestSprite reran --all: "Alert Settings Modal" — PASSED
-127. Suite: 7 tests banked. Series A UI/UX complete.
+127. Suite: 7 tests banked. UI/UX complete.
 
 ### Day 2 — Iteration 17: EdgeOne Migration (Jul 1)
 128. Migrated deployment from Render to EdgeOne: https://statuspulse.edgeone.dev
@@ -346,7 +346,7 @@
 | Observability | 3 | 9 | Pino structured logging, 8 event types, daily usage metrics. (AI usage dashboard UI needed for 10) |
 | Integration | 8 | 9 | Async embed, Escape key, ARIA. Seamless. |
 | Code Quality | 6 | 9 | Sub-components, constants, named exports. (Unit tests needed for 10) |
-| **Average** | **5.1** | **8.9** | **Series A quality achieved** |
+| **Average** | **5.1** | **8.9** | **Quality significantly improved** |
 
 **Remaining improvements:** EdgeOne env var dashboard config, Tavily content filter, AI feedback thumbs up/down, structured JSON output mode, connection pooling, Redis conversation persistence across server restarts, AI usage analytics dashboard, Vitest unit tests for guard/tools/stream.
 
@@ -379,7 +379,7 @@
 | Code Quality | **10** | 70 unit tests, sub-components, named constants (72), TypeScript strict, zero magic strings |
 | │ | **All dimensions significantly improved** |
 
-### Cycle 23 — Jul 2 (Framer Motion + Custom Theming — Series A Motion Design)
+### Cycle 23 — Jul 2 (Framer Motion + Custom Theming)
 | # | Action | TestSprite | Result |
 |---|--------|-----------|--------|
 | 188 | Rewrote `chat-panel.tsx` (~530 lines) — full Framer Motion integration: `AnimatePresence mode="popLayout"` for message list, 11 distinct animation types, spring physics (stiffness:400, damping:30) | — | Replaced all CSS animations with declarative motion |
@@ -485,7 +485,7 @@
 2. Incident Diagnostic (LangGraph state machine)
 3. Knowledge Base (TF-IDF search engine)
 
-Competitive advantage: no other hackathon project has this triple-layer AI architecture.
+Triple-layer AI architecture added.
 
 ### Cycle 28 — Jul 4 (Final Polish + README + Landing + Deep Audit)
 | # | Action | TestSprite | Result |
