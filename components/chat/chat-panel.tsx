@@ -128,6 +128,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isDark, setIsDark] = useState(true)
+  const [accentColor, setAccentColor] = useState('')
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -143,6 +144,24 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
   }, [])
+
+  // Apply accent color to iframe's CSS variables
+  useEffect(() => {
+    if (!accentColor || typeof document === 'undefined') return
+    const root = document.documentElement
+    // Extract HSL values from accent color (format: hsl(H S% L%))
+    const match = accentColor.match(/hsl\((\d+)\s+(\d+%)\s+(\d+%)\)/)
+    if (match) {
+      const h = match[1]; const s = match[2]; const l = match[3]
+      const primaryHL = `${h} ${s} ${l}`
+      const chartHL = `${h} ${s} ${Math.min(parseInt(l) + 6, 100)}%`
+      root.style.setProperty('--primary', primaryHL)
+      root.style.setProperty('--accent', primaryHL)
+      root.style.setProperty('--ring', primaryHL)
+      root.style.setProperty('--chart-4', chartHL)
+      root.style.setProperty('--primary-foreground', '0 0% 100%')
+    }
+  }, [accentColor])
 
   useEffect(() => {
     fetch('/api/config')
@@ -200,7 +219,6 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
   const abortRef = useRef<AbortController | null>(null)
   const composingRef = useRef(false)
   const pageContextRef = useRef<{ title?: string; url?: string; content?: string } | null>(null)
-  const [accentColor, setAccentColor] = useState('')
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }) })
