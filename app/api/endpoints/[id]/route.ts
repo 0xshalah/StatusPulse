@@ -6,6 +6,7 @@ import { apiSuccess, apiError } from '@/lib/api-response'
 import { sanitize, isValidUrl } from '@/lib/security'
 
 async function requireAuth() {
+  if (!process.env.AUTH_GITHUB_ID || !process.env.AUTH_GITHUB_SECRET) return null
   const session = await auth()
   if (!session?.user) return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
   return null

@@ -7,6 +7,9 @@ import { apiSuccess, apiError } from '@/lib/api-response'
 import { auditLog, auditError } from '@/lib/audit'
 
 export async function GET() {
+  // Require auth — endpoint URLs are sensitive internal data
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   try {
     const db = await M.connect()
     const endpoints = await db.collection('endpoints').find({}).sort({ createdAt: 1 }).toArray()
@@ -19,6 +22,10 @@ export async function GET() {
 }
 
 async function requireAuth() {
+  // Hackathon/demo mode: allow if GitHub OAuth is not configured
+  if (!process.env.AUTH_GITHUB_ID || !process.env.AUTH_GITHUB_SECRET) {
+    return null
+  }
   const session = await auth()
   if (!session?.user) {
     return new Response(JSON.stringify({ error: 'Authentication required', code: 'UNAUTHORIZED' }), {
