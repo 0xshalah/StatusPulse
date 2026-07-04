@@ -199,12 +199,12 @@
 | TypeScript handlers | 17 | Replaced single catch-all route |
 | Unit tests | 12/12 | Vitest — ping engine success, timeout, DNS error, verdict |
 
-### What Judges Should Know
+### Verification Summary
 
-- **Every FAIL→FIX is genuine.** We did not fabricate bugs for the competition. Each failure was discovered organically by TestSprite catching real regressions after feature additions.
-- **The loop ran continuously.** 35+ reruns across 2 deployment platforms (Render → EdgeOne). Tests were never skipped — even when Render cold starts caused timeouts.
-- **CI/CD gates every deployment.** `.github/workflows/testsprite.yml` blocks broken code from reaching production.
-- **The product IS the loop.** The monitoring tool you see was built by the verification loop it demonstrates.
+- 5 FAIL→FIX cycles — discovered organically by TestSprite catching regressions
+- 35+ reruns across 2 deployment platforms (Render → EdgeOne)
+- CI/CD gates every deployment via `.github/workflows/testsprite.yml`
+- 13 test plans in the verification suite
 
 ---
 
