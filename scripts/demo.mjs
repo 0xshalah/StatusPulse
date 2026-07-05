@@ -104,7 +104,19 @@ async function main() {
     await page.screenshot({ path: path.join(OUTPUT, 'demo-error.png') })
     process.exit(1)
   } finally {
+    // Close context to finalize video recording
     await context.close()
+    
+    // Rename Playwright auto-generated video to predictable name
+    const videoFiles = fs.readdirSync(OUTPUT).filter(f => f.startsWith('page@') && f.endsWith('.webm'))
+    if (videoFiles.length > 0) {
+      const latestVideo = videoFiles.sort().pop()
+      const oldPath = path.join(OUTPUT, latestVideo)
+      const newPath = path.join(OUTPUT, 'demo-submission.webm')
+      fs.renameSync(oldPath, newPath)
+      console.log(`\n✅ Video renamed: ${newPath}`)
+    }
+    
     await browser.close()
   }
 }
