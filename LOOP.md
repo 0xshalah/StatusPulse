@@ -627,6 +627,33 @@ pm run demo regenerates all documentation assets in under 30 seconds. No manual 
 
 ---
 
+
+
+## Performance Investigation
+
+**Observation**: Demo recording contained a 12-second blank screen before the dashboard rendered.
+
+**Hypothesis 1 — Playwright recording overhead**: Ruled out. Video recording adds disk I/O, not network latency.
+**Hypothesis 2 — SSE blocks initial render**: Ruled out. useStatusStream runs in useEffect after mount — rendering is not blocked.
+**Hypothesis 3 — EdgeOne cold start**: Partially confirmed. First request 1,404ms TTFB (Cache Miss), second 338ms (Cache Hit). 4.2x difference. But this only accounts for ~1s of the 12s.
+
+**Measurement**: Direct TTFB measurement of all API calls:
+`
+/api/dashboard: 5,336ms  ← BOTTLENECK
+/api/status:      829ms
+/api/endpoints:    607ms
+/api/config:       280ms
+/api-schema.json:  172ms
+`
+
+**Root cause**: /api/dashboard TTFB of 5.3s dominates startup time. The dashboard fetches all endpoints + full ping history + computes health score + uptime percentages. On cold EdgeOne + MongoDB Atlas connection, this takes 5+ seconds.
+
+**Decision**: Do NOT modify the application. The loading skeleton is correct UX. Instead, add a warm-up request to the demo automation script (GET /api/health before recording) to trigger EdgeOne runtime initialization.
+
+**Result**: Demo video produces consistent results. No application code changed. Stability preserved. The dashboard API bottleneck is documented for post-hackathon optimization (MongoDB query batching, Redis caching).
+
+---
+
 ## Engineering Trade-offs
 
 Major architectural decisions made during the build — each with a constraint that forced the choice.
