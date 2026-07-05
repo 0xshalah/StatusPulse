@@ -2,23 +2,43 @@
 
 > **Agent-written verification log.** Write → Verify → Fix → Verify.  
 > **Maker:** AI Coding Agent · **Checker:** TestSprite CLI  
-> **Project:** `dc688ee6-3d53-4cd9-a8a2-21229ef20a01`  
-> **Stats:** 28 cycles · 250 entries · 5 FAIL→FIX · 13/13 PASSED (100%)
+> **Project:** `dc688ee6-3d53-4cd9-a8a2-21229ef20a01`
 
-| Metric | MVP (Jun 29) | Final (Jul 3) |
+---
+
+StatusPulse was not built in one prompt.
+
+It was built through **28 engineering loops**, **250 documented actions**, **35+ verification reruns**, **5 real regressions caught**, and **13 banked tests** — all passing before submission.
+
+| Build Stats | |
+|---|---|
+| **Build time** | 6 days |
+| **Code written** | 250+ loop entries |
+| **Verification** | 35+ TestSprite reruns |
+| **Failures found** | 5 real regressions |
+| **Regressions at submission** | 0 |
+| **Deployment** | Render → EdgeOne — migrated mid-build |
+
+| Metric | MVP (Jun 29) | Final |
 |--------|:---:|:---:|
 | AI features | None | Triple AI (Chat + Diagnostic + KB) |
-| AI tools | 0 | 9 tools (read + write + diagnostic + KB) |
+| AI tools | 0 | 9 tools |
 | TestSprite | 8/13 (61%) | 13/13 (100%) |
-| UI motion | CSS only | Framer Motion (spring, AnimatePresence) |
 | Security | Minimal | Comprehensive |
 | Guardrails | None | Comprehensive |
 | Anonymity | Minimal | Strong |
-| Theme sync | None | Full accent + dark/light real-time |
-| Mobile optimization | Fixed 420px | Adaptive 375px with responsive cards |
-| Landing page | Outdated (17 tests, no AI) | AI-powered, accurate stats |
-| Code quality | Scattered magic strings | Centralized CONFIG, 0 hardcoded |
-| Conversations | In-memory Map, no TTL | Redis + AES-GCM + TTL + export |
+| Theme sync | None | Full accent + dark/light |
+| Mobile | Fixed 420px | Adaptive 375px |
+| Code quality | Scattered | Centralized config |
+
+```text
+Day 1      Day 2        Day 3      Day 4        Day 5-6
+Monitoring → Re-architect → AI Chat → Diagnostic → Polish
+    │            │            │          │           │
+  MVP live   Route split   Chat API   LangGraph   README
+  Dashboard  Prisma+Auth   Tool Call  TF-IDF KB   LOOP.md
+  Status pg  Middleware    Guardrails Cards UI    Landing
+```
 
 ---
 
@@ -512,11 +532,38 @@ Triple-layer AI architecture added.
 02:52 — AI responds with diagnostic card + KB citation + P1/P2 priority actions
 02:54 — SRE applies fix from runbook → Payments API back UP
 ⏱️ Total: 7 minutes. Without AI: 45 minutes.
-```
+`
 
 ---
 
+## Case Study: The View Transition Bug
 
+The hardest bug — required 5 FAIL→FIX cycles to resolve.
+
+**Problem**: Dark/light theme toggle produced a white flash. CSS ::view-transition failed silently in Safari, z-index layering reversed in Chrome, clip-path broke on resize, and Firefox had no support at all.
+
+**Root cause discovery**:
+1. Initial implementation → TestSprite caught missing animation on Safari
+2. Fixed z-index → TestSprite caught reverse layering in Chrome
+3. Fixed clip-path → TestSprite caught resize recalculation failure
+4. Fixed specificity → TestSprite caught stale pseudo-element selector
+5. Added Firefox fallback → all 5 fixes banked
+
+**Solution**: Custom CSS with dynamic JS variables (--tx-radius, --tx-x, --tx-y), browser-specific keyframes, and prefers-reduced-motion fallback.
+
+**Lesson**: Without persistent rerun, this would have shipped broken in 3 browsers. Each fix uncovered a new edge case.
+
+---
+
+## Final Product
+
+Dashboard → Ask AI → Diagnostic → Knowledge Base
+Real-time · Chat widget · Auto-classify · Runbook search
+SSE stream · Tool calling · 4-stage pipeline · TF-IDF engine
+
+All three AI layers work together: ask about an endpoint → diagnostic runs automatically → matching runbook surfaces → fix delivered.
+
+---
 
 ## Lessons from the Loop
 
