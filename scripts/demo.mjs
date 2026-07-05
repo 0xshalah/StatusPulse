@@ -1,14 +1,14 @@
 /**
- * StatusPulse Automated Demo Script
+ * StatusPulse Submission Demo Recorder
  *
- * Records the AI Chat workflow for README GIF and review.
+ * Generates a clean 45-second demo video for hackathon submission.
  *
  * Usage:
  *   npm run demo
  *
  * Output:
- *   assets/demo-*.png       — Screenshots at key steps
- *   assets/demo.webm        — Full video recording
+ *   assets/demo-submission.webm — Clean 1440×900 video
+ *   assets/demo-*.png            — Screenshots at key steps
  */
 
 import { chromium } from 'playwright'
@@ -21,76 +21,80 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const TARGET = process.env.DEMO_URL || 'https://statuspulse.edgeone.dev'
 const OUTPUT = path.resolve(__dirname, '..', 'assets')
 
+// Natural pause between steps
+const PAUSE = 800
+
+async function typeNaturally(frame, selector, text) {
+  const el = await frame.waitForSelector(selector, { timeout: 10000 })
+  await el.click()
+  // Type character by character for natural look
+  for (const char of text) {
+    await frame.type(selector, char, { delay: 40 + Math.random() * 30 })
+  }
+}
+
 async function main() {
-  // Ensure output directory exists
   if (!fs.existsSync(OUTPUT)) fs.mkdirSync(OUTPUT, { recursive: true })
 
-  console.log('📸 StatusPulse Demo Recorder')
-  console.log(`   Target: ${TARGET}\n`)
+  console.log('🎥 StatusPulse Submission Demo\n')
 
-  const browser = await chromium.launch({ headless: false })
+  const browser = await chromium.launch({ headless: true })
   const context = await browser.newContext({
-    viewport: { width: 1280, height: 800 },
-    recordVideo: { dir: OUTPUT, size: { width: 1280, height: 800 } },
+    viewport: { width: 1440, height: 900 },
+    recordVideo: { dir: OUTPUT, size: { width: 1440, height: 900 } },
   })
 
   const page = await context.newPage()
 
   try {
-    // ─── Step 1: Open Dashboard ───────────────────────────────────────────
-    console.log('1/6 Opening dashboard...')
+    // ─── 0:00–0:05 ─ Show dashboard ─────────────────────────────────────
+    console.log('1/5 Dashboard...')
     await page.goto(`${TARGET}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 30000 })
-    await page.waitForTimeout(3000)
-    await page.screenshot({ path: path.join(OUTPUT, 'demo-01-dashboard.png'), fullPage: false })
-    console.log('   ✓ Dashboard screenshot saved')
+    await page.waitForTimeout(3000) // Let dashboard fully render
+    await page.screenshot({ path: path.join(OUTPUT, 'demo-01-dashboard.png') })
+    console.log('   ✓ Dashboard captured')
 
-    // ─── Step 2: Click AI Bubble ──────────────────────────────────────────
-    console.log('2/6 Opening AI Chat...')
-    // Wait for embed script to load — bubble may take a moment
+    // ─── 0:05–0:10 ─ Open AI Chat ───────────────────────────────────────
+    console.log('2/5 AI Chat...')
     await page.waitForSelector('#__aa-bubble', { timeout: 15000 })
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(PAUSE)
     await page.click('#__aa-bubble')
-    await page.waitForTimeout(2000)
+    await page.waitForTimeout(2000) // Let widget fully load
     await page.screenshot({ path: path.join(OUTPUT, 'demo-02-ai-opened.png') })
     console.log('   ✓ AI chat opened')
 
-    // ─── Step 3: Type Question ────────────────────────────────────────────
-    console.log('3/6 Typing question...')
-    // Find the iframe that loaded the widget
+    // ─── 0:10–0:20 ─ Type question ──────────────────────────────────────
+    console.log('3/5 Typing...')
     const frameElement = await page.waitForSelector('#__aa-frame.open', { timeout: 10000 })
     const frame = await frameElement.contentFrame()
-    if (!frame) { console.log('   ⚠️ Could not access widget iframe — skipping chat steps'); }
-    else {
-      await frame.waitForSelector('textarea[aria-label="Chat message input"]', { timeout: 10000 })
-      await frame.fill('textarea[aria-label="Chat message input"]', 'Which APIs are currently down or degraded?')
-      await page.waitForTimeout(500)
-      await page.screenshot({ path: path.join(OUTPUT, 'demo-03-question-typed.png') })
-      console.log('   ✓ Question typed')
+    if (!frame) throw new Error('Could not access widget iframe')
 
-      // ─── Step 4: Send ─────────────────────────────────────────────────────
-      console.log('4/6 Sending question...')
-      await frame.click('button[aria-label="Send message"]')
-      await page.waitForTimeout(10000) // Wait for AI streaming response
-      await page.screenshot({ path: path.join(OUTPUT, 'demo-04-ai-responded.png') })
-      console.log('   ✓ AI responded (or still streaming)')
+    await typeNaturally(frame, 'textarea[aria-label="Chat message input"]', 'Which APIs are currently down?')
+    await page.waitForTimeout(PAUSE)
+    await page.screenshot({ path: path.join(OUTPUT, 'demo-03-question-typed.png') })
+    console.log('   ✓ Question typed naturally')
 
-      // ─── Step 5: Wait for full response ────────────────────────────────────
-      console.log('5/6 Waiting for complete response...')
-      await page.waitForTimeout(5000)
-      await page.screenshot({ path: path.join(OUTPUT, 'demo-05-full-response.png') })
-      console.log('   ✓ Full response captured')
-    }
+    // ─── 0:20–0:35 ─ Send + AI responds ─────────────────────────────────
+    console.log('4/5 AI responding...')
+    await frame.click('button[aria-label="Send message"]')
+    await page.waitForTimeout(12000) // AI streams response (tool calls + text)
+    await page.screenshot({ path: path.join(OUTPUT, 'demo-04-ai-responded.png') })
+    console.log('   ✓ AI responded')
 
-    // ─── Step 6: Final state ──────────────────────────────────────────────
-    console.log('6/6 Final screenshot...')
-    await page.screenshot({ path: path.join(OUTPUT, 'demo-06-final.png'), fullPage: false })
-    console.log('   ✓ Done!')
+    // ─── 0:35–0:45 ─ Full response visible ───────────────────────────────
+    console.log('5/5 Final...')
+    await page.waitForTimeout(5000)
+    await page.screenshot({ path: path.join(OUTPUT, 'demo-05-final.png') })
+    console.log('   ✓ Complete')
 
-    console.log(`\n🎉 Demo complete! Screenshots saved to: ${OUTPUT}`)
-    console.log(`   Video saved as: demo.webm`)
+    // Save final screenshot
+    await page.screenshot({ path: path.join(OUTPUT, 'demo-06-final.png') })
+
+    console.log(`\n✅ Demo video saved to: ${path.join(OUTPUT, 'demo-submission.webm')}`)
+    console.log('   Ready for hackathon submission.')
 
   } catch (err) {
-    console.error('❌ Demo failed:', err.message)
+    console.error('❌ Failed:', err.message)
     await page.screenshot({ path: path.join(OUTPUT, 'demo-error.png') })
     process.exit(1)
   } finally {
