@@ -6,6 +6,12 @@
 
 ---
 
+> **StatusPulse demonstrates how Loop Engineering can produce a production-style AI monitoring platform through continuous verification rather than one-shot generation.**
+>
+> For the product overview, see [README.md](./README.md).
+
+---
+
 StatusPulse was not built in one prompt.
 
 It was built through **28 engineering loops**, **250 documented actions**, **35+ verification reruns**, **5 real regressions caught**, and **13 banked tests** — all passing before submission.

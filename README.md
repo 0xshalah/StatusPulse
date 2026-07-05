@@ -10,6 +10,21 @@
 
 ---
 
+## 🎥 Demo
+
+| | |
+|---|---|
+| 🌐 **Live** | [statuspulse.edgeone.dev](https://statuspulse.edgeone.dev) |
+| ▶️ **Video walkthrough** | *Open dashboard → Click AI bubble → Ask "Which APIs are down?" → AI answers from live data* |
+
+*30-second GIF showing the AI chat in action — coming soon.*
+
+---
+
+> **StatusPulse demonstrates how Loop Engineering can produce a production-style AI monitoring platform through continuous verification rather than one-shot generation.**
+
+---
+
 ## Built with Loop Engineering
 
 *A loop with no real checker doesn't fail loudly. It hallucinates progress.*
@@ -123,7 +138,7 @@ against the deployed app
 5. Fixed layering → PASSED. 5 cycles to resolve.
 ```
 
-This is documented across 28 iterations in [LOOP.md](./LOOP.md).
+This is documented across 28 iterations in [LOOP.md](./LOOP.md) — a 250-entry engineering journal with Failure Bundles, root cause analysis, and lessons learned.
 
 ---
 
