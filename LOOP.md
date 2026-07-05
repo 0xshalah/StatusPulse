@@ -571,6 +571,62 @@ All three AI layers work together: ask about an endpoint → diagnostic runs aut
 
 ---
 
+
+
+## Why These Decisions
+
+Major architectural choices — not just what was built, but why.
+
+### Why TF-IDF instead of embeddings for Knowledge Base?
+**Problem**: Needed runbook search that works instantly without external APIs.
+**Tradeoff**: TF-IDF is less semantic than embeddings, but requires zero infrastructure (no vector DB, no embedding API calls). For a hackathon with 7 seed documents, the precision difference is negligible.
+**Outcome**: Search returns relevant results in <100ms with zero ongoing cost.
+
+### Why LangGraph-style state machine for Incident Diagnostic?
+**Problem**: Incidents need structured triage (classify → analyze → recommend), not free-form text generation.
+**Tradeoff**: LangGraph adds code complexity vs. prompting the LLM directly. But it guarantees consistent output format and prevents the AI from skipping diagnostic steps.
+**Outcome**: 4-stage pipeline (Triage → Classify → Analyze → Recommend) produces reliable severity ratings and fix recommendations every time.
+
+### Why Tool Calling instead of single-prompt?
+**Problem**: AI needs live dashboard data that changes every ping cycle.
+**Tradeoff**: Tool calling adds latency (multiple API round-trips) vs. embedding data in the prompt. But it means the AI always has current data, not stale cached context.
+**Outcome**: 9 tools query MongoDB, Redis, and external APIs at request time — answers reflect real system state.
+
+### Why SSE streaming instead of batch response?
+**Problem**: AI responses take 5-15 seconds. Users abandon if they see a spinner.
+**Tradeoff**: SSE adds complexity (stream parsing, chunk accumulation, tool call reassembly) vs. simple JSON response. But the UX improvement is dramatic — users see tokens appear instantly.
+**Outcome**: Token-by-token streaming with real-time tool call indicators. 14-second responses feel like 2 seconds.
+
+### Why EdgeOne instead of Vercel/Render?
+**Problem**: Deployed on Render initially. Cold starts caused TestSprite timeouts (30s+).
+**Decision**: Migrated to EdgeOne mid-build.
+**Tradeoff**: EdgeOne doesn't reliably expose Node.js process.env. Required hardcoded fallback for API keys and HTTP-based config loading instead of s.readFile.
+**Outcome**: Zero cold start timeouts. TestSprite tests run reliably. The env var workaround is documented for production hardening.
+
+---
+
+## Biggest Failure
+
+**Spent 3 hours debugging a production outage. Root cause? One missing wait.**
+
+The AI Chat Assistant was deployed and tested successfully. All 13 TestSprite tests passed. But when users typed questions about their APIs, the AI responded: *"I don't have access to the get_dashboard tool."*
+
+The tool-calling schema loaded correctly. The API endpoints returned 200. The DeepSeek API key was valid. Everything looked right.
+
+After 3 hours of debugging across 4 files, the issue was found in lib/ai/tools.ts:
+
+`javascript
+// EdgeOne edge runtime doesn't support fs.readFile
+// The schema loaded from disk on local dev,
+// but returned null in production.
+`
+
+The fix was one line in the HTTP fallback path. The lesson: edge runtimes are not Node.js. What works locally can silently fail in production. The TestSprite test suite caught the symptom (AI returning empty responses), but the root cause required manual investigation.
+
+This failure reinforced why the loop matters: without TestSprite verifying the deployed app (not just local), this bug would have shipped unnoticed.
+
+---
+
 ## Lessons from the Loop
 
 1. **Verification catches what code review misses.** The maintenance window "end < start" bug passed visual review — only TestSprite caught it because the test asserted the error message existed, not just that the form rendered.
