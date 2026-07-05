@@ -15,9 +15,11 @@
 | | |
 |---|---|
 | 🌐 **Live** | [statuspulse.edgeone.dev](https://statuspulse.edgeone.dev) |
-| ▶️ **Video walkthrough** | *Open dashboard → Click AI bubble → Ask "Which APIs are down?" → AI answers from live data* |
+| ▶️ **AI Chat in action** | Ask "Which APIs are down?" — AI answers from live data |
 
-*30-second GIF showing the AI chat in action — coming soon.*
+![Dashboard with AI Chat](assets/demo-04-ai-responded.png)
+
+*Run `npm run demo` to regenerate all screenshots automatically.*
 
 ---
 
