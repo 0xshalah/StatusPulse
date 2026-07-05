@@ -47,6 +47,12 @@ async function main() {
   const page = await context.newPage()
 
   try {
+    // ─── Warm-up: trigger EdgeOne cold start before recording ────────────
+    console.log('0/5 Warming up...')
+    await page.goto(`${TARGET}/api/health`, { waitUntil: 'domcontentloaded', timeout: 15000 })
+    await page.waitForTimeout(1000)
+    console.log('   ✓ EdgeOne warm\n')
+
     // ─── 0:00–0:05 ─ Show dashboard ─────────────────────────────────────
     console.log('1/5 Dashboard...')
     await page.goto(`${TARGET}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 30000 })
