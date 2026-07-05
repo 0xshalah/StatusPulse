@@ -573,6 +573,45 @@ All three AI layers work together: ask about an endpoint → diagnostic runs aut
 
 
 
+
+
+## How TestSprite Changed This Project
+
+The ultimate question: *Was TestSprite bolted on at the end, or did it genuinely change how this project was built?*
+
+Five moments where verification drove engineering decisions — not the other way around.
+
+### 1. The EdgeOne Migration
+**Before verification**: Deployed on Render. Tests passed locally.
+**TestSprite found**: 30-second cold start timeouts on Render. 5 tests intermittently FAILED.
+**Engineering impact**: Migrated deployment platform mid-build from Render to EdgeOne. This was not planned — the verification data forced the decision.
+
+### 2. The Accent Picker Bug
+**Before verification**: Added accent color picker. UI looked correct.
+**TestSprite found**: 3 tests BLOCKED — the utton selector now matched 3 elements instead of 1.
+**Engineering impact**: Rewrote all test plan selectors from broad (	ext=Down) to precise (utton[data-value='down']). Changed how future features were tested — every UI addition now considers selector impact.
+
+### 3. The Copy All Badges Bug
+**Before verification**: Button said "Copy ALL badges." Manual testing worked.
+**TestSprite found**: Only copied data.endpoints[0] — a single endpoint.
+**Engineering impact**: Fixed the iteration logic. More importantly: this revealed that manual testing of "obvious" features is unreliable. Only automated E2E caught it.
+
+### 4. The Security Overhaul
+**Before verification**: API keys hardcoded. No input validation. No rate limiting.
+**TestSprite context**: While tests passed, the loop documentation revealed that the app had zero authentication, zero guardrails, and public endpoints exposing sensitive data. A penetration test confirmed 2 HIGH vulnerabilities.
+**Engineering impact**: Route-level auth checks, 27 injection patterns, output guard, content filter, API key rotation — all added because the verification process exposed the gap.
+
+### 5. The View Transition Bug (5-cycle failure)
+**Before verification**: Dark/light toggle looked fine on Chrome.
+**TestSprite found**: FAILED on Safari. Then FAILED on Chrome (z-index). Then FAILED on resize. Then FAILED on Firefox.
+**Engineering impact**: 5 separate fixes across 3 browsers. Each fix created a new edge case that only TestSprite caught. Without the loop, this would have shipped broken in 2 of 3 major browsers.
+
+---
+
+**TestSprite was not installed after the project was finished.**
+
+It was the feedback loop that shaped the project from deployment infrastructure (EdgeOne migration) to UI architecture (selector precision) to security posture (route-level auth) to browser compatibility (View Transitions).
+
 ## Why These Decisions
 
 Major architectural choices — not just what was built, but why.

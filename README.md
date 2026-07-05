@@ -138,7 +138,7 @@ against the deployed app
 5. Fixed layering → PASSED. 5 cycles to resolve.
 ```
 
-This is documented across 28 iterations in [LOOP.md](./LOOP.md) — a 250-entry engineering journal with Failure Bundles, root cause analysis, lessons learned, and [the reasoning behind every major decision](./LOOP.md#why-these-decisions).
+This is documented across 28 iterations in [LOOP.md](./LOOP.md) — a 250-entry engineering journal with Failure Bundles, root cause analysis, lessons learned, the [reasoning behind every major decision](./LOOP.md#why-these-decisions), and [5 moments where TestSprite genuinely changed the project](./LOOP.md#how-testsprite-changed-this-project).
 
 ---
 
