@@ -39,44 +39,47 @@ async function main() {
   try {
     // ─── Step 1: Open Dashboard ───────────────────────────────────────────
     console.log('1/6 Opening dashboard...')
-    await page.goto(`${TARGET}/dashboard`, { waitUntil: 'networkidle' })
-    await page.waitForTimeout(2000)
+    await page.goto(`${TARGET}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 30000 })
+    await page.waitForTimeout(3000)
     await page.screenshot({ path: path.join(OUTPUT, 'demo-01-dashboard.png'), fullPage: false })
     console.log('   ✓ Dashboard screenshot saved')
 
     // ─── Step 2: Click AI Bubble ──────────────────────────────────────────
     console.log('2/6 Opening AI Chat...')
-    const bubble = page.locator('#__aa-bubble')
-    await bubble.waitFor({ timeout: 10000 })
-    await bubble.click()
-    await page.waitForTimeout(1500)
+    // Wait for embed script to load — bubble may take a moment
+    await page.waitForSelector('#__aa-bubble', { timeout: 15000 })
+    await page.waitForTimeout(1000)
+    await page.click('#__aa-bubble')
+    await page.waitForTimeout(2000)
     await page.screenshot({ path: path.join(OUTPUT, 'demo-02-ai-opened.png') })
     console.log('   ✓ AI chat opened')
 
     // ─── Step 3: Type Question ────────────────────────────────────────────
     console.log('3/6 Typing question...')
-    // Type into the widget iframe's textarea
-    const frame = page.frameLocator('#__aa-frame')
-    const textarea = frame.locator('textarea[aria-label="Chat message input"]')
-    await textarea.waitFor({ timeout: 10000 })
-    await textarea.fill('Which APIs are currently down or degraded?')
-    await page.waitForTimeout(500)
-    await page.screenshot({ path: path.join(OUTPUT, 'demo-03-question-typed.png') })
-    console.log('   ✓ Question typed')
+    // Find the iframe that loaded the widget
+    const frameElement = await page.waitForSelector('#__aa-frame.open', { timeout: 10000 })
+    const frame = await frameElement.contentFrame()
+    if (!frame) { console.log('   ⚠️ Could not access widget iframe — skipping chat steps'); }
+    else {
+      await frame.waitForSelector('textarea[aria-label="Chat message input"]', { timeout: 10000 })
+      await frame.fill('textarea[aria-label="Chat message input"]', 'Which APIs are currently down or degraded?')
+      await page.waitForTimeout(500)
+      await page.screenshot({ path: path.join(OUTPUT, 'demo-03-question-typed.png') })
+      console.log('   ✓ Question typed')
 
-    // ─── Step 4: Send ─────────────────────────────────────────────────────
-    console.log('4/6 Sending question...')
-    const sendBtn = frame.locator('button[aria-label="Send message"]')
-    await sendBtn.click()
-    await page.waitForTimeout(8000) // Wait for AI response (SSE streaming)
-    await page.screenshot({ path: path.join(OUTPUT, 'demo-04-ai-responded.png') })
-    console.log('   ✓ AI responded')
+      // ─── Step 4: Send ─────────────────────────────────────────────────────
+      console.log('4/6 Sending question...')
+      await frame.click('button[aria-label="Send message"]')
+      await page.waitForTimeout(10000) // Wait for AI streaming response
+      await page.screenshot({ path: path.join(OUTPUT, 'demo-04-ai-responded.png') })
+      console.log('   ✓ AI responded (or still streaming)')
 
-    // ─── Step 5: Scroll to see full response ──────────────────────────────
-    console.log('5/6 Capturing response...')
-    await page.waitForTimeout(3000)
-    await page.screenshot({ path: path.join(OUTPUT, 'demo-05-full-response.png') })
-    console.log('   ✓ Full response captured')
+      // ─── Step 5: Wait for full response ────────────────────────────────────
+      console.log('5/6 Waiting for complete response...')
+      await page.waitForTimeout(5000)
+      await page.screenshot({ path: path.join(OUTPUT, 'demo-05-full-response.png') })
+      console.log('   ✓ Full response captured')
+    }
 
     // ─── Step 6: Final state ──────────────────────────────────────────────
     console.log('6/6 Final screenshot...')
