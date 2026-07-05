@@ -12,60 +12,28 @@
 
 ## 🎥 Demo
 
+▶️  [**Open live demo**](https://statuspulse.edgeone.dev/dashboard) — click the AI bubble in the bottom-right corner.
+
+![AI Chat in action — "Which APIs are down?" answered from live data](assets/demo-04-ai-responded.png)
+
 | | |
 |---|---|
-| 🌐 **Live** | [statuspulse.edgeone.dev](https://statuspulse.edgeone.dev) |
-| ▶️ **AI Chat in action** | Ask "Which APIs are down?" — AI answers from live data |
-
-![Dashboard with AI Chat](assets/demo-04-ai-responded.png)
-
-*Run `npm run demo` to regenerate all screenshots automatically — no manual editing.*
-
-*All demo assets in this README are generated via Playwright automation, not manual screenshots. This ensures documentation stays synchronized with the live application.*
+| 📸 **Dashboard** | Real-time monitoring with sparklines |
+| 💬 **AI Chat** | Ask "Which APIs are down?" — answers from live data |
+| 🏥 **Diagnostic** | Auto-classifies 7 incident types |
+| 📚 **Knowledge Base** | Citation-backed runbook search |
 
 ---
 
-> **StatusPulse demonstrates how Loop Engineering can produce a production-style AI monitoring platform through continuous verification rather than one-shot generation.**
+## Reproducible Demo
 
----
+All screenshots in this README are generated automatically — no manual editing.
 
-## Built with Loop Engineering
-
-*A loop with no real checker doesn't fail loudly. It hallucinates progress.*
-
-StatusPulse wasn't built with one-shot prompting. Every feature followed the TestSprite loop:
-
-```
-Write ──→ Verify ──→ Fix ──→ Verify Again
-  │          │         │          │
-  Agent     TestSprite  Agent     TestSprite
-  ships     runs real   reads     reruns
-  code      tests       failure   → passes
-                        bundle    → banks
+```bash
+npm run demo
 ```
 
-| | |
-|---|---|
-| **Loop iterations** | 28 |
-| **Verification reruns** | 35+ |
-| **Test plans** | 13 automated |
-| **Pass rate** | 100% |
-| **Regressions found** | 5 real bugs |
-| **LOOP.md** | [250-entry audit trail](./LOOP.md) |
-| **CI/CD** | [GitHub Actions gate](./.github/workflows/testsprite.yml) |
-
----
-
-## 🎥 Try it
-
-🌐 **Live:** [statuspulse.edgeone.dev](https://statuspulse.edgeone.dev)
-
-| | |
-|---|---|
-| 📸 Dashboard | Real-time monitoring with sparklines |
-| 💬 AI Chat | Ask "Which APIs are down?" — answers from live data |
-| 🏥 Diagnostic | Auto-classifies 7 incident types |
-| 📚 Knowledge Base | Citation-backed runbook search |
+Outputs: `demo-01-dashboard.png` → `demo-02-ai-opened.png` → `demo-03-question-typed.png` → `demo-04-ai-responded.png` → `demo-05-full-response.png` → `demo-06-final.png` + video recording.
 
 ---
 
@@ -94,43 +62,29 @@ StatusPulse tells you **what**, **why**, how **severe** it is, and what to **do 
 
 ---
 
-## Three ways to use it
+## Built with Loop Engineering
 
-| | | |
-|---|---|---|
-| 🟢 **Monitor** | Track uptime, response time, and status | Dashboard + status page + badges |
-| 🏥 **Diagnose** | Auto-classify incidents, get fix recommendations | 7 incident types, severity ratings |
-| 💬 **Ask AI** | Query live dashboard in plain English | 9 tools, streaming responses |
+> *A loop with no real checker doesn't fail loudly. It hallucinates progress.*
 
----
+StatusPulse wasn't built with one-shot prompting. Every feature followed the TestSprite loop:
 
-## How the loop runs here
-
-StatusPulse demonstrates the core TestSprite loop in practice:
-
-```text
-Feature idea
-    │
-    ▼
-Agent writes implementation
-    │
-    ▼
-TestSprite runs real browser tests
-against the deployed app
-    │
-    ├── PASS → banked, moves to next feature
-    │
-    └── FAIL → failure bundle downloaded
-                    │
-                    ▼
-            Agent reads root cause
-                    │
-                    ▼
-            Agent fixes the code
-                    │
-                    ▼
-            TestSprite reruns → PASS → banked
 ```
+Write ──→ Verify ──→ Fix ──→ Verify Again
+  │          │         │          │
+  Agent     TestSprite  Agent     TestSprite
+  ships     runs real   reads     reruns
+  code      tests       failure   → passes
+                         bundle    → banks
+```
+
+| | |
+|---|---|
+| **Loop iterations** | 28 |
+| **Verification reruns** | 35+ |
+| **Test plans** | 13 automated |
+| **Pass rate** | 100% |
+| **Regressions found** | 5 real bugs |
+| **LOOP.md** | [250-entry audit trail](./LOOP.md) |
 
 **Example from the build log:**
 
@@ -161,20 +115,6 @@ This is documented across 28 iterations in [LOOP.md](./LOOP.md) — a 250-entry 
 
 ---
 
-## Quick Start
-
-```bash
-git clone https://github.com/0xshalah/StatusPulse.git
-cd StatusPulse
-npm install
-cp .env.example .env
-npm run dev
-```
-
-Open `http://localhost:3000/dashboard` — click the AI bubble in the bottom-right corner.
-
----
-
 ## Architecture
 
 ```
@@ -199,6 +139,33 @@ External Services
 
 ---
 
+## Security
+
+Full audit in [SECURITY.md](./SECURITY.md).
+
+| Area | Approach |
+|-------|----------|
+| **Auth** | NextAuth v5 + route-level checks |
+| **Input** | Zod validation · XSS filter · NoSQL injection prevention |
+| **AI Guardrails** | Prompt injection detection (27 patterns) · Output guard · Content filter |
+| **Data** | AES-GCM encryption · SHA-256 IP hashing · API key rotation |
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/0xshalah/StatusPulse.git
+cd StatusPulse
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Open `http://localhost:3000/dashboard` — click the AI bubble in the bottom-right corner.
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -211,19 +178,6 @@ External Services
 | **Auth** | NextAuth v5 · GitHub OAuth |
 | **Testing** | TestSprite CLI · Vitest |
 | **CI/CD** | GitHub Actions |
-
----
-
-## Security
-
-Full audit in [SECURITY.md](./SECURITY.md).
-
-| Area | Approach |
-|-------|----------|
-| **Auth** | NextAuth v5 + route-level checks |
-| **Input** | Zod validation · XSS filter · NoSQL injection prevention |
-| **AI Guardrails** | Prompt injection detection (27 patterns) · Output guard · Content filter |
-| **Data** | AES-GCM encryption · SHA-256 IP hashing · API key rotation |
 
 ---
 
