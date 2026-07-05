@@ -612,6 +612,21 @@ Five moments where verification drove engineering decisions — not the other wa
 
 It was the feedback loop that shaped the project from deployment infrastructure (EdgeOne migration) to UI architecture (selector precision) to security posture (route-level auth) to browser compatibility (View Transitions).
 
+
+
+## Documentation Automation
+
+**Problem**: README screenshots are typically taken once and quickly become outdated as the UI evolves.
+
+**Decision**: Make documentation assets reproducible through automation.
+
+**Implementation**: Playwright script records a complete demo flow — opening the dashboard, interacting with the AI chat, capturing the streaming response — and saves screenshots + video to ssets/.
+
+**Result**: 
+pm run demo regenerates all documentation assets in under 30 seconds. No manual editing. No stale screenshots.
+
+---
+
 ## Engineering Trade-offs
 
 Major architectural decisions made during the build — each with a constraint that forced the choice.

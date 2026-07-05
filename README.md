@@ -19,7 +19,9 @@
 
 ![Dashboard with AI Chat](assets/demo-04-ai-responded.png)
 
-*Run `npm run demo` to regenerate all screenshots automatically.*
+*Run `npm run demo` to regenerate all screenshots automatically — no manual editing.*
+
+*All demo assets in this README are generated via Playwright automation, not manual screenshots. This ensures documentation stays synchronized with the live application.*
 
 ---
 
