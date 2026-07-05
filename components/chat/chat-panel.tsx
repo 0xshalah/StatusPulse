@@ -298,7 +298,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
     <div className={`flex flex-col ${isWidget ? 'h-full' : 'h-screen'} font-sans overflow-hidden`} style={{ background: bg }} role="application" aria-label={`${CONFIG.ui.brandName} Chat`}>
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -3 }} animate={{ opacity: 1, y: 0 }} transition={spring}
-        className={`flex items-center justify-between ${compact ? 'px-3' : 'pl-7 pr-5'} ${hPy} border-b ${borderColor}`}
+        className={`flex items-center justify-between ${compact ? 'px-3' : 'pl-9 pr-5'} ${hPy} border-b ${borderColor}`}
       >
         <div className={`flex items-center ${hGap}`}>
            <motion.div
