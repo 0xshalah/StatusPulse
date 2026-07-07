@@ -52,6 +52,7 @@ export async function PUT(
     if (parsed.data.maintenanceStart !== undefined) u.maintenanceStart = parsed.data.maintenanceStart
     if (parsed.data.maintenanceEnd !== undefined) u.maintenanceEnd = parsed.data.maintenanceEnd
     if (parsed.data.status !== undefined) u.status = parsed.data.status
+    if (parsed.data.expectedContent !== undefined) u.expectedContent = parsed.data.expectedContent
 
     await db.collection('endpoints').updateOne({ id }, { $set: u })
     const updated = await db.collection('endpoints').findOne({ id })

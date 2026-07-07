@@ -93,6 +93,7 @@ async function enqueueDueChecks() {
         endpointId: ep.id,
         url: ep.url,
         expectedStatus: ep.expectedStatus,
+        expectedContent: (ep as any).expectedContent || '',
       })
     }
 

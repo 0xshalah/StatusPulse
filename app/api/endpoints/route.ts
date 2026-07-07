@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const parsed = createEndpointSchema.safeParse(body)
     if (!parsed.success) return apiError(parsed.error)
 
-    const { name, url, expectedStatus, interval } = parsed.data
+    const { name, url, expectedStatus, interval, expectedContent } = parsed.data
     const db = await M.connect()
 
     const ep = {
@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
       url,
       expectedStatus,
       interval,
+      expectedContent: expectedContent || '',
       paused: false,
       status: 'active',
       consecutiveFailures: 0,

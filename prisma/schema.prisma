@@ -30,6 +30,7 @@ model Endpoint {
   maintenanceStart DateTime?
   maintenanceEnd   DateTime?
   status           String    @default("active")
+  expectedContent  String?   @default("")
   lastVerdict      String?
   lastPingAt       DateTime?
   nextPingAt       DateTime?
