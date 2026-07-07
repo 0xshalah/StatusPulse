@@ -81,13 +81,13 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle className="font-display text-xl">{isEdit ? 'Edit endpoint' : 'Add endpoint'}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle className="font-display text-xl text-center">{isEdit ? 'Edit endpoint' : 'Add endpoint'}</DialogTitle></DialogHeader>
 
-        <div className="flex items-center justify-between px-1 py-1">
+        <div className="mx-auto flex max-w-[360px] items-center justify-between py-1">
           {STEPS.map((s, i) => {
             const active = step === s.id, done = step > s.id, Icon = s.icon
             return (
-              <div key={s.id} className="flex flex-1 items-center max-w-[120px]">
+              <div key={s.id} className="flex flex-1 items-center">
                 <div className="flex flex-col items-center gap-0.5">
                   <div className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${done ? 'border-primary bg-primary text-primary-foreground' : active ? 'border-primary text-primary' : 'border-border text-muted-foreground'}`}>
                     {done ? <Check className="h-3.5 w-3.5" /> : <Icon className="h-3.5 w-3.5" />}
@@ -100,7 +100,7 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
           })}
         </div>
 
-        <div className="min-h-[170px]">
+        <div className="min-h-[170px] mt-5">
           <AnimatePresence mode="wait">
             {step === 1 && (
               <Slide key="s1">
