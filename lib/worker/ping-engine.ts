@@ -6,11 +6,12 @@ export interface PingResult {
   responseTime: number
   errored: boolean
   attempts: number
+  contentMismatch?: boolean
 }
 
-export async function pingWithRetry(url: string, expectedStatus: number): Promise<PingResult> {
+export async function pingWithRetry(url: string, expectedStatus: number, expectedContent?: string): Promise<PingResult> {
   const backoffs = CONFIG.ping.retryBackoff
-  let last: PingResult = { statusCode: 0, responseTime: 0, errored: true, attempts: 0 }
+  let last: PingResult = { statusCode: 0, responseTime: 0, errored: true, attempts: 0, contentMismatch: false }
 
   for (let i = 0; i < CONFIG.ping.maxAttempts; i++) {
     if (backoffs[i]) await sleep(backoffs[i])
@@ -24,8 +25,17 @@ export async function pingWithRetry(url: string, expectedStatus: number): Promis
         headers: { 'User-Agent': 'StatusPulse/2.0 (+worker)' },
       })
       clearTimeout(t)
-      last = { statusCode: r.status, responseTime: Date.now() - start, errored: false, attempts: i + 1 }
-      if (r.status === expectedStatus) return last
+      const responseTime = Date.now() - start
+      // Content verification
+      let contentMismatch = false
+      if (expectedContent && r.status === expectedStatus) {
+        try {
+          const text = await r.text()
+          contentMismatch = !text.includes(expectedContent)
+        } catch {}
+      }
+      last = { statusCode: r.status, responseTime, errored: false, attempts: i + 1, contentMismatch }
+      if (r.status === expectedStatus && !contentMismatch) return last
     } catch {
       last = { statusCode: 0, responseTime: Date.now() - start, errored: true, attempts: i + 1 }
     }
@@ -38,7 +48,7 @@ export function computeVerdict(
   expectedStatus: number,
   consecutiveFailures: number
 ): { verdict: string; consecutive: number } {
-  const failed = result.errored || result.statusCode !== expectedStatus
+  const failed = result.errored || result.statusCode !== expectedStatus || result.contentMismatch
   const consecutive = failed ? consecutiveFailures + 1 : 0
 
   let verdict: string
