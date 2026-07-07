@@ -36,15 +36,19 @@ export async function pingWithRetry(url: string, expectedStatus: number, expecte
           } else {
             const lower = text.toLowerCase()
             const errorIndicators = [
-              /<title>.*(error|maintenance|unavailable|suspended).*<\/title>/i,
+              /<title>.*(error|maintenance|unavailable|suspended|not found|parked).*<\/title>/i,
               /error establishing a database connection/i,
               /fatal error/i,
               /service unavailable/i,
               /under maintenance/i,
               /account suspended/i,
+              /site not found/i,
+              /no such app/i,
+              /deployment not found/i,
               /\b(stack trace|exception|panic|segfault)\b/i,
             ]
-            contentMismatch = errorIndicators.some(p => p.test(lower))
+            const isTinyResponse = text.trim().length < 100
+            contentMismatch = isTinyResponse || errorIndicators.some(p => p.test(lower))
           }
         } catch {}
       }
