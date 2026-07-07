@@ -28,10 +28,24 @@ export async function pingWithRetry(url: string, expectedStatus: number, expecte
       const responseTime = Date.now() - start
       // Content verification
       let contentMismatch = false
-      if (expectedContent && r.status === expectedStatus) {
+      if (r.status === expectedStatus) {
         try {
           const text = await r.text()
-          contentMismatch = !text.includes(expectedContent)
+          if (expectedContent) {
+            contentMismatch = !text.includes(expectedContent)
+          } else {
+            const lower = text.toLowerCase()
+            const errorIndicators = [
+              /<title>.*(error|maintenance|unavailable|suspended).*<\/title>/i,
+              /error establishing a database connection/i,
+              /fatal error/i,
+              /service unavailable/i,
+              /under maintenance/i,
+              /account suspended/i,
+              /\b(stack trace|exception|panic|segfault)\b/i,
+            ]
+            contentMismatch = errorIndicators.some(p => p.test(lower))
+          }
         } catch {}
       }
       last = { statusCode: r.status, responseTime, errored: false, attempts: i + 1, contentMismatch }
