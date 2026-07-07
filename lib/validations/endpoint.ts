@@ -25,6 +25,7 @@ export const createEndpointSchema = z.object({
     .min(10)
     .max(3600)
     .default(60),
+  expectedContent: z.string().max(500).default(''),
 })
 
 export const updateEndpointSchema = z.object({
@@ -55,6 +56,7 @@ export const updateEndpointSchema = z.object({
     .max(3600)
     .optional(),
   paused: z.boolean().optional(),
+  expectedContent: z.string().max(500).optional(),
   maintenanceStart: z.string().datetime({ offset: true }).optional().nullable(),
   maintenanceEnd: z.string().datetime({ offset: true }).optional().nullable(),
   status: z.enum(['active', 'maintenance']).optional(),

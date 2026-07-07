@@ -22,7 +22,7 @@ const INTERVALS = [
   { v: 30, l: '30s' }, { v: 60, l: '60s' }, { v: 300, l: '5m' },
   { v: 900, l: '15m' }, { v: 1800, l: '30m' }, { v: 3600, l: '1h' },
 ]
-const empty = { name: '', url: '', expectedStatus: '200', interval: 60 }
+const empty = { name: '', url: '', expectedStatus: '200', interval: 60, expectedContent: '' }
 
 export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing }) {
   const [step, setStep] = useState(1)
@@ -39,7 +39,7 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
       if (editing) {
         const sc = String(editing.expectedStatus)
         setCustomStatus(!STATUS_CODES.includes(sc))
-        setForm({ name: editing.name, url: editing.url, expectedStatus: sc, interval: Number(editing.interval) })
+        setForm({ name: editing.name, url: editing.url, expectedStatus: sc, interval: Number(editing.interval), expectedContent: editing.expectedContent || '' })
       } else { setCustomStatus(false); setForm(empty) }
     }
   }, [open, editing])
@@ -71,7 +71,7 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
   const submit = async () => {
     setSaving(true)
     try {
-      const payload = { name: form.name, url: form.url, expectedStatus: Number(form.expectedStatus), interval: Number(form.interval) }
+      const payload = { name: form.name, url: form.url, expectedStatus: Number(form.expectedStatus), interval: Number(form.interval), expectedContent: form.expectedContent || '' }
       if (isEdit) { await api(`/endpoints/${editing.id}`, { method: 'PUT', body: JSON.stringify(payload) }); toast.success('Endpoint updated') }
       else { await api('/endpoints', { method: 'POST', body: JSON.stringify(payload) }); toast.success('Endpoint added — monitoring started') }
       onOpenChange(false); onSaved && onSaved()
@@ -137,6 +137,11 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
                     <Input type="number" min={5} className="w-28 font-mono" value={form.interval} onChange={(e) => set('interval', Number(e.target.value))} />
                   </div>
                 </div>
+                <div className="space-y-1.5">
+                  <Label>Expected text in response (optional)</Label>
+                  <Input placeholder="e.g. OK or success" value={form.expectedContent} onChange={(e) => set('expectedContent', e.target.value)} className="font-mono text-sm" />
+                  <p className="text-[10px] text-muted-foreground">If set, the ping fails when this text is missing — catches CDN holding pages masquerading as 200.</p>
+                </div>
               </Slide>
             )}
             {step === 3 && (
@@ -146,6 +151,7 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
                 <Review label="URL" value={form.url} mono />
                 <Review label="Expected status" value={form.expectedStatus} mono />
                 <Review label="Interval" value={`${form.interval}s`} mono />
+                {form.expectedContent && <Review label="Expected text" value={form.expectedContent} mono />}
                 </div>
               </Slide>
             )}
