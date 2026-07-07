@@ -45,7 +45,7 @@ export function computeVerdict(
   if (failed) {
     verdict = consecutive >= 3 ? 'down' : 'degraded'
   } else {
-    verdict = result.responseTime > 2000 ? 'degraded' : 'up'
+    verdict = result.responseTime > CONFIG.ping.degradedThresholdMs ? 'degraded' : 'up'
   }
   return { verdict, consecutive }
 }
