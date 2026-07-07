@@ -83,11 +83,11 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader><DialogTitle className="font-display text-xl">{isEdit ? 'Edit endpoint' : 'Add endpoint'}</DialogTitle></DialogHeader>
 
-        <div className="flex items-center justify-between px-1 py-1.5">
+        <div className="flex items-center justify-between px-1 py-1">
           {STEPS.map((s, i) => {
             const active = step === s.id, done = step > s.id, Icon = s.icon
             return (
-              <div key={s.id} className="flex flex-1 items-center">
+              <div key={s.id} className="flex flex-1 items-center max-w-[120px]">
                 <div className="flex flex-col items-center gap-0.5">
                   <div className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${done ? 'border-primary bg-primary text-primary-foreground' : active ? 'border-primary text-primary' : 'border-border text-muted-foreground'}`}>
                     {done ? <Check className="h-3.5 w-3.5" /> : <Icon className="h-3.5 w-3.5" />}
@@ -173,7 +173,7 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
           </AnimatePresence>
         </div>
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between border-t border-border pt-3">
           <Button variant="ghost" onClick={back} disabled={step === 1} className="gap-1"><ChevronLeft className="h-4 w-4" /> Back</Button>
           {step < 4 ? (
             <Button onClick={next} disabled={(step === 1 && !step1Valid) || (step === 2 && !step2Valid)} className="gap-1">Next <ChevronRight className="h-4 w-4" /></Button>
