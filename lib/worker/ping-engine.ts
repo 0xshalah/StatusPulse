@@ -7,9 +7,27 @@ export interface PingResult {
   errored: boolean
   attempts: number
   contentMismatch?: boolean
+  dnsFailed?: boolean
 }
 
 export async function pingWithRetry(url: string, expectedStatus: number, expectedContent?: string): Promise<PingResult> {
+  // DNS pre-check to avoid local DNS cache false positives
+  let dnsFailed = false
+  try {
+    const hostname = new URL(url).hostname
+    const dnsRes = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(hostname)}&type=A`, {
+      signal: AbortSignal.timeout(5000),
+    })
+    if (dnsRes.ok) {
+      const dnsData = await dnsRes.json()
+      dnsFailed = !dnsData.Answer || dnsData.Answer.length === 0
+    }
+  } catch { /* skip DNS check */ }
+
+  if (dnsFailed) {
+    return { statusCode: 0, responseTime: 0, errored: true, attempts: 0, contentMismatch: false, dnsFailed: true }
+  }
+
   const backoffs = CONFIG.ping.retryBackoff
   let last: PingResult = { statusCode: 0, responseTime: 0, errored: true, attempts: 0, contentMismatch: false }
 
