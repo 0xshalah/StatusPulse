@@ -83,18 +83,18 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader><DialogTitle className="font-display text-xl text-center">{isEdit ? 'Edit endpoint' : 'Add endpoint'}</DialogTitle></DialogHeader>
 
-        <div className="mx-auto flex max-w-[360px] items-center justify-between py-1">
+        <div className="mx-auto flex max-w-[420px] items-center justify-between py-1.5 mt-1">
           {STEPS.map((s, i) => {
             const active = step === s.id, done = step > s.id, Icon = s.icon
             return (
               <div key={s.id} className="flex flex-1 items-center">
-                <div className="flex flex-col items-center gap-0.5">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${done ? 'border-primary bg-primary text-primary-foreground' : active ? 'border-primary text-primary' : 'border-border text-muted-foreground'}`}>
-                    {done ? <Check className="h-3.5 w-3.5" /> : <Icon className="h-3.5 w-3.5" />}
+                <div className="flex flex-col items-center gap-1">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${done ? 'border-primary bg-primary text-primary-foreground' : active ? 'border-primary text-primary' : 'border-border text-muted-foreground'}`}>
+                    {done ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                   </div>
-                  <span className={`text-[9px] uppercase tracking-wide ${active ? 'text-foreground' : 'text-muted-foreground'}`}>{s.title}</span>
+                  <span className={`text-[10px] font-medium uppercase tracking-wide ${active ? 'text-foreground' : 'text-muted-foreground'}`}>{s.title}</span>
                 </div>
-                {i < STEPS.length - 1 && <div className={`mx-1 h-px flex-1 ${step > s.id ? 'bg-primary' : 'bg-border'}`} />}
+                {i < STEPS.length - 1 && <div className={`mx-1.5 h-px flex-1 ${step > s.id ? 'bg-primary' : 'bg-border'}`} />}
               </div>
             )
           })}
