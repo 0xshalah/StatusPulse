@@ -61,15 +61,22 @@ function App() {
     catch { toast.error('Reset failed') }
   }
   const handleDelete = async (ep) => {
-    try { await api(`/endpoints/${ep.id}`, { method: 'DELETE' }); toast.success(`Deleted ${ep.name}`); load() }
-    catch { toast.error('Delete failed') }
+    // Optimistic: remove immediately, revert on error
+    setData(prev => ({ ...prev, endpoints: prev.endpoints.filter(e => e.id !== ep.id) }))
+    try { await api(`/endpoints/${ep.id}`, { method: 'DELETE' }); toast.success(`Deleted ${ep.name}`) }
+    catch { toast.error('Delete failed'); load() }
   }
   const handlePause = async (ep) => {
-    try { await api(`/endpoints/${ep.id}/pause`, { method: 'POST', body: JSON.stringify({ paused: !ep.paused }) }); toast.success(ep.paused ? 'Resumed' : 'Paused'); load() }
-    catch { toast.error('Action failed') }
+    // Optimistic: toggle immediately, revert on error
+    const newPaused = !ep.paused
+    setData(prev => ({ ...prev, endpoints: prev.endpoints.map(e => e.id === ep.id ? { ...e, paused: newPaused } : e) }))
+    try { await api(`/endpoints/${ep.id}/pause`, { method: 'POST', body: JSON.stringify({ paused: newPaused }) }); toast.success(newPaused ? 'Paused' : 'Resumed') }
+    catch { toast.error('Action failed'); load() }
   }
   const handleTest = async (ep) => {
-    await api(`/endpoints/${ep.id}/test`, { method: 'POST' }); load()
+    toast.success('Testing...')
+    try { const r = await api(`/endpoints/${ep.id}/test`, { method: 'POST' }); if (r?.ping) setData(prev => ({ ...prev, endpoints: prev.endpoints.map(e => e.id === ep.id ? { ...e, lastVerdict: r.ping.verdict, latest: { ...e.latest, responseTime: r.ping.responseTime, statusCode: r.ping.statusCode, verdict: r.ping.verdict } } : e) })) }
+    catch { toast.error('Test failed') }
   }
 
   const counts = useMemo(() => {
