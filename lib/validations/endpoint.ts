@@ -25,7 +25,6 @@ export const createEndpointSchema = z.object({
     .min(10)
     .max(3600)
     .default(60),
-  expectedContent: z.string().max(500).default(''),
 })
 
 export const updateEndpointSchema = z.object({
