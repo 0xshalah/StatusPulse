@@ -71,7 +71,7 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
   const submit = async () => {
     setSaving(true)
     try {
-      const payload = { name: form.name, url: form.url, expectedStatus: Number(form.expectedStatus), interval: Number(form.interval) }
+      const payload = { name: form.name, url: form.url, expectedStatus: Number(form.expectedStatus), interval: Math.max(10, Number(form.interval) || 60) }
       if (isEdit) { await api(`/endpoints/${editing.id}`, { method: 'PUT', body: JSON.stringify(payload) }); toast.success('Endpoint updated') }
       else { await api('/endpoints', { method: 'POST', body: JSON.stringify(payload) }); toast.success('Endpoint added — monitoring started') }
       onOpenChange(false); onSaved && onSaved()
@@ -134,7 +134,7 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
                   </div>
                   <div className="flex items-center gap-2 pt-0.5">
                     <Label className="text-xs text-muted-foreground">Custom (seconds)</Label>
-                    <Input type="number" min={5} className="w-28 font-mono" value={form.interval} onChange={(e) => set('interval', Number(e.target.value))} />
+                    <Input type="number" min={5} className="w-28 font-mono" value={form.interval || ''} onChange={(e) => set('interval', Math.max(5, Number(e.target.value) || 60))} />
                   </div>
                 </div>
               </Slide>
