@@ -1,0 +1,38 @@
+{
+  "projectId": "dc688ee6-3d53-4cd9-a8a2-21229ef20a01",
+  "type": "frontend",
+  "name": "Endpoint Edit — Save Changes",
+  "description": "Verify editing an existing endpoint saves without validation errors",
+  "planSteps": [
+    {
+      "type": "action",
+      "action": "navigate",
+      "url": "https://statuspulse.edgeone.dev/dashboard",
+      "description": "Open dashboard to see endpoint cards"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=API Gateway",
+      "description": "At least one endpoint card is visible"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "button[aria-label='Edit']",
+      "description": "Click the Edit button on an endpoint card"
+    },
+    {
+      "type": "assertion",
+      "assertion": "visible",
+      "selector": "text=Edit endpoint",
+      "description": "Edit wizard dialog opens"
+    },
+    {
+      "type": "action",
+      "action": "click",
+      "selector": "text=Save changes",
+      "description": "Click Save changes without modifying anything"
+    }
+  ]
+}
