@@ -47,7 +47,7 @@ export default function AddEndpointWizard({ open, onOpenChange, onSaved, editing
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
   const validUrl = (() => { try { const u = new URL(form.url); return u.protocol === 'http:' || u.protocol === 'https:' } catch { return false } })()
   const step1Valid = form.name.trim().length >= 2 && validUrl
-  const step2Valid = Number(form.expectedStatus) >= 100 && Number(form.expectedStatus) <= 599 && Number(form.interval) >= 5
+  const step2Valid = Number(form.expectedStatus) >= 100 && Number(form.expectedStatus) <= 599 && Number(form.interval) >= 10 && Number(form.interval) <= 3600
 
   const checkDup = async () => {
     if (!validUrl || (editing && editing.url === form.url)) { setDup(false); return }

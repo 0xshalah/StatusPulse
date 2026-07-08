@@ -36,6 +36,9 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
+    // Normalize before validation
+    if (body.interval !== undefined) body.interval = Math.min(3600, Math.max(10, parseInt(String(body.interval)) || 60))
+    if (body.expectedStatus !== undefined) body.expectedStatus = Math.min(599, Math.max(100, parseInt(String(body.expectedStatus)) || 200))
     const parsed = updateEndpointSchema.safeParse(body)
     if (!parsed.success) return apiError(parsed.error)
 

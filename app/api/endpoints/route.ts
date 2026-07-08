@@ -38,6 +38,9 @@ export async function POST(request: NextRequest) {
   if (unauth) return unauth
   try {
     const body = await request.json()
+    // Normalize before validation — defensive layer
+    if (body.interval !== undefined) body.interval = Math.min(3600, Math.max(10, parseInt(String(body.interval)) || 60))
+    if (body.expectedStatus !== undefined) body.expectedStatus = Math.min(599, Math.max(100, parseInt(String(body.expectedStatus)) || 200))
     const parsed = createEndpointSchema.safeParse(body)
     if (!parsed.success) return apiError(parsed.error)
 
