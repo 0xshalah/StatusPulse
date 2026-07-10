@@ -79,12 +79,12 @@ Write ──→ Verify ──→ Fix ──→ Verify Again
 
 | | |
 |---|---|
-| **Loop iterations** | 28 |
+| **Loop iterations** | 30 |
 | **Verification reruns** | 35+ |
-| **Test plans** | 13 automated |
+| **Test plans** | 17 (14 frontend + 3 `--type backend`) |
 | **Pass rate** | 100% |
-| **Regressions found** | 5 real bugs |
-| **LOOP.md** | [250-entry audit trail](./LOOP.md) |
+| **Regressions found** | 6 real bugs |
+| **LOOP.md** | [267-entry audit trail](./LOOP.md) |
 
 **Example from the build log:**
 
@@ -96,7 +96,7 @@ Write ──→ Verify ──→ Fix ──→ Verify Again
 5. Fixed layering → PASSED. 5 cycles to resolve.
 ```
 
-This is documented across 28 iterations in [LOOP.md](./LOOP.md) — a 250-entry engineering journal with Failure Bundles, root cause analysis, [engineering trade-offs](./LOOP.md#engineering-trade-offs), and [5 moments where TestSprite genuinely changed the project](./LOOP.md#how-testsprite-changed-this-project).
+This is documented across 30 iterations in [LOOP.md](./LOOP.md) — a 267-entry engineering journal with Failure Bundles, root cause analysis, [engineering trade-offs](./LOOP.md#engineering-trade-offs), and [5 moments where TestSprite genuinely changed the project](./LOOP.md#how-testsprite-changed-this-project).
 
 ---
 
@@ -105,8 +105,8 @@ This is documented across 28 iterations in [LOOP.md](./LOOP.md) — a 250-entry 
 | Category | Capabilities |
 |----------|-------------|
 | **Monitoring** | Real-time SSE dashboard · Search · Filter by status · 30-day ping history |
-| **Status Page** | Public `/status` with uptime heatmaps · Embeddable SVG badges |
-| **Alerts** | Slack · Discord · Email — multi-channel notifications |
+| **Status Page** | Public `/status` with uptime heatmaps · Embeddable SVG badges · Email incident subscription |
+| **Alerts** | Slack · Discord webhooks — multi-channel outage notifications |
 | **AI Assistant** | Natural language queries · Tool calling · Streaming responses |
 | **Incident Diagnostic** | 4-stage pipeline: Triage → Classify → Analyze → Recommend |
 | **Knowledge Base** | TF-IDF search · Citation-backed answers · Seeded runbook documents |
@@ -174,7 +174,7 @@ Open `http://localhost:3000/dashboard` — click the AI bubble in the bottom-rig
 | **Backend** | Next.js API Routes · TypeScript · Zod · SSE Streaming |
 | **Database** | MongoDB · Prisma · Redis |
 | **Queue** | BullMQ |
-| **AI** | LLM · Web Search · LangGraph · TF-IDF |
+| **AI** | LLM · Web Search · LangGraph-style state machine · TF-IDF |
 | **Auth** | NextAuth v5 · GitHub OAuth |
 | **Testing** | TestSprite CLI · Vitest |
 | **CI/CD** | GitHub Actions |
