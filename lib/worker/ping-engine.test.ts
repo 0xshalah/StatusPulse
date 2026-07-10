@@ -7,15 +7,25 @@ global.fetch = mockFetch
 // Must import AFTER mock is set up (the module uses fetch at top level)
 import { pingWithRetry, computeVerdict } from './ping-engine'
 
+// pingWithRetry first performs a DNS pre-check (fetch to dns.google) before the
+// actual ping attempts. Tests that assert exact attempt counts must account for
+// that leading fetch call by mocking a successful DNS resolution first.
+const dnsOk = () =>
+  ({ ok: true, json: async () => ({ Answer: [{ data: '93.184.216.34' }] }) }) as unknown as Response
+// A healthy body long enough to pass the tiny-response heuristic and free of
+// error indicators, so it is treated as genuine success (not a holding page).
+const okBody = (status: number) =>
+  ({ status, text: async () => 'ok '.repeat(50) }) as unknown as Response
+
 describe('pingWithRetry', () => {
   beforeEach(() => {
     mockFetch.mockReset()
   })
 
   it('returns success when endpoint responds 200 OK', async () => {
-    mockFetch.mockResolvedValueOnce({
-      status: 200,
-    } as Response)
+    mockFetch
+      .mockResolvedValueOnce(dnsOk())
+      .mockResolvedValueOnce(okBody(200))
 
     const result = await pingWithRetry('https://example.com', 200)
 
@@ -27,9 +37,10 @@ describe('pingWithRetry', () => {
 
   it('retries up to 3 times on failure', async () => {
     mockFetch
+      .mockResolvedValueOnce(dnsOk())
       .mockRejectedValueOnce(new Error('ETIMEDOUT'))
       .mockRejectedValueOnce(new Error('ECONNREFUSED'))
-      .mockResolvedValueOnce({ status: 200 } as Response)
+      .mockResolvedValueOnce(okBody(200))
 
     const result = await pingWithRetry('https://example.com', 200)
 

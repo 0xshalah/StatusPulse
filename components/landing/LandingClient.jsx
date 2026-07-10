@@ -42,15 +42,15 @@ import {
 /* ----------------------------------- DATA ---------------------------------- */
 const STEPS = [
   { icon: Plus, title: 'Paste your API endpoint URL', body: 'Drop in any HTTP(S) URL and set the expected status code in a 30-second wizard.' },
-  { icon: Zap, title: 'We ping it every 60 seconds', body: 'Automated checks run around the clock from 6 global regions, recording latency and verdict.' },
-  { icon: Bell, title: 'Get alerts when things break', body: 'Instant notifications via Slack, Email, or Discord the moment an endpoint degrades or goes down.' },
+  { icon: Zap, title: 'We ping it every 60 seconds', body: 'A background worker runs automated checks around the clock, recording latency and verdict.' },
+  { icon: Bell, title: 'Get alerts when things break', body: 'Instant Slack and Discord webhook notifications the moment an endpoint degrades or goes down.' },
 ]
 
 const FEATURES = [
   { icon: Globe, title: 'Public status page', body: 'A shareable /status page with 24h / 7d / 30d uptime for your users.' },
   { icon: Code2, title: 'Embeddable SVG badge', body: 'Drop a live up/degraded/down badge into any README with one line.' },
   { icon: Clock, title: 'Incident timeline', body: 'Automatic detection of when endpoints went down and recovered.' },
-  { icon: Bell, title: 'Multi-channel alerts', body: 'Slack, Email & Discord notifications before customers notice.' },
+  { icon: Bell, title: 'Multi-channel alerts', body: 'Slack & Discord notifications before customers notice.' },
   { icon: Moon, title: 'Dark & light mode', body: 'A terminal-grade theme that respects system preference.' },
   { icon: Sparkles, title: 'AI Chat Assistant', body: 'Ask questions about your APIs in natural language — powered by advanced AI with real-time tool calling.' },
   { icon: Database, title: 'Incident Diagnostic', body: 'Auto-classifies incidents (timeout, 5xx, DNS) and provides specific fix recommendations.' },
@@ -69,7 +69,7 @@ const COMPARE_ROWS = [
   'Public status page',
   'Embeddable SVG badges',
   'Incident timeline',
-  'Slack / Discord / Email alerts',
+  'Slack / Discord alerts',
   'Open source',
   'Unlimited endpoints (free)',
 ]
@@ -99,7 +99,7 @@ const FAQ = [
   { q: 'How much does StatusPulse cost?', a: 'StatusPulse is free forever during beta — every feature, unlimited endpoints, no credit card required.' },
   { q: 'How is my data secured?', a: 'We only store endpoint URLs and response metadata (status code, latency). No request bodies or credentials are ever logged, and all traffic is encrypted in transit.' },
   { q: 'Can I self-host StatusPulse?', a: 'Yes. StatusPulse is open source and ships on a Next.js + MongoDB stack you can deploy anywhere in minutes.' },
-  { q: 'Which alert channels are supported?', a: 'Get notified the moment an endpoint degrades or goes down via Slack, Discord, or Email — with more channels on the way.' },
+  { q: 'Which alert channels are supported?', a: 'Get notified the moment an endpoint degrades or goes down via Slack or Discord webhooks. Email incident subscriptions are available on the public status page, with more channels on the way.' },
   { q: 'Does it integrate with my stack?', a: 'StatusPulse monitors any HTTP(S) endpoint and exposes a REST API plus embeddable SVG badges for your README, docs, or dashboards.' },
   { q: 'How does the AI assistant work?', a: 'StatusPulse includes a built-in AI chat widget powered by advanced language models. It can query your live dashboard, run incident diagnostics, and search our knowledge base — all through natural language. Your data is encrypted and never stored permanently.' },
   { q: 'Is there an uptime SLA?', a: 'Monitoring runs 24/7 with automated health checks. During beta we target 99.99% availability for the monitoring layer itself.' },

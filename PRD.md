@@ -1,16 +1,16 @@
 # StatusPulse — Product Requirements Document
 
-> **Version:** 2.1 (Revised)  
-> **Status:** Hackathon Prototype · Pre-Production  
-> **Last Updated:** June 29, 2026
+> **Version:** 3.0 (Final — Hackathon Submission)  
+> **Status:** Hackathon Submission · Production-style prototype  
+> **Last Updated:** July 4, 2026
 
 ---
 
 ## Executive Summary
 
-StatusPulse is an open-source API endpoint monitoring tool — real-time dashboard, public status pages, embeddable SVG badges, Slack/Discord alerts. Built in 24 hours during TestSprite Hackathon Season 3 with a self-verifying AI agent loop (Claude Code + TestSprite CLI): 10 iterations, 84 LOOP.md entries, 4 FAIL→FIX cycles.
+StatusPulse is an open-source API endpoint monitoring tool — real-time dashboard, public status pages, embeddable SVG badges, Slack/Discord alerts, and a triple-layer AI assistant (chat + incident diagnostic + knowledge base). Built during TestSprite Hackathon Season 3 with a self-verifying AI agent loop (AI Coding Agent + TestSprite CLI): **28 iterations, 250 LOOP.md entries, 35+ verification reruns, 5 FAIL→FIX cycles, 13 banked tests (100% passing)**.
 
-**Current state:** A functional prototype. The next phase is a **re-architecture** — not a refactor — to make it production-grade. Timeline: 8-12 weeks, not 2-4.
+**Current state:** A production-style prototype. The re-architecture planned in v2.1 was executed during the build — auth, TypeScript route handlers, Docker, and a BullMQ worker all shipped. Remaining hardening (scale indexes, email delivery, multi-project) is tracked in the roadmap below.
 
 **Core differentiator:** Open-source + self-hosted. StatusPulse competes on freedom (you own your monitoring), not on being a cheaper UptimeRobot.
 
@@ -18,20 +18,24 @@ StatusPulse is an open-source API endpoint monitoring tool — real-time dashboa
 
 ## Honest Assessment
 
-### What the Prototype Proves
-- ✅ Agent-driven development works: 19 commits, 4 genuine FAIL→FIX cycles in 24 hours
-- ✅ Full-stack Next.js 15 + MongoDB Atlas + Render deployment pipeline
+### What the Build Proves
+- ✅ Agent-driven development works: 30+ commits, 5 genuine FAIL→FIX cycles across 28 iterations
+- ✅ Full-stack Next.js 15 + MongoDB Atlas + EdgeOne deployment pipeline (migrated from Render mid-build)
 - ✅ Rich UX: SSE streaming, Framer Motion animations, View Transitions API
-- ✅ Security basics: HSTS, CSP, rate limiting, input sanitization
+- ✅ Security: HSTS, CSP, rate limiting, input sanitization, route-level auth, AI prompt-injection guardrails
 
-### What the Prototype Is NOT
-- ❌ Production-ready architecture: 250-line catch-all API route, no separation of concerns
-- ❌ Type-safe: Pure JavaScript, no compile-time guarantees
-- ❌ Scalable: In-memory rate limiter, no database indexes, no connection retry
-- ❌ Secure: No authentication, credentials in plaintext env vars
-- ❌ Tested: Zero unit/integration tests, only external TestSprite E2E
+### Delivered During the Hackathon (was "NOT" in v2.1)
+- ✅ Separation of concerns: 191-line catch-all route → 17 domain-specific TypeScript route handlers
+- ✅ Type-safe API layer: route handlers, workers, and AI modules in TypeScript with Zod validation
+- ✅ Auth: GitHub OAuth via NextAuth v5 + route-level checks (mutations protected, sensitive GETs gated)
+- ✅ Tested: 70 Vitest unit tests (ping engine, guard, tools, stream, circuit breaker) + 13 TestSprite E2E plans
 
-**This is a proof of concept. Treating it as an MVP that just needs polish is the planning fallacy.**
+### Still Roadmap (not yet production-grade)
+- ⚠️ Scale: database indexes exist in schema, but not load-tested beyond a handful of endpoints
+- ⚠️ Email alerts: status page captures subscribers, but delivery (SendGrid/Resend) is not wired
+- ⚠️ Multi-tenant isolation, custom domains, and Prometheus metrics remain future phases
+
+**This is a strong hackathon prototype with production-style architecture — not yet a hardened SaaS. The roadmap below is honest about the gap.**
 
 ---
 
@@ -65,22 +69,22 @@ A free, open-source, **self-hosted** monitoring tool that developers can deploy 
 ### P0 — Critical (Must Ship First)
 | ID | Story | Status |
 |----|-------|:------:|
-| US-01 | As a developer, I can `docker compose up` and have StatusPulse running in 2 minutes | ❌ |
-| US-02 | As a user, I can log in with GitHub OAuth (basic, not multi-tenant) | ❌ |
-| US-03 | As a user, my endpoints are private to my account | ❌ |
-| US-04 | As a user, I can add/monitor/delete HTTP(S) endpoints | ✅ MVP |
-| US-05 | As a user, monitoring continues even when I close my browser | ✅ MVP |
-| US-06 | As a user, I can see real-time status on a dashboard | ✅ MVP |
+| US-01 | As a developer, I can `docker compose up` and have StatusPulse running in 2 minutes | ✅ |
+| US-02 | As a user, I can log in with GitHub OAuth (basic, not multi-tenant) | ✅ |
+| US-03 | As a user, my endpoints are private to my account | ✅ |
+| US-04 | As a user, I can add/monitor/delete HTTP(S) endpoints | ✅ |
+| US-05 | As a user, monitoring continues even when I close my browser | ✅ |
+| US-06 | As a user, I can see real-time status on a dashboard | ✅ |
 
 ### P1 — Important (Ship After P0)
 | ID | Story | Status |
 |----|-------|:------:|
-| US-07 | As a user, I can view a public status page with uptime history | ✅ MVP |
-| US-08 | As a user, I receive Slack/Discord alerts when endpoints go down | ✅ MVP |
-| US-09 | As a user, I can embed a live SVG badge in my README | ✅ MVP |
-| US-10 | As a user, I can configure monitoring intervals per endpoint | ✅ MVP |
-| US-11 | As a user, I can set maintenance windows | ✅ MVP |
-| US-12 | As a user, I receive email alerts (SendGrid/Resend) | ❌ |
+| US-07 | As a user, I can view a public status page with uptime history | ✅ |
+| US-08 | As a user, I receive Slack/Discord alerts when endpoints go down | ✅ |
+| US-09 | As a user, I can embed a live SVG badge in my README | ✅ |
+| US-10 | As a user, I can configure monitoring intervals per endpoint | ✅ |
+| US-11 | As a user, I can set maintenance windows | ✅ |
+| US-12 | As a user, I receive email alerts (SendGrid/Resend) | ⚠️ Subscribe capture only, no delivery |
 
 ### P2 — Nice to Have
 | ID | Story |
@@ -308,11 +312,11 @@ P = Probability, I = Impact. C = Critical, H = High, M = Medium, L = Low.
 
 | Metric | Current | Phase 1 | Phase 2 | Phase 3 |
 |--------|:---:|:---:|:---:|:---:|
-| **Docker deploy time** | — | < 120s | < 90s | < 60s |
+| **Docker deploy time** | ~120s | < 120s | < 90s | < 60s |
 | **GitHub stars** | 0 | 50 | 200 | 1,000 |
 | **Self-hosted instances** | 1 | 20 | 100 | 500 |
-| **Test coverage** | 0% | 30% | 60% | 80% |
-| **TypeScript coverage** | 0% | 20% | 60% | 100% |
+| **Test coverage** | 70 unit + 13 E2E | 30% | 60% | 80% |
+| **TypeScript coverage** | API + workers + AI | 20% | 60% | 100% |
 | **p95 API latency** | ~500ms | < 300ms | < 200ms | < 100ms |
 
 ---

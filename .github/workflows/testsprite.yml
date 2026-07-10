@@ -6,7 +6,46 @@ on:
     branches: [main]
 
 jobs:
+  unit:
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run unit tests (Vitest)
+        run: npx vitest run
+
+  backend-security:
+    needs: unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Backend auth / guardrail / validation boundaries (live app)
+        env:
+          STATUSPULSE_URL: https://statuspulse.edgeone.dev
+        run: python .testsprite/backend_security.py
+
   testsprite:
+    needs: [unit, backend-security]
     runs-on: ubuntu-latest
     env:
       TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
