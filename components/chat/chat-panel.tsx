@@ -7,6 +7,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { encryptForStorage, decryptFromStorage } from '@/lib/privacy'
 import { CONFIG } from '@/lib/config'
 import { DiagnosticCard, KnowledgeBaseCard } from '@/components/chat/diagnostic-cards'
+import { ResolutionCard } from '@/components/chat/resolution-card'
 
 marked.setOptions({ gfm: true, breaks: true })
 
@@ -416,6 +417,7 @@ export default function ChatPanel({ mode = 'full' }: { mode?: 'full' | 'widget' 
                         <div className={`${compact ? 'text-[13px]' : 'text-sm'} ${isDark ? 'text-white/80' : 'text-gray-700'} break-words`}>
                           {msg.content.includes('🏥') ? <DiagnosticCard content={msg.content} isDark={isDark} />
                            : msg.content.includes('📚') ? <KnowledgeBaseCard content={msg.content} isDark={isDark} />
+                           : msg.content.includes('📋') ? <ResolutionCard content={msg.content} isDark={isDark} />
                            : <MarkdownBlock content={msg.content} />}
                         </div>
                         <AnimatePresence>

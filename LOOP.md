@@ -14,7 +14,7 @@
 
 StatusPulse was not built in one prompt.
 
-It was built through **30 engineering loops**, **267 documented actions**, **35+ verification reruns**, **6 real regressions caught**, and **17 banked tests (14 frontend + 3 backend)** — all passing before submission.
+It was built through **31 engineering loops**, **272 documented actions**, **35+ verification reruns**, **6 real regressions caught**, and **17 banked tests (14 frontend + 3 backend)** — all passing before submission.
 
 | Build Stats | |
 |---|---|
@@ -27,8 +27,8 @@ It was built through **30 engineering loops**, **267 documented actions**, **35+
 
 | Metric | MVP (Jun 29) | Final |
 |--------|:---:|:---:|
-| AI features | None | Triple AI (Chat + Diagnostic + KB) |
-| AI tools | 0 | 9 tools |
+| AI features | None | Triple AI + Resolution |
+| AI tools | 0 | 11 tools |
 | TestSprite | 8/13 (61%) | 17/17 (100%) — incl. 3 `--type backend` |
 | Security | Minimal | Comprehensive |
 | Guardrails | None | Comprehensive |
@@ -720,6 +720,27 @@ This failure reinforced why the loop matters: without TestSprite verifying the d
 | 267 | Documented 3 committed failure bundles (badge, search, search-edgeone) as receipts of the iteration process | `.testsprite/failure-*/` | Proof of genuine loop |
 
 **Coverage expanded 14→17.** The 3 backend tests together prove 4 boundaries invisible to the browser: auth enforcement on mutations, prompt-injection guardrail, input validation (empty message, bad email), SVG badge correctness, and secret hygiene on a public config endpoint. All cost 0 credits at run time and are drift-immune — rerunning in CI is deterministic.
+
+---
+
+## Cycle 31 — Jul 10 (AI-Guided Incident Resolution — Closing the Full Loop)
+
+| # | Action | TestSprite | Result |
+|---|--------|-----------|--------|
+| 268 | Created `lib/ai/resolution.ts` — 7 incident type → action plan maps (P1/P2/P3) + safe tool actions following Crawl→Walk model from industry research | 180 lines | 7 resolution maps, each with prioritized steps + tool suggestions |
+| 269 | Created `components/chat/resolution-card.tsx` — styled chat card rendering action plan with priority badges, tool buttons (Pause/Test), Framer Motion staggered entrance | 170 lines | Consistent with diagnostic-card design system |
+| 270 | Added `resolve_incident` tool to `public/api-schema.json` + import in `lib/ai/tools.ts` — internal tool dispatched locally, no HTTP call | Schema 10→11 tools | AI can now call resolve_incident after diagnose_incident |
+| 271 | Integrated ResolutionCard into `components/chat/chat-panel.tsx` — detects 📋 prefix (same pattern as 🏥/📚 cards) | 1 line addition | Renders inline with DiagnosticCard + KnowledgeBaseCard |
+| 272 | Build verified — all 30 API routes + widget (154 kB) compiled clean; `npx vitest run` → 70/70 | `npm run build` | 0 errors, 0 warnings |
+
+**What this changes:** the AI assistant now closes the full loop. Before: diagnose (`🏥`) tells you what's broken. Now: `📋 Incident Resolution` gives you a **prioritized action plan** (P1/P2/P3) with concrete steps to fix it, plus safe actions (pause monitoring, test ping) the AI can execute for you. This turns StatusPulse from a diagnostic tool into the **first open-source, self-hosted monitoring platform with AI-guided incident resolution** — a capability that PagerDuty and Datadog charge hundreds per month for, available here for free and self-hosted.
+
+**Full loop narrative (Build → Verify → Monitor → Resolve):**
+```
+CLI writes code → TestSprite verifies → StatusPulse monitors → AI diagnoses → AI resolves
+        └──────────────────── CLOSED LOOP ───────────────────────────────┘
+```
+The tool that was BUILT by the loop now monitors the software that the loop shipped — and resolves the incidents it finds.
 
 ---
 

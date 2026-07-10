@@ -8,6 +8,7 @@ import { readFile } from 'fs/promises'
 import { resolve } from 'path'
 import { z } from 'zod'
 import { validateToolInput } from './guard'
+import { resolveIncident, formatResolutionCard } from './resolution'
 
 const logger = createLogger('ai-tools')
 
@@ -113,7 +114,25 @@ export async function callTool(
     return { error: `Unknown tool: ${toolName}` }
   }
 
-  // Zod validation for known tools
+  // ─── Internal tools (no HTTP call — execute locally) ──────────────────────
+  if (toolName === 'resolve_incident') {
+    try {
+      const resolved = resolveIncident(
+        input.endpointName || 'Unknown',
+        input.endpointId || '',
+        input.incidentType || 'unknown',
+        input.severity || 'medium',
+      )
+      return {
+        __card: formatResolutionCard(resolved),
+        ...resolved,
+      }
+    } catch (e) {
+      return { error: `Resolution failed: ${(e as Error).message}` }
+    }
+  }
+
+  // ─── HTTP-based tools (standard dispatch) ──────────────────────────────────
   const toolSchema = baseToolSchemas[toolName]
   if (toolSchema) {
     const validation = validateToolInput(toolSchema, input)

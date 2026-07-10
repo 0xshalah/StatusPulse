@@ -89,6 +89,33 @@
           "required": true
         }
       }
+    },
+    {
+      "name": "resolve_incident",
+      "description": "Generate a structured incident resolution plan for a diagnosed endpoint. After the AI calls diagnose_incident, call this to produce a prioritized action plan (P1/P2/P3) with concrete steps the user can take to fix the incident, plus safe actions (pause monitoring, test ping) the AI can offer to execute.",
+      "endpoint": "INTERNAL:lib/ai/resolution.ts",
+      "parameters": {
+        "endpointId": {
+          "type": "string",
+          "description": "The endpoint UUID that was just diagnosed",
+          "required": true
+        },
+        "incidentType": {
+          "type": "string",
+          "description": "The incident type from the diagnostic (server_error_5xx, dns_failure, timeout, latency_spike, client_error_4xx, certificate_expiry, unknown)",
+          "required": true
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity level: critical, high, medium, or low",
+          "required": true
+        },
+        "endpointName": {
+          "type": "string",
+          "description": "The human-readable endpoint name",
+          "required": true
+        }
+      }
     }
   ]
 }
