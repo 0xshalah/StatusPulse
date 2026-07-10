@@ -9,6 +9,8 @@ import HealthScore from '@/components/statuspulse/HealthScore'
 import EndpointCard from '@/components/statuspulse/EndpointCard'
 import AddEndpointWizard from '@/components/statuspulse/AddEndpointWizard'
 import AlertSettings from '@/components/statuspulse/SlackSettings'
+import { ReliabilityInsightsCard } from '@/components/statuspulse/ReliabilityInsightsCard'
+import { generateReliabilityInsights } from '@/lib/ai/insights'
 import { useStatusStream } from '@/hooks/useStatusStream'
 import { api, timeAgo } from '@/lib/statuspulse'
 import { Button } from '@/components/ui/button'
@@ -91,6 +93,7 @@ function App() {
       const mf = filter === 'all' || e.verdict === filter
       return ms && mf
     }), [data, search, filter])
+  const insights = useMemo(() => generateReliabilityInsights(data.endpoints), [data.endpoints])
 
   return (
     <div className="min-h-screen bg-background">
@@ -149,6 +152,10 @@ function App() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+        <ReliabilityInsightsCard insights={insights} />
       </div>
 
       <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6">
